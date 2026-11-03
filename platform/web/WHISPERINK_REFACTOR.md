@@ -20,7 +20,7 @@ Source of truth for the kit: `vendor/whisperink` and its design guide (`docs/DES
 
 ## What stayed
 
-Select, combobox, dialog, alert dialog, sheet, dropdown, popover, tabs, and table keep their current composition. Their colors come from the same tokens (`bg-popover` and `bg-card` resolve to `surface`). Rebuilding them as `Select`, `Modal`, and `Menu` would change every call site for no change in what the screens do.
+Dialogs, menus, selects, tables, cards, badges, tabs, and tooltips render Whisperink components. The page files still compose them with the names they already used (`Dialog`, `Select`, `DropdownMenu`). Those names are local adapters over `Modal`, `Select`, `Menu`, and the rest of the kit. There is no shadcn and no Base UI dependency. Combobox and the transcript scroller are app controls built from Whisperink `Popover`, `Input`, and `Button`.
 
 Session transcripts, the composer, workspace trees, and bot triggers stay product components. They use the token utilities (`text-muted-foreground`, `bg-background`) so they sit on the kit's neutral scale.
 

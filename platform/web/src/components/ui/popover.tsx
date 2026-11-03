@@ -1,48 +1,43 @@
-import * as React from "react"
-import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
+import { cloneElement, isValidElement, type MouseEvent, type ReactElement, type ReactNode } from "react"
+import { Popover as WhisperinkPopover } from "@versavolta/whisperink/components/Popover/Popover.js"
+import { elements, named } from "@/components/ui/nodes"
 
-import { cn } from "@/lib/utils"
-
-function Popover({ ...props }: PopoverPrimitive.Root.Props) {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />
-}
-
-function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
-}
-
-function PopoverContent({
-  align = "start",
-  alignOffset = 0,
-  side = "bottom",
-  sideOffset = 6,
-  className,
-  ...props
-}: PopoverPrimitive.Popup.Props &
-  Pick<
-    PopoverPrimitive.Positioner.Props,
-    "align" | "alignOffset" | "side" | "sideOffset"
-  >) {
+function Popover({ children }: { children?: ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) {
+  const parts = elements(children)
+  const trigger = parts.find((child) => named(child) === "PopoverTrigger")
+  const content = parts.find((child) => named(child) === "PopoverContent")
+  const side = content?.props.side === "top" ? "top" : "bottom"
+  const align = content?.props.align === "end" ? "end" : "start"
   return (
-    <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Positioner
-        className="isolate z-50 outline-none"
-        align={align}
-        alignOffset={alignOffset}
-        side={side}
-        sideOffset={sideOffset}
-      >
-        <PopoverPrimitive.Popup
-          data-slot="popover-content"
-          className={cn(
-            "max-h-(--available-height) w-[min(24rem,calc(100vw-2rem))] origin-(--transform-origin) overflow-y-auto rounded-xl bg-popover text-popover-foreground shadow-lg ring-1 ring-foreground/10 outline-none duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-            className
-          )}
-          {...props}
-        />
-      </PopoverPrimitive.Positioner>
-    </PopoverPrimitive.Portal>
+    <WhisperinkPopover
+      align={align}
+      side={side}
+      className={content?.props.className}
+      trigger={({ toggle, open }) => {
+        const rendered = trigger?.props.render as ReactElement<{ onClick?: (event: MouseEvent) => void; children?: ReactNode }> | undefined
+        if (rendered && isValidElement(rendered)) {
+          return cloneElement(rendered, {
+            "aria-expanded": open,
+            onClick: (event: MouseEvent) => { rendered.props.onClick?.(event); toggle() },
+            children: trigger?.props.children ?? rendered.props.children,
+          } as never)
+        }
+        return <button type="button" className={trigger?.props.className} aria-label={trigger?.props["aria-label"]} aria-haspopup="dialog" aria-expanded={open} onClick={toggle}>{trigger?.props.children}</button>
+      }}
+    >
+      {content?.props.children}
+    </WhisperinkPopover>
   )
 }
+
+function PopoverTrigger({ children }: { render?: ReactElement; children?: ReactNode; className?: string; "aria-label"?: string }) {
+  return <>{children}</>
+}
+PopoverTrigger.displayName = "PopoverTrigger"
+
+function PopoverContent({ children }: { children?: ReactNode; className?: string; align?: string; side?: string; sideOffset?: number; alignOffset?: number }) {
+  return <>{children}</>
+}
+PopoverContent.displayName = "PopoverContent"
 
 export { Popover, PopoverContent, PopoverTrigger }

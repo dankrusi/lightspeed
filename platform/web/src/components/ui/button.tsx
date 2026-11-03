@@ -1,5 +1,7 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react"
+import { Button as WhisperinkButton } from "@versavolta/whisperink/components/Button/Button.js"
 import { buttonClasses, type ButtonSize, type ButtonVariant } from "@versavolta/whisperink/components/Button/button-classes.js"
+import { cn } from "@/lib/utils"
 
 type Variant = "default" | "outline" | "secondary" | "ghost" | "destructive" | "link"
 type Size = "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg"
@@ -35,30 +37,42 @@ function buttonVariants({
 }) {
   const resolvedVariant = variant ?? "default"
   const resolvedSize = size ?? "default"
-  return buttonClasses(
-    variants[resolvedVariant],
-    sizes[resolvedSize],
-    className,
-    String(resolvedSize).startsWith("icon"),
-  )
+  return buttonClasses(variants[resolvedVariant], sizes[resolvedSize], className, String(resolvedSize).startsWith("icon"))
 }
 
 function Button({
   className,
   variant = "default",
   size = "default",
+  render,
+  nativeButton: _nativeButton,
+  children,
   ...props
-}: ButtonPrimitive.Props & { variant?: Variant | null; size?: Size | null }) {
+}: React.ComponentProps<"button"> & {
+  variant?: Variant | null
+  size?: Size | null
+  render?: ReactElement<{ className?: string; children?: ReactNode; onClick?: (event: React.MouseEvent) => void }>
+  nativeButton?: boolean
+}) {
+  const resolvedVariant = variant ?? "default"
+  const resolvedSize = size ?? "default"
+  if (isValidElement(render)) {
+    return cloneElement(render, {
+      className: cn(buttonVariants({ variant: resolvedVariant, size: resolvedSize, className: typeof className === "string" ? className : undefined }), render.props.className),
+      children: children ?? render.props.children,
+      "aria-label": props["aria-label"],
+      title: props.title,
+    })
+  }
   return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={(state) => buttonVariants({
-        variant,
-        size,
-        className: typeof className === "function" ? className(state) : className,
-      })}
+    <WhisperinkButton
+      variant={variants[resolvedVariant]}
+      size={sizes[resolvedSize]}
+      className={typeof className === "string" ? className : undefined}
       {...props}
-    />
+    >
+      {children}
+    </WhisperinkButton>
   )
 }
 

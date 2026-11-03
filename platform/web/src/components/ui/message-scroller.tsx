@@ -1,138 +1,177 @@
-import * as React from "react"
-import {
-  MessageScroller as MessageScrollerPrimitive,
-  useMessageScroller,
-  useMessageScrollerScrollable,
-  useMessageScrollerVisibility,
-} from "@shadcn/react/message-scroller"
-
-import { cn } from "@/lib/utils"
+import { createContext, useContext, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react"
 import { Button } from "@/components/ui/button"
-import { IconArrowDown } from "@tabler/icons-react"
+import { cn } from "@/lib/utils"
 
-function MessageScrollerProvider(
-  props: React.ComponentProps<typeof MessageScrollerPrimitive.Provider>
-) {
-  return <MessageScrollerPrimitive.Provider {...props} />
+type Scroller = {
+  viewport: RefObject<HTMLDivElement | null>
+  scrollToEnd: (options?: { behavior?: ScrollBehavior }) => void
+  scrollToMessage: (id: string, options?: ScrollIntoViewOptions) => void
+  scrollable: boolean
+  atEnd: boolean
+  setEdges: (scrollable: boolean, atEnd: boolean) => void
+  stick: React.MutableRefObject<boolean>
+  preservePrepend: boolean
 }
 
-function MessageScroller({
-  className,
-  ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Root>) {
+const ScrollerContext = createContext<Scroller | null>(null)
+
+function useScroller() {
+  const value = useContext(ScrollerContext)
+  if (!value) throw new Error("Message scroller parts must be inside MessageScrollerProvider")
+  return value
+}
+
+function MessageScrollerProvider({
+  children,
+  autoScroll = false,
+}: {
+  children?: ReactNode
+  autoScroll?: boolean
+  defaultScrollPosition?: string
+}) {
+  const viewport = useRef<HTMLDivElement | null>(null)
+  const stick = useRef(autoScroll)
+  const [scrollable, setScrollable] = useState(false)
+  const [atEnd, setAtEnd] = useState(true)
+  const measure = () => {
+    const element = viewport.current
+    if (!element) return
+    const overflow = element.scrollHeight - element.clientHeight > 8
+    const nearEnd = element.scrollHeight - element.scrollTop - element.clientHeight < 48
+    setScrollable(overflow)
+    setAtEnd(nearEnd || !overflow)
+    if (!nearEnd && overflow) stick.current = false
+  }
+  const scrollToEnd = (options?: { behavior?: ScrollBehavior }) => {
+    const element = viewport.current
+    stick.current = true
+    element?.scrollTo({ top: element.scrollHeight, behavior: options?.behavior ?? "auto" })
+    setAtEnd(true)
+  }
+  const scrollToMessage = (id: string, options?: ScrollIntoViewOptions) => {
+    viewport.current?.querySelector<HTMLElement>(`[data-message-id="${id}"]`)?.scrollIntoView(options)
+  }
+  const setEdges = (nextScrollable: boolean, nextAtEnd: boolean) => {
+    setScrollable(nextScrollable)
+    setAtEnd(nextAtEnd)
+  }
   return (
-    <MessageScrollerPrimitive.Root
-      data-slot="message-scroller"
-      className={cn(
-        "group/message-scroller relative flex size-full min-h-0 flex-col overflow-hidden",
-        className
-      )}
-      {...props}
-    />
+    <ScrollerContext.Provider value={{ viewport, scrollToEnd, scrollToMessage, scrollable, atEnd, setEdges, stick, preservePrepend: false }}>
+      {children}
+    </ScrollerContext.Provider>
   )
+}
+
+function MessageScroller({ className, children }: { className?: string; children?: ReactNode }) {
+  return <div data-slot="message-scroller" className={cn("relative flex size-full min-h-0 flex-col overflow-hidden", className)}>{children}</div>
 }
 
 function MessageScrollerViewport({
   className,
-  ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Viewport>) {
+  children,
+  preserveScrollOnPrepend = false,
+}: {
+  className?: string
+  children?: ReactNode
+  preserveScrollOnPrepend?: boolean
+}) {
+  const scroller = useScroller()
+  const previous = useRef({ height: 0, top: 0 })
+  useLayoutEffect(() => {
+    const element = scroller.viewport.current
+    if (!element) return
+    const nextHeight = element.scrollHeight
+    const delta = nextHeight - previous.current.height
+    if (preserveScrollOnPrepend && delta > 0 && previous.current.top < 8 && previous.current.height > 0) {
+      element.scrollTop += delta
+    } else if (scroller.stick.current) {
+      element.scrollTop = element.scrollHeight
+    }
+    previous.current = { height: element.scrollHeight, top: element.scrollTop }
+    const overflow = element.scrollHeight - element.clientHeight > 8
+    const nearEnd = element.scrollHeight - element.scrollTop - element.clientHeight < 48
+    if (overflow !== scroller.scrollable || nearEnd !== scroller.atEnd) {
+      // Measurement stays in the ref path; state updates happen on scroll.
+    }
+  })
   return (
-    <MessageScrollerPrimitive.Viewport
+    <div
+      ref={scroller.viewport}
       data-slot="message-scroller-viewport"
-      className={cn(
-        "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-x-hidden overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-thumb-transparent data-autoscrolling:scrollbar-track-transparent",
-        className
-      )}
-      {...props}
-    />
+      className={cn("scrollbar-thin size-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto", className)}
+      onScroll={() => {
+        const element = scroller.viewport.current
+        if (!element) return
+        const overflow = element.scrollHeight - element.clientHeight > 8
+        const nearEnd = element.scrollHeight - element.scrollTop - element.clientHeight < 48
+        scroller.stick.current = nearEnd
+        scroller.setEdges(overflow, nearEnd || !overflow)
+        previous.current.top = element.scrollTop
+      }}
+    >
+      {children}
+    </div>
   )
 }
 
-function MessageScrollerContent({
-  className,
-  ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Content>) {
-  return (
-    <MessageScrollerPrimitive.Content
-      data-slot="message-scroller-content"
-      className={cn(
-        "flex h-max min-h-full min-w-0 max-w-full flex-col gap-8 [overflow-wrap:anywhere]",
-        className
-      )}
-      {...props}
-    />
-  )
+function MessageScrollerContent({ className, children }: { className?: string; children?: ReactNode }) {
+  return <div data-slot="message-scroller-content" className={cn("flex h-max min-h-full min-w-0 max-w-full flex-col gap-8", className)}>{children}</div>
 }
 
 function MessageScrollerItem({
   className,
   messageId,
+  children,
   onClickCapture,
-  scrollAnchor = false,
-  ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Item>) {
-  const { scrollToMessage } = useMessageScroller()
+}: {
+  className?: string
+  messageId?: string
+  children?: ReactNode
+  scrollAnchor?: boolean
+  onClickCapture?: (event: React.MouseEvent) => void
+}) {
+  const scroller = useScroller()
   return (
-    <MessageScrollerPrimitive.Item
+    <div
       data-slot="message-scroller-item"
-      messageId={messageId}
-      scrollAnchor={scrollAnchor}
-      className={cn(
-        "w-full min-w-0 max-w-full shrink-0",
-        className
-      )}
+      data-message-id={messageId}
+      className={cn("w-full min-w-0 max-w-full shrink-0", className)}
       onClickCapture={(event) => {
         onClickCapture?.(event)
         if (event.defaultPrevented || !messageId) return
         const target = event.target
-        // Expansion is reading intent. Leave bottom-following before the
-        // content grows, preserving this row's current position when visible.
         if (!(target instanceof Element) || !target.closest("[data-message-expansion]")) return
-        scrollToMessage(messageId, {
-          align: "nearest",
-          behavior: "instant",
-        })
+        scroller.scrollToMessage(messageId, { block: "nearest" })
       }}
-      {...props}
-    />
+    >
+      {children}
+    </div>
   )
 }
 
-function MessageScrollerButton({
-  direction = "end",
-  className,
-  children,
-  render,
-  variant = "secondary",
-  size = "icon-sm",
-  ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Button> &
-  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
+function MessageScrollerButton({ className }: { className?: string; direction?: string; variant?: string; size?: string; children?: ReactNode }) {
+  const scroller = useScroller()
+  if (scroller.atEnd) return null
   return (
-    <MessageScrollerPrimitive.Button
-      data-slot="message-scroller-button"
-      data-direction={direction}
-      data-variant={variant}
-      data-size={size}
-      direction={direction}
-      className={cn(
-        "absolute inset-s-1/2 -translate-x-1/2 border-border bg-background text-foreground transition-[translate,scale,opacity] duration-200 hover:bg-muted hover:text-foreground data-[active=false]:pointer-events-none data-[active=false]:scale-95 data-[active=false]:opacity-0 data-[active=false]:duration-400 data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)] data-[active=true]:translate-y-0 data-[active=true]:scale-100 data-[active=true]:opacity-100 data-[active=true]:ease-[cubic-bezier(0.23,1,0.32,1)] data-[direction=end]:bottom-4 data-[direction=end]:data-[active=false]:translate-y-full data-[direction=start]:top-4 data-[direction=start]:data-[active=false]:-translate-y-full rtl:translate-x-1/2 data-[direction=start]:[&_svg]:rotate-180",
-        className
-      )}
-      render={render ?? <Button variant={variant} size={size} />}
-      {...props}
-    >
-      {children ?? (
-        <>
-          <IconArrowDown
-          />
-          <span className="sr-only">
-            {direction === "end" ? "Scroll to end" : "Scroll to start"}
-          </span>
-        </>
-      )}
-    </MessageScrollerPrimitive.Button>
+    <Button variant="secondary" size="icon-sm" className={cn("absolute bottom-4 left-1/2 -translate-x-1/2", className)} onClick={() => scroller.scrollToEnd({ behavior: "smooth" })}>
+      <span className="sr-only">Scroll to end</span>
+      ↓
+    </Button>
   )
+}
+
+function useMessageScroller() {
+  const scroller = useScroller()
+  return { scrollToEnd: scroller.scrollToEnd, scrollToMessage: scroller.scrollToMessage }
+}
+
+function useMessageScrollerScrollable() {
+  const scroller = useScroller()
+  return { end: scroller.scrollable && !scroller.atEnd }
+}
+
+function useMessageScrollerVisibility() {
+  return { atEnd: useScroller().atEnd }
 }
 
 export {

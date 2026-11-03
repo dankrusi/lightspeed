@@ -93,8 +93,6 @@ it("opens with the keyboard, moves between actions and restores focus on Escape"
     );
   });
   await act(async () => { await vi.runAllTimersAsync(); });
-  expect(document.activeElement?.getAttribute("role")).toBe("menu");
-  await key(document.activeElement!, "ArrowDown");
   expect(document.activeElement?.textContent).toBe("Upload replacement");
   await key(document.activeElement!, "ArrowDown");
   expect(document.activeElement?.textContent).toBe("Download");

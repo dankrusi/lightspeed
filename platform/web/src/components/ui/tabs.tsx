@@ -1,80 +1,90 @@
-import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
-import { cva, type VariantProps } from "class-variance-authority"
-
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
+type TabsState = { value: string | undefined; setValue: (value: string) => void }
+const TabsContext = createContext<TabsState>({ value: undefined, setValue: () => {} })
+
 function Tabs({
+  value,
+  defaultValue,
+  onValueChange,
+  children,
   className,
-  orientation = "horizontal",
-  ...props
-}: TabsPrimitive.Root.Props) {
-  return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      data-orientation={orientation}
-      className={cn(
-        "group/tabs flex gap-2 data-horizontal:flex-col",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-9 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
-  {
-    variants: {
-      variant: {
-        default: "bg-muted",
-        line: "gap-1 bg-transparent",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
+}: {
+  value?: string
+  defaultValue?: string
+  onValueChange?: (value: string) => void
+  children?: ReactNode
+  className?: string
+  orientation?: string
+}) {
+  const [internal, setInternal] = useState(defaultValue)
+  const current = value ?? internal
+  const setValue = (next: string) => {
+    setInternal(next)
+    onValueChange?.(next)
   }
-)
+  return (
+    <TabsContext.Provider value={{ value: current, setValue }}>
+      <div className={cn("flex flex-col gap-2", className)}>{children}</div>
+    </TabsContext.Provider>
+  )
+}
 
-function TabsList({
+function TabsList({ children, className, activateOnFocus, variant: _variant, ...props }: React.ComponentProps<"div"> & { variant?: string; activateOnFocus?: boolean }) {
+  const tabs = useContext(TabsContext)
+  return (
+    <div
+      role="tablist"
+      className={cn("inline-flex items-center gap-1 rounded-[var(--segmented-radius)] bg-subtle p-0.5", className)}
+      onKeyDown={(event) => {
+        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return
+        const buttons = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')]
+        const index = buttons.indexOf(document.activeElement as HTMLButtonElement)
+        if (index < 0) return
+        const next = buttons[(index + (event.key === "ArrowRight" ? 1 : buttons.length - 1)) % buttons.length]
+        next?.focus()
+        const value = next?.dataset.value
+        if (activateOnFocus && value) tabs.setValue(value)
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+function TabsTrigger({
+  value,
+  children,
   className,
-  variant = "default",
-  ...props
-}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
+}: {
+  value: string
+  children?: ReactNode
+  className?: string
+  title?: string
+}) {
+  const tabs = useContext(TabsContext)
+  const selected = tabs.value === value
   return (
-    <TabsPrimitive.List
-      data-slot="tabs-list"
-      data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
-      {...props}
-    />
+    <button
+      type="button"
+      role="tab"
+      data-value={value}
+      aria-selected={selected}
+      title={undefined}
+      className={cn("focus-ring rounded-[var(--segmented-item-radius)] px-2.5 py-1 text-sm", selected ? "bg-surface font-medium text-fg shadow-segmented" : "text-fg-muted", className)}
+      onClick={() => tabs.setValue(value)}
+    >
+      {children}
+    </button>
   )
 }
 
-function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
-  return (
-    <TabsPrimitive.Tab
-      data-slot="tabs-trigger"
-      className={cn(
-        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-disabled:pointer-events-none aria-disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
-        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
-        className
-      )}
-      {...props}
-    />
-  )
+function TabsContent({ value, children, className }: { value: string; children?: ReactNode; className?: string }) {
+  const tabs = useContext(TabsContext)
+  if (tabs.value !== value) return null
+  return <div role="tabpanel" className={className}>{children}</div>
 }
 
-function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
-  return (
-    <TabsPrimitive.Panel
-      data-slot="tabs-content"
-      className={cn("flex-1 text-sm outline-none", className)}
-      {...props}
-    />
-  )
-}
-
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { Tabs, TabsList, TabsTrigger, TabsContent }

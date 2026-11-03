@@ -1,6 +1,5 @@
 import * as React from "react"
-import { mergeProps } from "@base-ui/react/merge-props"
-import { useRender } from "@base-ui/react/use-render"
+import { cloneElement, isValidElement, type ReactElement } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -23,22 +22,14 @@ function Marker({
   className,
   variant = "default",
   render,
+  children,
   ...props
-}: useRender.ComponentProps<"div"> & VariantProps<typeof markerVariants>) {
-  return useRender({
-    defaultTagName: "div",
-    props: mergeProps<"div">(
-      {
-        className: cn(markerVariants({ variant, className })),
-      },
-      props
-    ),
-    render,
-    state: {
-      slot: "marker",
-      variant,
-    },
-  })
+}: React.ComponentProps<"div"> & VariantProps<typeof markerVariants> & { render?: ReactElement<{ className?: string; children?: React.ReactNode }> }) {
+  const classes = cn(markerVariants({ variant, className }))
+  if (render && isValidElement(render)) {
+    return cloneElement(render, { className: cn(classes, render.props.className), children: children ?? render.props.children })
+  }
+  return <div data-slot="marker" data-variant={variant} className={classes} {...props}>{children}</div>
 }
 
 function MarkerIcon({ className, ...props }: React.ComponentProps<"span">) {

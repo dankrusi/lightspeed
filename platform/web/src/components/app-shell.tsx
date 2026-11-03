@@ -3,15 +3,15 @@ import { useEffect, type ComponentType } from "react";
 import { Link, Outlet, useLocation, useMatch, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  Broadcast,
   Globe,
-  KeyRound,
+  HardDrives,
+  Key,
   Palette,
-  RadioTower,
-  ScrollText,
-  ServerCog,
-  UserCog,
-  UserRound,
-} from "lucide-react";
+  Scroll,
+  UserCircle,
+  UserGear,
+} from "@phosphor-icons/react";
 import { WebApp } from "@versavolta/whisperink/components/WebApp/WebApp.js";
 import type { NavGroup } from "@versavolta/whisperink/components/Sidebar/Sidebar.js";
 import { UniverseSwitcher } from "@/components/universe-switcher";
@@ -24,17 +24,17 @@ import { rememberUniverse, useUniverses } from "@/lib/universes";
 type ShellMode = "universe" | "admin" | "account";
 
 const ADMIN_NAV: Array<{ key: string; label: string; icon: ComponentType; href: string }> = [
-  { key: "users", label: "Users", icon: UserCog, href: "/admin/users" },
+  { key: "users", label: "Users", icon: UserGear, href: "/admin/users" },
   { key: "universes", label: "Universes", icon: Globe, href: "/admin/universes" },
-  { key: "api-keys", label: "API keys", icon: KeyRound, href: "/admin/api-keys" },
-  { key: "channels", label: "Channels", icon: RadioTower, href: "/admin/channels" },
-  { key: "audit", label: "Audit log", icon: ScrollText, href: "/admin/audit" },
-  { key: "environment-providers", label: "Environment providers", icon: ServerCog, href: "/admin/environment-providers" },
+  { key: "api-keys", label: "API keys", icon: Key, href: "/admin/api-keys" },
+  { key: "channels", label: "Channels", icon: Broadcast, href: "/admin/channels" },
+  { key: "audit", label: "Audit log", icon: Scroll, href: "/admin/audit" },
+  { key: "environment-providers", label: "Environment providers", icon: HardDrives, href: "/admin/environment-providers" },
 ];
 
 const ACCOUNT_NAV: Array<{ key: string; label: string; icon: ComponentType }> = [
-  { key: "profile", label: "Profile", icon: UserRound },
-  { key: "security", label: "Security", icon: KeyRound },
+  { key: "profile", label: "Profile", icon: UserCircle },
+  { key: "security", label: "Security", icon: Key },
   { key: "appearance", label: "Appearance", icon: Palette },
 ];
 

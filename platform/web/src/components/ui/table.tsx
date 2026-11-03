@@ -1,49 +1,17 @@
-import * as React from "react"
-
+import type { ComponentProps, ReactNode } from "react"
+import { Table as WhisperinkTable } from "@versavolta/whisperink/components/Table/Table.js"
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js"
+import { TD } from "@versavolta/whisperink/components/Table/TD.js"
+import { TH } from "@versavolta/whisperink/components/Table/TH.js"
+import { THead } from "@versavolta/whisperink/components/Table/THead.js"
+import { TR } from "@versavolta/whisperink/components/Table/TR.js"
 import { cn } from "@/lib/utils"
 
-/// Bordered card around a table. `Table` itself owns the horizontal scroll
-/// container, so this must not add another `overflow-x-auto` (nested
-/// scrollers clip the border radius and double the scrollbars).
-function TableCard({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="table-card"
-      className={cn("min-w-0 max-w-full overflow-hidden rounded-xl border", className)}
-      {...props}
-    />
-  )
+function TableCard({ className, ...props }: ComponentProps<"div">) {
+  return <div data-slot="table-card" className={cn("min-w-0 max-w-full overflow-hidden rounded-[var(--card-radius)] border border-border", className)} {...props} />
 }
 
-/// Primary label with an optional secondary line (typically the mono id):
-/// keeps "name + id" in one column instead of two, which is what makes most
-/// settings tables fit the page column.
-function TableTitleCell({
-  title,
-  subtitle,
-  className,
-  ...props
-}: React.ComponentProps<"td"> & { title: React.ReactNode; subtitle?: React.ReactNode }) {
-  return (
-    <TableCell className={cn("max-w-72", className)} {...props}>
-      <div className="grid min-w-0 gap-0.5">
-        <span className="block min-w-0 truncate font-medium">{title}</span>
-        {subtitle != null && subtitle !== "" && (
-          <IdText className="text-muted-foreground">{subtitle}</IdText>
-        )}
-      </div>
-    </TableCell>
-  )
-}
-
-/// Monospace identifier that truncates instead of widening its column; the
-/// full value stays available as a tooltip.
-function IdText({
-  className,
-  children,
-  title,
-  ...props
-}: React.ComponentProps<"span">) {
+function IdText({ className, children, title, ...props }: ComponentProps<"span">) {
   return (
     <span
       data-slot="id-text"
@@ -56,114 +24,56 @@ function IdText({
   )
 }
 
-/// Trailing actions column: never wraps, never widens beyond its content.
-function TableActionsCell({ className, ...props }: React.ComponentProps<"td">) {
-  return (
-    <TableCell
-      className={cn("w-0 whitespace-nowrap text-right [&>*]:align-middle", className)}
-      {...props}
-    />
-  )
+function Table(props: ComponentProps<"table">) {
+  return <WhisperinkTable data-slot="table" {...props} />
 }
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
-  return (
-    <div
-      data-slot="table-container"
-      className="relative w-full min-w-0 max-w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
-    </div>
-  )
+function TableHeader(props: ComponentProps<"thead">) {
+  return <THead data-slot="table-header" {...props} />
 }
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
-  return (
-    <thead
-      data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
-      {...props}
-    />
-  )
+function TableBody(props: ComponentProps<"tbody">) {
+  return <TBody data-slot="table-body" {...props} />
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody
-      data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
-      {...props}
-    />
-  )
+function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
+  return <tfoot data-slot="table-footer" className={cn("border-t border-border font-medium", className)} {...props} />
 }
 
-function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
-  return (
-    <tfoot
-      data-slot="table-footer"
-      className={cn(
-        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
-        className
-      )}
-      {...props}
-    />
-  )
+function TableRow(props: ComponentProps<"tr">) {
+  return <TR data-slot="table-row" {...props} />
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
-  return (
-    <tr
-      data-slot="table-row"
-      className={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
-        className
-      )}
-      {...props}
-    />
-  )
+function TableHead({ align: _align, ...props }: ComponentProps<"th">) {
+  return <TH data-slot="table-head" {...props} />
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
-  return (
-    <th
-      data-slot="table-head"
-      className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
-        className
-      )}
-      {...props}
-    />
-  )
+function TableCell({ align: _align, ...props }: ComponentProps<"td">) {
+  return <TD data-slot="table-cell" {...props} />
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
-  return (
-    <td
-      data-slot="table-cell"
-      className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
-        className
-      )}
-      {...props}
-    />
-  )
+function TableCaption({ className, ...props }: ComponentProps<"caption">) {
+  return <caption data-slot="table-caption" className={cn("mt-4 text-sm text-fg-muted", className)} {...props} />
 }
 
-function TableCaption({
+function TableTitleCell({
+  title,
+  subtitle,
   className,
   ...props
-}: React.ComponentProps<"caption">) {
+}: ComponentProps<"td"> & { title: ReactNode; subtitle?: ReactNode }) {
   return (
-    <caption
-      data-slot="table-caption"
-      className={cn("mt-4 text-sm text-muted-foreground", className)}
-      {...props}
-    />
+    <TableCell className={cn("max-w-72", className)} {...props}>
+      <div className="grid min-w-0 gap-0.5">
+        <span className="block min-w-0 truncate font-medium">{title}</span>
+        {subtitle != null && subtitle !== "" && <IdText className="text-fg-muted">{subtitle}</IdText>}
+      </div>
+    </TableCell>
   )
+}
+
+function TableActionsCell({ className, ...props }: ComponentProps<"td">) {
+  return <TableCell className={cn("w-0 whitespace-nowrap text-right", className)} {...props} />
 }
 
 export {

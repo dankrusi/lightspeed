@@ -68,7 +68,7 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
       </div>}
       <AlertDialogFooter>
         <AlertDialogCancel disabled={deletion.isPending}>{softDeleted ? "Done" : "Cancel"}</AlertDialogCancel>
-        <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={deletion.isPending} onClick={() => deletion.mutate()}>
+        <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={deletion.isPending} onClick={(event) => { event.preventDefault(); deletion.mutate(); }}>
           {deletion.isPending ? "Deleting…" : permanent ? softDeleted ? "Retry permanent deletion" : "Permanently delete" : "Delete session"}
         </AlertDialogAction>
       </AlertDialogFooter>
