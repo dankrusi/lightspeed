@@ -21,14 +21,14 @@ import {
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
-import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure, SettingsGroup } from "@/components/settings-disclosure";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { TableCell } from "@/components/ui/table";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
 import { EmptyState, LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";
-import { ProgressSteps } from "@/components/ui/progress-steps";
+import { ProgressSteps } from "@/components/progress-steps";
 import { useActiveUniverse } from "@/lib/universes";
 
 const MCP_CREATE_STEPS = [
@@ -100,12 +100,12 @@ function ServerList({ universeId }: { universeId: string }) {
               setSelectedId(server.serverId);
             }}>
               <ResourceIdentityCell name={serverName(server)} subtitle={server.serverId} mono compactDescription={server.serverUrl} />
-              <TableCell className="hidden max-w-64 sm:table-cell"><ResourceValue mono>{server.serverUrl}</ResourceValue></TableCell>
-              <TableCell className="hidden max-w-56 sm:table-cell"><ResourceValue
+              <TD className="hidden max-w-64 sm:table-cell"><ResourceValue mono>{server.serverUrl}</ResourceValue></TD>
+              <TD className="hidden max-w-56 sm:table-cell"><ResourceValue
                 description={server.authPolicy.type.startsWith("optional") ? "Optional" : server.authPolicy.type.startsWith("required") ? "Required" : undefined}>
                 {mcpAuthKind(server.authPolicy.type) === "oauth" ? "OAuth" : mcpAuthKind(server.authPolicy.type) === "bearer" ? "Bearer token" : "No authentication"}
-              </ResourceValue></TableCell>
-              <TableCell><ResourceStatus status={mcpServerStatus(server)} /></TableCell>
+              </ResourceValue></TD>
+              <TD><ResourceStatus status={mcpServerStatus(server)} /></TD>
             </ResourceRow>
           ))}
         </ResourceTable>

@@ -3,7 +3,13 @@ import { api } from "@/api";
 import { authClient } from "@/auth";
 import { LoadingNote, PageHeader } from "@/components/page";
 import { ReadError } from "@/components/read-error";
-import { Table, TableBody, TableCard, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TableCard } from "@/components/table-layout";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 
 interface AuditEvent {
   id: string;
@@ -34,19 +40,19 @@ export function AdminAuditPage() {
     {audit.error && <ReadError error={audit.error} loading={!audit.data} />}
     {audit.isFetching && <LoadingNote />}
     {audit.data && <TableCard><Table>
-      <TableHeader><TableRow>
-        <TableHead>When</TableHead><TableHead>Action</TableHead><TableHead>Actor</TableHead><TableHead>Target</TableHead><TableHead>Outcome</TableHead>
-      </TableRow></TableHeader>
-      <TableBody>
-        {audit.data.map((event) => <TableRow key={event.id}>
-          <TableCell>{new Date(event.createdAt).toLocaleString()}</TableCell>
-          <TableCell>{auditAction(event.action)}</TableCell>
-          <TableCell>{label(event.actorId, "System")}</TableCell>
-          <TableCell>{label(event.targetId, "—")}</TableCell>
-          <TableCell>{event.outcome}</TableCell>
-        </TableRow>)}
-        {audit.data.length === 0 && <TableRow><TableCell colSpan={5} className="text-muted-foreground">No audit events recorded.</TableCell></TableRow>}
-      </TableBody>
+      <THead><TR>
+        <TH>When</TH><TH>Action</TH><TH>Actor</TH><TH>Target</TH><TH>Outcome</TH>
+      </TR></THead>
+      <TBody>
+        {audit.data.map((event) => <TR key={event.id}>
+          <TD>{new Date(event.createdAt).toLocaleString()}</TD>
+          <TD>{auditAction(event.action)}</TD>
+          <TD>{label(event.actorId, "System")}</TD>
+          <TD>{label(event.targetId, "—")}</TD>
+          <TD>{event.outcome}</TD>
+        </TR>)}
+        {audit.data.length === 0 && <TR><TD colSpan={5} className="text-muted-foreground">No audit events recorded.</TD></TR>}
+      </TBody>
     </Table></TableCard>}
   </>;
 }

@@ -43,7 +43,7 @@ import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
-import { ProgressSteps } from "@/components/ui/progress-steps";
+import { ProgressSteps } from "@/components/progress-steps";
 import { useSessionConfigEditorOptions } from "@/lib/sessions/editor-options";
 import { setupResourceFeatureError } from "@/lib/sessions/resource-features";
 import { cn } from "@/lib/utils";

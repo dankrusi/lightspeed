@@ -25,7 +25,7 @@ import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
-import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure } from "@/components/settings-disclosure";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { DetailPrompt, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";

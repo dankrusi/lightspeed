@@ -2,7 +2,13 @@ import { useRef, type ReactNode } from "react";
 import { CaretRight, CircleNotch } from "@phosphor-icons/react";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Table, TableActionsCell, TableBody, TableCard, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TableActionsCell, TableCard } from "@/components/table-layout";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import type { ResourceStatusInfo } from "@/lib/resource-status";
 import { cn } from "@/lib/utils";
 
@@ -15,14 +21,14 @@ export function ResourceTable({ label, columns, children }: {
   return (
     <TableCard>
       <Table aria-label={label} className="[&_td]:px-3 [&_td]:py-3 [&_th]:px-3">
-        <TableHeader>
-          <TableRow>
-            {columns.map((column, index) => <TableHead key={column} scope="col"
-              className={index > 0 && index < columns.length - 1 ? "hidden sm:table-cell" : undefined}>{column}</TableHead>)}
-            <TableHead scope="col" className="w-0"><span className="sr-only">Details</span></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>{children}</TableBody>
+        <THead>
+          <TR>
+            {columns.map((column, index) => <TH key={column} scope="col"
+              className={index > 0 && index < columns.length - 1 ? "hidden sm:table-cell" : undefined}>{column}</TH>)}
+            <TH scope="col" className="w-0"><span className="sr-only">Details</span></TH>
+          </TR>
+        </THead>
+        <TBody>{children}</TBody>
       </Table>
     </TableCard>
   );
@@ -35,7 +41,7 @@ export function ResourceRow({ name, onOpen, children }: {
 }) {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   return (
-    <TableRow className="cursor-pointer focus-within:bg-muted/50" onClick={() => onOpen(triggerRef.current)}>
+    <TR className="cursor-pointer focus-within:bg-muted/50" onClick={() => onOpen(triggerRef.current)}>
       {children}
       <TableActionsCell>
         <IconButton ref={triggerRef} size="sm" className="text-muted-foreground"
@@ -43,7 +49,7 @@ export function ResourceRow({ name, onOpen, children }: {
           <CaretRight aria-hidden="true" className="size-4" />
         </IconButton>
       </TableActionsCell>
-    </TableRow>
+    </TR>
   );
 }
 
@@ -56,7 +62,7 @@ export function ResourceIdentityCell({ name, subtitle, mono = false, icon, compa
 }) {
   const secondary = subtitle?.trim().toLocaleLowerCase() !== name.trim().toLocaleLowerCase() ? subtitle : undefined;
   return (
-    <TableCell className="max-w-40 sm:max-w-72">
+    <TD className="max-w-40 sm:max-w-72">
       <div className="flex min-w-0 items-center gap-3">
         {icon && <span aria-hidden="true" className="shrink-0">{icon}</span>}
         <div className="grid min-w-0 gap-0.5">
@@ -65,7 +71,7 @@ export function ResourceIdentityCell({ name, subtitle, mono = false, icon, compa
           {compactDescription && <span className="truncate text-xs text-muted-foreground sm:hidden" title={compactDescription}>{compactDescription}</span>}
         </div>
       </div>
-    </TableCell>
+    </TD>
   );
 }
 

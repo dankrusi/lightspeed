@@ -13,17 +13,13 @@ import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import {
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { EmptyState, LoadingNote, PageHeader, UniverseNotFound, ShowHiddenToggle } from "@/components/page";
 import { useActiveUniverse } from "@/lib/universes";
 import { useActionPermissions } from "@/lib/permissions";
@@ -97,44 +93,44 @@ function ApiKeyList({ universeId }: { universeId: string }) {
       {rows.length > 0 && (
         <TableCard>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Key</TableHead>
-                <TableHead>May call</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Last used</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-0" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            <THead>
+              <TR>
+                <TH>Key</TH>
+                <TH>May call</TH>
+                <TH>Created</TH>
+                <TH>Last used</TH>
+                <TH>Status</TH>
+                <TH className="w-0" />
+              </TR>
+            </THead>
+            <TBody>
               {rows.map((key) => {
                 const revoked = key.revokedAtMs != null;
                 return (
-                  <TableRow key={key.keyPrefix}>
+                  <TR key={key.keyPrefix}>
                     <TableTitleCell
                       title={key.displayName ?? "Unnamed key"}
                       subtitle={key.keyPrefix}
                     />
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TD className="text-xs text-muted-foreground">
                       <GroupSummary summary={groupSummary("universe", key.groups)} />
                       {key.assertActor && (
                         <span className="mt-1 block">Speaks for people</span>
                       )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    </TD>
+                    <TD className="text-muted-foreground">
                       {formatTimestamp(key.createdAtMs)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    </TD>
+                    <TD className="text-muted-foreground">
                       {key.lastUsedAtMs == null ? "Never" : formatTimestamp(key.lastUsedAtMs)}
-                    </TableCell>
-                    <TableCell>
+                    </TD>
+                    <TD>
                       {revoked ? (
                         <Badge outline>revoked</Badge>
                       ) : (
                         <Badge>active</Badge>
                       )}
-                    </TableCell>
+                    </TD>
                     <TableActionsCell>
                       {!revoked && !key.assertActor && (
                         <IconButton size="sm" label={`Rotate ${key.displayName ?? key.keyPrefix}`} onClick={() => setRotatingKey(key)}>
@@ -152,10 +148,10 @@ function ApiKeyList({ universeId }: { universeId: string }) {
                         </IconButton>
                       )}
                     </TableActionsCell>
-                  </TableRow>
+                  </TR>
                 );
               })}
-            </TableBody>
+            </TBody>
           </Table>
         </TableCard>
       )}

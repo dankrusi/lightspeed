@@ -42,7 +42,7 @@ vi.mock("@tanstack/react-query", () => ({
   useMutationState: () => mocks.compactions,
 }));
 vi.mock("@/components/session/session-settings-sheet", () => ({ SessionSettingsDialog: () => null }));
-vi.mock("@/components/ui/message-scroller", () => {
+vi.mock("@/components/session/message-scroller", () => {
   const Container = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
   return {
     MessageScrollerProvider: ({ children, autoScroll }: { children?: ReactNode; autoScroll?: boolean }) => (

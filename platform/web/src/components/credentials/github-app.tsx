@@ -6,20 +6,15 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure } from "@/components/settings-disclosure";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
-import {
-  IdText,
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { IdText, TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { LoadingNote } from "@/components/page";
 import { installationGrantFor, permissionEntries, validateGitHubAppForm } from "@/lib/integrations";
 import { ConfirmDangerButton } from "@/components/confirm-danger-button";
@@ -296,39 +291,39 @@ export function GitHubAppDetails({
         {installations.data && installations.data.length > 0 && (
           <TableCard>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Repositories</TableHead>
-                  <TableHead>Permissions</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-0" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+              <THead>
+                <TR>
+                  <TH>Account</TH>
+                  <TH>Repositories</TH>
+                  <TH>Permissions</TH>
+                  <TH>Status</TH>
+                  <TH className="w-0" />
+                </TR>
+              </THead>
+              <TBody>
                 {installations.data.map((installation) => {
                   const existing = installationGrantFor(grants, installation.installationId);
                   const granting =
                     grant.isPending && grant.variables?.installationId === installation.installationId;
                   return (
-                    <TableRow key={installation.installationId}>
+                    <TR key={installation.installationId}>
                       <TableTitleCell
                         title={installation.accountLogin ?? "Unknown account"}
                         subtitle={`installation ${installation.installationId}`}
                       />
-                      <TableCell className="text-muted-foreground">
+                      <TD className="text-muted-foreground">
                         {installation.repositorySelection ?? "—"}
-                      </TableCell>
-                      <TableCell className="whitespace-normal text-muted-foreground">
+                      </TD>
+                      <TD className="whitespace-normal text-muted-foreground">
                         <PermissionList permissions={installation.permissions} />
-                      </TableCell>
-                      <TableCell>
+                      </TD>
+                      <TD>
                         {existing ? (
                           <InstallationStatusBadge status={existing.status} />
                         ) : (
                           <Badge outline>not granted</Badge>
                         )}
-                      </TableCell>
+                      </TD>
                       <TableActionsCell>
                         {(!existing || existing.status !== "active") && (
                           <Button
@@ -341,10 +336,10 @@ export function GitHubAppDetails({
                           </Button>
                         )}
                       </TableActionsCell>
-                    </TableRow>
+                    </TR>
                   );
                 })}
-              </TableBody>
+              </TBody>
             </Table>
           </TableCard>
         )}

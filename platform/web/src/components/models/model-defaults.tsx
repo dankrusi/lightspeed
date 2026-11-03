@@ -9,7 +9,7 @@ import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/combobox";
 
 const apiLabels: Record<string, string> = {
   "openai:responses": "OpenAI Responses",

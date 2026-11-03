@@ -34,11 +34,11 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
-} from "@/components/ui/combobox";
+} from "@/components/combobox";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure } from "@/components/settings-disclosure";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import { cn } from "@/lib/utils";
 import { CronBuilder } from "./cron-builder";

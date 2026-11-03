@@ -5,7 +5,7 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure } from "@/components/settings-disclosure";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import {
   mcpDiscoveryFailureAction,

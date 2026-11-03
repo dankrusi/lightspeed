@@ -30,11 +30,11 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxValue,
-} from "@/components/ui/combobox";
+} from "@/components/combobox";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure, SettingsGroup } from "@/components/settings-disclosure";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { supportsOpenAiProcessingTier } from "@/lib/sessions/run-options";
 import { cn } from "@/lib/utils";

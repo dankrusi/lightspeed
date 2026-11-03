@@ -26,17 +26,13 @@ import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import {
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { EmptyState, LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";
 import { useActiveUniverse } from "@/lib/universes";
 
@@ -167,34 +163,34 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
               {accounts.data && (
                 <TableCard>
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Account</TableHead>
-                        <TableHead>Provider</TableHead>
-                        <TableHead>Connection</TableHead>
-                        <TableHead>Conversations</TableHead>
-                        <TableHead className="w-0" />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                    <THead>
+                      <TR>
+                        <TH>Account</TH>
+                        <TH>Provider</TH>
+                        <TH>Connection</TH>
+                        <TH>Conversations</TH>
+                        <TH className="w-0" />
+                      </TR>
+                    </THead>
+                    <TBody>
                       {accountRows.map((account) => (
-                        <TableRow key={account.accountId}>
+                        <TR key={account.accountId}>
                           <TableTitleCell title={account.displayName} subtitle={account.accountId} />
-                          <TableCell>
+                          <TD>
                             <span className="capitalize">{account.provider}</span>
                             <span className="block text-xs text-muted-foreground">
                               {providerAccountLabel(account)}
                             </span>
-                          </TableCell>
-                          <TableCell>
+                          </TD>
+                          <TD>
                             <AccountStatusBadge
                               account={account}
                               health={healthByAccount.get(account.accountId)}
                             />
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          </TD>
+                          <TD className="text-muted-foreground">
                             {pairingRows.filter((pairing) => pairing.accountId === account.accountId).length}
-                          </TableCell>
+                          </TD>
                           <TableActionsCell>
                             <Button
                               variant="ghost"
@@ -205,9 +201,9 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
                               {(account.enabled ?? true) ? "Disable" : "Enable"}
                             </Button>
                           </TableActionsCell>
-                        </TableRow>
+                        </TR>
                       ))}
-                    </TableBody>
+                    </TBody>
                   </Table>
                 </TableCard>
               )}
@@ -234,27 +230,27 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
               {pairings.data && pairingRows.length > 0 && (
                 <TableCard>
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Account</TableHead>
-                        <TableHead>Bot trigger</TableHead>
-                        <TableHead>Conversation</TableHead>
-                        <TableHead>Connected</TableHead>
-                        <TableHead className="w-0" />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                    <THead>
+                      <TR>
+                        <TH>Account</TH>
+                        <TH>Bot trigger</TH>
+                        <TH>Conversation</TH>
+                        <TH>Connected</TH>
+                        <TH className="w-0" />
+                      </TR>
+                    </THead>
+                    <TBody>
                       {pairingRows.map((pairing) => (
-                        <TableRow key={`${pairing.accountId}/${pairing.chatId}`}>
-                          <TableCell>{accountName(accountRows, pairing.accountId)}</TableCell>
-                          <TableCell>
+                        <TR key={`${pairing.accountId}/${pairing.chatId}`}>
+                          <TD>{accountName(accountRows, pairing.accountId)}</TD>
+                          <TD>
                             {pairing.botId}
                             <span className="block text-xs text-muted-foreground">{pairing.triggerId}</span>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">{pairing.chatId}</TableCell>
-                          <TableCell className="text-muted-foreground">
+                          </TD>
+                          <TD className="font-mono text-xs">{pairing.chatId}</TD>
+                          <TD className="text-muted-foreground">
                             {new Date(pairing.pairedAtMs).toLocaleString()}
-                          </TableCell>
+                          </TD>
                           <TableActionsCell>
                             <IconButton
                               size="sm"
@@ -265,9 +261,9 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
                               <Plugs />
                             </IconButton>
                           </TableActionsCell>
-                        </TableRow>
+                        </TR>
                       ))}
-                    </TableBody>
+                    </TBody>
                   </Table>
                 </TableCard>
               )}

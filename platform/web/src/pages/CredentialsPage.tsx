@@ -21,20 +21,15 @@ import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure } from "@/components/settings-disclosure";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
-import {
-  IdText,
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { IdText, TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { EmptyState, LoadingNote, PageHeader, SectionHeader, ShowHiddenToggle, UniverseNotFound } from "@/components/page";
 import {
   GitHubAppDetails,
@@ -165,49 +160,49 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
       {grants.length > 0 && (
         <TableCard>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Credential</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Exposure</TableHead>
-                <TableHead>Last leased</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-0" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            <THead>
+              <TR>
+                <TH>Credential</TH>
+                <TH>Provider</TH>
+                <TH>Type</TH>
+                <TH>Exposure</TH>
+                <TH>Last leased</TH>
+                <TH>Status</TH>
+                <TH className="w-0" />
+              </TR>
+            </THead>
+            <TBody>
               {grants.map((grant) => (
-                <TableRow key={grant.grantId}>
+                <TR key={grant.grantId}>
                   <TableTitleCell
                     title={grant.displayName ?? grant.subjectHint ?? "Unnamed credential"}
                     subtitle={grant.grantId}
                   />
-                  <TableCell className="max-w-48 text-muted-foreground">
+                  <TD className="max-w-48 text-muted-foreground">
                     <IdText>{grant.providerId}</IdText>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {grantTypeLabel(grant)}
                     {managedBy(grant) && (
                       <Badge outline className="ml-2 font-normal">
                         {managedBy(grant)}
                       </Badge>
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </TD>
+                  <TD>
                     <Badge outline={grant.exposure !== "retrievable"}>
                       {grant.exposure}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {grant.lastLeasedAtMs ? formatTimestamp(grant.lastLeasedAtMs) : "Never"}
                     {grant.leaseCount > 0 && (
                       <span className="ml-1 text-xs">({grant.leaseCount})</span>
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </TD>
+                  <TD>
                     <GrantStatusBadge status={grant.status} />
-                  </TableCell>
+                  </TD>
                   <TableActionsCell>
                     {grant.status !== "revoked" && (
                       <IconButton
@@ -220,9 +215,9 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                       </IconButton>
                     )}
                   </TableActionsCell>
-                </TableRow>
+                </TR>
               ))}
-            </TableBody>
+            </TBody>
           </Table>
         </TableCard>
       )}
@@ -249,23 +244,23 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
           />
           <TableCard>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>App</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-0" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+              <THead>
+                <TR>
+                  <TH>App</TH>
+                  <TH>Status</TH>
+                  <TH className="w-0" />
+                </TR>
+              </THead>
+              <TBody>
                 {apps.map((app) => {
                   const granted = appGrants(app).filter((grant) => grant.status === "active").length;
                   return (
-                    <TableRow
+                    <TR
                       key={app.providerId}
                       className="cursor-pointer"
                       onClick={() => setSelectedApp(app.providerId)}
                     >
-                      <TableCell>
+                      <TD>
                         <div className="flex items-center gap-3">
                           <GitHubLogo className="shrink-0" />
                           <div className="grid gap-0.5">
@@ -277,17 +272,17 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                             </span>
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
+                      </TD>
+                      <TD>
                         <GitHubAppStatusBadge app={app} />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      </TD>
+                      <TD className="text-muted-foreground">
                         <CaretRight className="size-4" />
-                      </TableCell>
-                    </TableRow>
+                      </TD>
+                    </TR>
                   );
                 })}
-              </TableBody>
+              </TBody>
             </Table>
           </TableCard>
         </section>

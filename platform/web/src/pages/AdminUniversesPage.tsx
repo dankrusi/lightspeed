@@ -17,18 +17,13 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import {
-  IdText,
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { IdText, TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { NewUniverseDialog } from "@/components/universe-switcher";
 import { LoadingNote, PageHeader } from "@/components/page";
 import { universeHome, useUniverses } from "@/lib/universes";
@@ -127,36 +122,36 @@ export function AdminUniversesPage() {
       {universes.data && (
         <TableCard>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Universe</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Engine</TableHead>
-                <TableHead>Your role</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="w-0" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            <THead>
+              <TR>
+                <TH>Universe</TH>
+                <TH>Status</TH>
+                <TH>Engine</TH>
+                <TH>Your role</TH>
+                <TH>Created</TH>
+                <TH className="w-0" />
+              </TR>
+            </THead>
+            <TBody>
               {rows.map((universe) => (
-                <TableRow key={universe.id}>
+                <TR key={universe.id}>
                   <TableTitleCell title={universe.name} subtitle={universe.slug} />
-                  <TableCell>
+                  <TD>
                     <Badge
                       outline={universe.status !== "active"}
                     >
                       {universe.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
+                  </TD>
+                  <TD>
                     <EngineBadge status={engineStatus.get(universe.id)} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {universe.role ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {new Date(universe.createdAt).toLocaleDateString()}
-                  </TableCell>
+                  </TD>
                   <TableActionsCell>
                     <Button variant="ghost" size="sm" onClick={() => setDeletedUniverse(universe)}>Deleted sessions</Button>
                     {engineStatus.get(universe.id) === "missing" && (
@@ -210,9 +205,9 @@ export function AdminUniversesPage() {
                       </>
                     )}
                   </TableActionsCell>
-                </TableRow>
+                </TR>
               ))}
-            </TableBody>
+            </TBody>
           </Table>
         </TableCard>
       )}
@@ -226,26 +221,26 @@ export function AdminUniversesPage() {
           </p>
           <TableCard>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Engine universe id</TableHead>
-                  <TableHead>Sessions</TableHead>
-                  <TableHead>Workspaces</TableHead>
-                  <TableHead>Profiles</TableHead>
-                  <TableHead>Blobs</TableHead>
-                  <TableHead className="w-0" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+              <THead>
+                <TR>
+                  <TH>Engine universe id</TH>
+                  <TH>Sessions</TH>
+                  <TH>Workspaces</TH>
+                  <TH>Profiles</TH>
+                  <TH>Blobs</TH>
+                  <TH className="w-0" />
+                </TR>
+              </THead>
+              <TBody>
                 {orphans.map((orphan) => (
-                  <TableRow key={orphan.universeId}>
-                    <TableCell className="max-w-64">
+                  <TR key={orphan.universeId}>
+                    <TD className="max-w-64">
                       <IdText>{orphan.universeId}</IdText>
-                    </TableCell>
-                    <TableCell>{orphan.sessions ?? 0}</TableCell>
-                    <TableCell>{orphan.workspaces ?? 0}</TableCell>
-                    <TableCell>{orphan.profiles ?? 0}</TableCell>
-                    <TableCell>{formatBytes(orphan.blobBytes ?? 0)}</TableCell>
+                    </TD>
+                    <TD>{orphan.sessions ?? 0}</TD>
+                    <TD>{orphan.workspaces ?? 0}</TD>
+                    <TD>{orphan.profiles ?? 0}</TD>
+                    <TD>{formatBytes(orphan.blobBytes ?? 0)}</TD>
                     <TableActionsCell>
                       <Button
                         variant="ghost"
@@ -263,9 +258,9 @@ export function AdminUniversesPage() {
                         Delete
                       </Button>
                     </TableActionsCell>
-                  </TableRow>
+                  </TR>
                 ))}
-              </TableBody>
+              </TBody>
             </Table>
           </TableCard>
         </section>

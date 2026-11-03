@@ -14,17 +14,13 @@ import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
-import {
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { LoadingNote, PageHeader } from "@/components/page";
 
 type Provider = DeploymentEnvironmentProviderView;
@@ -192,14 +188,14 @@ export function AdminEnvironmentProvidersPage() {
                 ) : (
                   <TableCard className="rounded-lg">
                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Universe</TableHead>
-                          <TableHead>Enabled</TableHead>
-                          <TableHead className="w-0" />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                      <THead>
+                        <TR>
+                          <TH>Universe</TH>
+                          <TH>Enabled</TH>
+                          <TH className="w-0" />
+                        </TR>
+                      </THead>
+                      <TBody>
                         {providerBindings.map(({ universe, binding }) => (
                           <BindingRow
                             key={`${universe.universeId}:${binding.providerId}`}
@@ -208,7 +204,7 @@ export function AdminEnvironmentProvidersPage() {
                             onChanged={refresh}
                           />
                         ))}
-                      </TableBody>
+                      </TBody>
                     </Table>
                   </TableCard>
                 )}
@@ -275,16 +271,16 @@ function BindingRow({
   const error = setEnabled.error ?? remove.error;
   const [confirming, setConfirming] = useState(false);
   return (
-    <TableRow>
+    <TR>
       <TableTitleCell title={universe.name} subtitle={universe.lightspeedUniverseId} />
-      <TableCell>
+      <TD>
         <Switch
           aria-label={`Enable ${binding.providerId} for ${universe.name}`}
           checked={binding.enabled}
           disabled={setEnabled.isPending}
           onChange={(event) => setEnabled.mutate(event.target.checked)}
         />
-      </TableCell>
+      </TD>
       <TableActionsCell>
         <Button variant="ghost" size="sm" className="text-destructive" disabled={remove.isPending} onClick={() => setConfirming(true)}>
           Delete
@@ -312,7 +308,7 @@ function BindingRow({
         </Modal>
         {error && <div className="mt-1 text-xs text-destructive">{error.message}</div>}
       </TableActionsCell>
-    </TableRow>
+    </TR>
   );
 }
 

@@ -12,16 +12,13 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
-import {
-  Table,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TableCard, TableTitleCell } from "@/components/table-layout";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { LoadingNote, PageHeader } from "@/components/page";
 import { useUniverses } from "@/lib/universes";
 
@@ -75,40 +72,40 @@ export function AdminChannelsPage() {
             {status.data && healthRows.length > 0 && (
               <TableCard>
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Account</TableHead>
-                      <TableHead>Universe</TableHead>
-                      <TableHead>State</TableHead>
-                      <TableHead>Ingress</TableHead>
-                      <TableHead>Activities</TableHead>
-                      <TableHead>Last error</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                  <THead>
+                    <TR>
+                      <TH>Account</TH>
+                      <TH>Universe</TH>
+                      <TH>State</TH>
+                      <TH>Ingress</TH>
+                      <TH>Activities</TH>
+                      <TH>Last error</TH>
+                    </TR>
+                  </THead>
+                  <TBody>
                     {healthRows.map(({ connector, health }, index) => (
-                      <TableRow key={`${connector.url}/${health?.accountId ?? index}`}>
-                        <TableCell className="font-medium">
+                      <TR key={`${connector.url}/${health?.accountId ?? index}`}>
+                        <TD className="font-medium">
                           {health ? `${health.provider} / ${health.accountId}` : connector.url}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        </TD>
+                        <TD className="text-muted-foreground">
                           {health?.universeId
                             ? universeByCoreId.get(health.universeId)?.name ?? health.universeId
                             : "—"}
-                        </TableCell>
-                        <TableCell>
+                        </TD>
+                        <TD>
                           <Badge tone={health?.state === "ready" ? "neutral" : "danger"}>
                             {health?.state ?? (connector.reachable ? "no accounts" : "unreachable")}
                           </Badge>
-                        </TableCell>
-                        <TableCell>{yesNo(health?.ingressConnected)}</TableCell>
-                        <TableCell>{yesNo(health?.activityWorkerReady)}</TableCell>
-                        <TableCell className="max-w-sm text-sm text-muted-foreground">
+                        </TD>
+                        <TD>{yesNo(health?.ingressConnected)}</TD>
+                        <TD>{yesNo(health?.activityWorkerReady)}</TD>
+                        <TD className="max-w-sm text-sm text-muted-foreground">
                           {health?.lastError ?? connector.error ?? health?.detail ?? "—"}
-                        </TableCell>
-                      </TableRow>
+                        </TD>
+                      </TR>
                     ))}
-                  </TableBody>
+                  </TBody>
                 </Table>
               </TableCard>
             )}
@@ -126,33 +123,33 @@ export function AdminChannelsPage() {
             {accounts.data && (
               <TableCard>
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Account</TableHead>
-                      <TableHead>Provider</TableHead>
-                      <TableHead>Universe</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                  <THead>
+                    <TR>
+                      <TH>Account</TH>
+                      <TH>Provider</TH>
+                      <TH>Universe</TH>
+                      <TH>Status</TH>
+                    </TR>
+                  </THead>
+                  <TBody>
                     {(accounts.data.accounts ?? []).map((account) => (
-                      <TableRow key={`${account.universeId}/${account.accountId}`}>
+                      <TR key={`${account.universeId}/${account.accountId}`}>
                         <TableTitleCell title={account.displayName} subtitle={account.accountId} />
-                        <TableCell>
+                        <TD>
                           {account.provider}
                           <span className="block text-xs text-muted-foreground">{account.providerAccountId}</span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        </TD>
+                        <TD className="text-muted-foreground">
                           {universeByCoreId.get(account.universeId)?.name ?? account.universeId}
-                        </TableCell>
-                        <TableCell>
+                        </TD>
+                        <TD>
                           <Badge outline={!(account.enabled ?? true)}>
                             {(account.enabled ?? true) ? "enabled" : "disabled"}
                           </Badge>
-                        </TableCell>
-                      </TableRow>
+                        </TD>
+                      </TR>
                     ))}
-                  </TableBody>
+                  </TBody>
                 </Table>
               </TableCard>
             )}

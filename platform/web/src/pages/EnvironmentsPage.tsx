@@ -17,7 +17,7 @@ import {
   type EnvironmentTemplate,
   type SecretsInventory,
 } from "@/api";
-import { TableCell } from "@/components/ui/table";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
@@ -25,7 +25,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/collapsible";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
@@ -288,8 +288,8 @@ function EnvironmentRow({
   return (
     <ResourceRow name={environmentName(environment)} onOpen={onSelect}>
       <ResourceIdentityCell name={environmentName(environment)} subtitle={environment.environmentId} mono compactDescription={`${sourceName} · ${sourceDescription}`} />
-      <TableCell className="hidden max-w-64 sm:table-cell"><ResourceValue description={sourceDescription}>{sourceName}</ResourceValue></TableCell>
-      <TableCell><ResourceStatus status={environmentStatus(environment)} /></TableCell>
+      <TD className="hidden max-w-64 sm:table-cell"><ResourceValue description={sourceDescription}>{sourceName}</ResourceValue></TD>
+      <TD><ResourceStatus status={environmentStatus(environment)} /></TD>
     </ResourceRow>
   );
 }

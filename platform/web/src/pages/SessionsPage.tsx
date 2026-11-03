@@ -60,7 +60,7 @@ import {
   MessageScrollerViewport,
   useMessageScroller,
   useMessageScrollerScrollable,
-} from "@/components/ui/message-scroller";
+} from "@/components/session/message-scroller";
 import { sessionDraftKey } from "@/lib/sessions/draft";
 import { SessionComposer, type ComposerMessage, type ComposerMode } from "@/components/session/composer";
 import { SessionResourceChips, useSessionResources } from "@/components/session/session-resources";

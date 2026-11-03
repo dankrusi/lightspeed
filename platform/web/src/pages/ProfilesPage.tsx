@@ -21,7 +21,7 @@ import { ProfileRetentionEditor } from "@/components/session/profile-retention-e
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
+import { SettingsDisclosure } from "@/components/settings-disclosure";
 import { DetailPrompt, ListNote, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";
 import { useSessionConfigEditorOptions } from "@/lib/sessions/editor-options";

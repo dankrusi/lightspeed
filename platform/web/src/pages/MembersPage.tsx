@@ -10,16 +10,13 @@ import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
-import {
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TableActionsCell, TableCard } from "@/components/table-layout";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import {
   LoadingNote,
   PageHeader,
@@ -96,25 +93,25 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
       {members.data && (
         <TableCard className="mb-6">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                {writable && <TableHead>Email</TableHead>}
-                <TableHead>Role</TableHead>
+            <THead>
+              <TR>
+                <TH>Name</TH>
+                {writable && <TH>Email</TH>}
+                <TH>Role</TH>
                 {writable && (
-                  <TableHead className="w-0" />
+                  <TH className="w-0" />
                 )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+              </TR>
+            </THead>
+            <TBody>
               {members.data.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell>{member.name}</TableCell>
-                  {writable && <TableCell>{member.email}</TableCell>}
-                  <TableCell>
+                <TR key={member.id}>
+                  <TD>{member.name}</TD>
+                  {writable && <TD>{member.email}</TD>}
+                  <TD>
                     {member.role}
                     <span className="mt-1 block text-xs text-muted-foreground">{ROLE_SUMMARY[member.role]}</span>
-                  </TableCell>
+                  </TD>
                   {writable && (
                     <TableActionsCell>
                       <IconButton
@@ -134,9 +131,9 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
                       </IconButton>
                     </TableActionsCell>
                   )}
-                </TableRow>
+                </TR>
               ))}
-            </TableBody>
+            </TBody>
           </Table>
         </TableCard>
       )}

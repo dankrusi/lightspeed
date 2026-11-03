@@ -15,17 +15,13 @@ import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
-import {
-  Table,
-  TableActionsCell,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-  TableTitleCell,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TableActionsCell, TableCard, TableTitleCell } from "@/components/table-layout";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { EmptyState, LoadingNote, PageHeader, ShowHiddenToggle } from "@/components/page";
 import { groupSummary, groupsFor } from "@/lib/method-groups";
 import { useUniverses } from "@/lib/universes";
@@ -82,37 +78,37 @@ export function AdminApiKeysPage() {
       {rows.length > 0 && (
         <TableCard>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Key</TableHead>
-                <TableHead>Reaches</TableHead>
-                <TableHead>May call</TableHead>
-                <TableHead>Last used</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-0" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            <THead>
+              <TR>
+                <TH>Key</TH>
+                <TH>Reaches</TH>
+                <TH>May call</TH>
+                <TH>Last used</TH>
+                <TH>Status</TH>
+                <TH className="w-0" />
+              </TR>
+            </THead>
+            <TBody>
               {rows.map((key) => {
                 const revoked = key.revokedAtMs != null;
                 return (
-                  <TableRow key={key.keyPrefix}>
+                  <TR key={key.keyPrefix}>
                     <TableTitleCell title={key.displayName ?? "Unnamed key"} subtitle={key.keyPrefix} />
-                    <TableCell>
+                    <TD>
                       {key.scope.kind === "deployment" ? "Deployment" : universeName(key.scope.universeId)}
                       {key.assertActor && (
                         <span className="mt-1 block text-xs text-muted-foreground">Asserts people</span>
                       )}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    </TD>
+                    <TD className="text-xs text-muted-foreground">
                       <GroupSummary summary={groupSummary(key.scope.kind, key.groups)} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    </TD>
+                    <TD className="text-muted-foreground">
                       {key.lastUsedAtMs == null ? "Never" : formatTimestamp(key.lastUsedAtMs)}
-                    </TableCell>
-                    <TableCell>
+                    </TD>
+                    <TD>
                       {revoked ? <Badge outline>revoked</Badge> : <Badge>active</Badge>}
-                    </TableCell>
+                    </TD>
                     <TableActionsCell>
                       {!revoked && (
                         <IconButton size="sm" label={`Rotate ${key.displayName ?? key.keyPrefix}`} onClick={() => setRotatingKey(key)}>
@@ -130,10 +126,10 @@ export function AdminApiKeysPage() {
                         </IconButton>
                       )}
                     </TableActionsCell>
-                  </TableRow>
+                  </TR>
                 );
               })}
-            </TableBody>
+            </TBody>
           </Table>
         </TableCard>
       )}

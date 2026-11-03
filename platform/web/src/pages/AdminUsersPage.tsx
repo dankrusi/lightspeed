@@ -10,16 +10,13 @@ import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import {
-  Table,
-  TableBody,
-  TableCard,
-  TableCell,
-  TableActionsCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table } from "@versavolta/whisperink/components/Table/Table.js";
+import { TBody } from "@versavolta/whisperink/components/Table/TBody.js";
+import { TableActionsCell, TableCard } from "@/components/table-layout";
+import { TD } from "@versavolta/whisperink/components/Table/TD.js";
+import { TH } from "@versavolta/whisperink/components/Table/TH.js";
+import { THead } from "@versavolta/whisperink/components/Table/THead.js";
+import { TR } from "@versavolta/whisperink/components/Table/TR.js";
 import { LoadingNote, PageHeader } from "@/components/page";
 
 interface UserRow extends SessionUser {
@@ -70,40 +67,40 @@ export function AdminUsersPage({ currentUser }: { currentUser: SessionUser }) {
       {users.data && (
         <TableCard className="mb-8">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Access</TableHead>
-                <TableHead>Last company check</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="w-0" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            <THead>
+              <TR>
+                <TH>Name</TH>
+                <TH>Email</TH>
+                <TH>Role</TH>
+                <TH>Access</TH>
+                <TH>Last company check</TH>
+                <TH>Created</TH>
+                <TH className="w-0" />
+              </TR>
+            </THead>
+            <TBody>
               {users.data.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
+                <TR key={user.id}>
+                  <TD>{user.name}</TD>
+                  <TD>{user.email}</TD>
+                  <TD>
                     {user.role?.split(",").includes("admin") ? (
                       <Badge>admin</Badge>
                     ) : (
                       <span className="text-muted-foreground">user</span>
                     )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {user.banned ? "Suspended" : user.identitySource === "company" ? user.companyAdmitted ? "Company account" : "Company access absent" : user.emergencyAdmin ? "Emergency admin" : "Local account"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {user.providerCheckedAt ? new Date(user.providerCheckedAt).toLocaleString() : "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  </TD>
+                  <TD className="text-muted-foreground">
                     {user.createdAt
                       ? new Date(user.createdAt).toLocaleDateString()
                       : "—"}
-                  </TableCell>
+                  </TD>
                   <TableActionsCell>
                     <IconButton
                       size="sm"
@@ -113,9 +110,9 @@ export function AdminUsersPage({ currentUser }: { currentUser: SessionUser }) {
                       <PencilSimple />
                     </IconButton>
                   </TableActionsCell>
-                </TableRow>
+                </TR>
               ))}
-            </TableBody>
+            </TBody>
           </Table>
         </TableCard>
       )}
