@@ -38,7 +38,8 @@ const HEX = /^#?([\da-f]{6}|[\da-f]{3})$/i;
 function normalizeHex(value: string, fallback = "#000000"): string {
   const match = HEX.exec(value.trim());
   if (!match) return fallback;
-  const digits = match[1].length === 3 ? [...match[1]].map(part => part + part).join("") : match[1];
+  const hex = match[1]!;
+  const digits = hex.length === 3 ? [...hex].map(part => part + part).join("") : hex;
   return `#${digits.toLowerCase()}`;
 }
 
@@ -57,13 +58,13 @@ function rgbToHex({ r, g, b }: Rgb): string {
 }
 
 function rgbToHsv({ r, g, b }: Rgb): Hsv {
-  const channels = [r, g, b].map(value => value / 255);
-  const maximum = Math.max(...channels), minimum = Math.min(...channels), distance = maximum - minimum;
+  const red = r / 255, green = g / 255, blue = b / 255;
+  const maximum = Math.max(red, green, blue), minimum = Math.min(red, green, blue), distance = maximum - minimum;
   let hue = 0;
   if (distance) {
-    if (maximum === channels[0]) hue = ((channels[1] - channels[2]) / distance) % 6;
-    else if (maximum === channels[1]) hue = (channels[2] - channels[0]) / distance + 2;
-    else hue = (channels[0] - channels[1]) / distance + 4;
+    if (maximum === red) hue = ((green - blue) / distance) % 6;
+    else if (maximum === green) hue = (blue - red) / distance + 2;
+    else hue = (red - green) / distance + 4;
     hue = (hue * 60 + 360) % 360;
   }
   return { h: hue, s: maximum ? distance / maximum * 100 : 0, v: maximum * 100 };
@@ -80,7 +81,7 @@ function hsvToRgb({ h, s, v }: Hsv): Rgb {
     [chroma, x, 0], [x, chroma, 0], [0, chroma, x],
     [0, x, chroma], [x, 0, chroma], [chroma, 0, x],
   ];
-  const [red, green, blue] = candidates[Math.min(5, Math.floor(part))];
+  const [red, green, blue] = candidates[Math.min(5, Math.floor(part))]!;
   const match = value - chroma;
   return { r: (red + match) * 255, g: (green + match) * 255, b: (blue + match) * 255 };
 }

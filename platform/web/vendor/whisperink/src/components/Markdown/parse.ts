@@ -61,17 +61,17 @@ function matchLink(text: string, start: number): { label: string; href: string; 
   if (end === -1) return null;
   const inside = text.slice(close + 2, end).trim();
   const titled = /^(\S+)\s+"([^"]*)"$/.exec(inside) ?? /^(\S+)\s+'([^']*)'$/.exec(inside);
-  const href = (titled ? titled[1] : inside).replace(/^<(.*)>$/, "$1");
+  const href = (titled ? titled[1]! : inside).replace(/^<(.*)>$/, "$1");
   return { label: text.slice(start + 1, close), href, title: titled?.[2], end: end + 1 };
 }
 
 /** A run of `marker` closing an emphasis that opened at `start`. */
 function matchDelimited(text: string, start: number, marker: string): number {
   const open = start + marker.length;
-  if (open >= text.length || /\s/.test(text[open])) return -1;
+  if (open >= text.length || /\s/.test(text[open]!)) return -1;
   for (let index = open + 1; index <= text.length - marker.length; index += 1) {
     if (text[index] === "\\") { index += 1; continue; }
-    if (text.startsWith(marker, index) && !/\s/.test(text[index - 1])) {
+    if (text.startsWith(marker, index) && !/\s/.test(text[index - 1]!)) {
       // A single star must not be the first of a double one, and an underscore stays out of words.
       if (marker.length === 1 && text[index + 1] === marker) continue;
       if (marker === "_" && /\w/.test(text[index + 1] ?? "")) continue;
@@ -87,11 +87,11 @@ export function parseInline(text: string): MarkdownInline[] {
   const flush = () => { if (buffer) { nodes.push({ type: "text", value: buffer }); buffer = ""; } };
   let index = 0;
   while (index < text.length) {
-    const char = text[index];
+    const char = text[index]!;
     const rest = text.slice(index);
     if (char === "\\" && index + 1 < text.length) {
       if (text[index + 1] === "\n") { flush(); nodes.push({ type: "break" }); index += 2; continue; }
-      if (ESCAPABLE.test(text[index + 1])) { buffer += text[index + 1]; index += 2; continue; }
+      if (ESCAPABLE.test(text[index + 1]!)) { buffer += text[index + 1]; index += 2; continue; }
     }
     if (char === "\n") {
       if (buffer.endsWith("  ")) { buffer = buffer.trimEnd(); flush(); nodes.push({ type: "break" }); } else buffer += " ";
@@ -121,15 +121,15 @@ export function parseInline(text: string): MarkdownInline[] {
     }
     if (char === "<") {
       const auto = /^<((?:https?|mailto):[^\s>]+)>/.exec(rest);
-      if (auto) { flush(); nodes.push({ type: "link", href: auto[1], children: [{ type: "text", value: auto[1].replace(/^mailto:/, "") }] }); index += auto[0].length; continue; }
+      if (auto) { flush(); nodes.push({ type: "link", href: auto[1]!, children: [{ type: "text", value: auto[1]!.replace(/^mailto:/, "") }] }); index += auto[0].length; continue; }
       const mail = /^<([\w.+-]+@[\w-]+(?:\.[\w-]+)+)>/.exec(rest);
-      if (mail) { flush(); nodes.push({ type: "link", href: `mailto:${mail[1]}`, children: [{ type: "text", value: mail[1] }] }); index += mail[0].length; continue; }
+      if (mail) { flush(); nodes.push({ type: "link", href: `mailto:${mail[1]}`, children: [{ type: "text", value: mail[1]! }] }); index += mail[0].length; continue; }
       const kbd = /^<kbd>([^<]*)<\/kbd>/i.exec(rest);
-      if (kbd) { flush(); nodes.push({ type: "kbd", value: kbd[1] }); index += kbd[0].length; continue; }
+      if (kbd) { flush(); nodes.push({ type: "kbd", value: kbd[1]! }); index += kbd[0].length; continue; }
       const br = /^<br\s*\/?>/i.exec(rest);
       if (br) { flush(); nodes.push({ type: "break" }); index += br[0].length; continue; }
     }
-    if (char === "h" && (index === 0 || /[\s(]/.test(text[index - 1]))) {
+    if (char === "h" && (index === 0 || /[\s(]/.test(text[index - 1]!))) {
       const url = /^https?:\/\/[^\s<]+/.exec(rest);
       if (url) {
         const href = url[0].replace(/[.,;:!?)]+$/, "");
@@ -141,7 +141,7 @@ export function parseInline(text: string): MarkdownInline[] {
     }
     if (char === "*" || char === "_" || char === "~") {
       const marker = text.startsWith(char + char, index) ? char + char : char;
-      const intraword = char === "_" && index > 0 && /\w/.test(text[index - 1]);
+      const intraword = char === "_" && index > 0 && /\w/.test(text[index - 1]!);
       // A single tilde is just a tilde; only a pair strikes through.
       const close = intraword || marker === "~" ? -1 : matchDelimited(text, index, marker);
       if (close !== -1) {
@@ -230,15 +230,16 @@ function parseBlocks(lines: readonly string[], headings: MarkdownHeading[], ids:
   let index = 0;
   const blank = (line: string | undefined) => line === undefined || !line.trim();
   while (index < lines.length) {
-    const line = lines[index];
+    const line = lines[index]!;
     if (blank(line)) { index += 1; continue; }
 
     const fence = FENCE.exec(line);
     if (fence) {
-      const [, marker, language] = fence;
+      const marker = fence[1]!;
+      const language = fence[2];
       const code: string[] = [];
       index += 1;
-      while (index < lines.length && !new RegExp(`^ {0,3}${marker[0]}{${marker.length},}[ \\t]*$`).test(lines[index])) { code.push(lines[index]); index += 1; }
+      while (index < lines.length && !new RegExp(`^ {0,3}${marker[0]}{${marker.length},}[ \\t]*$`).test(lines[index]!)) { code.push(lines[index]!); index += 1; }
       index += 1;
       blocks.push({ type: "code", language: language || undefined, code: code.join("\n") });
       continue;
@@ -246,13 +247,13 @@ function parseBlocks(lines: readonly string[], headings: MarkdownHeading[], ids:
 
     const heading = HEADING.exec(line);
     if (heading) {
-      const children = parseInline(heading[2]);
+      const children = parseInline(heading[2]!);
       const text = inlineText(children);
       const base = slugify(text);
       const seen = ids.get(base) ?? 0;
       ids.set(base, seen + 1);
       const id = seen ? `${base}-${seen + 1}` : base;
-      const level = heading[1].length as 1 | 2 | 3 | 4 | 5 | 6;
+      const level = heading[1]!.length as 1 | 2 | 3 | 4 | 5 | 6;
       headings.push({ id, level, text });
       blocks.push({ type: "heading", level, id, text, children });
       index += 1;
@@ -263,10 +264,10 @@ function parseBlocks(lines: readonly string[], headings: MarkdownHeading[], ids:
 
     if (QUOTE.test(line)) {
       const inner: string[] = [];
-      while (index < lines.length && QUOTE.test(lines[index])) { inner.push(lines[index].replace(/^ {0,3}> ?/, "")); index += 1; }
+      while (index < lines.length && QUOTE.test(lines[index]!)) { inner.push(lines[index]!.replace(/^ {0,3}> ?/, "")); index += 1; }
       const callout = CALLOUT.exec(inner[0] ?? "");
       if (callout) {
-        const kind = callout[1].toLowerCase() as CalloutKind;
+        const kind = callout[1]!.toLowerCase() as CalloutKind;
         blocks.push({ type: "callout", kind, title: callout[2] ? parseInline(callout[2]) : undefined, blocks: parseBlocks(inner.slice(1), headings, ids) });
       } else blocks.push({ type: "quote", blocks: parseBlocks(inner, headings, ids) });
       continue;
@@ -274,20 +275,20 @@ function parseBlocks(lines: readonly string[], headings: MarkdownHeading[], ids:
 
     const item = ITEM.exec(line);
     if (item && item[3] !== undefined) {
-      const ordered = /\d/.test(item[2]);
-      const start = ordered ? Number.parseInt(item[2], 10) : 1;
+      const ordered = /\d/.test(item[2]!);
+      const start = ordered ? Number.parseInt(item[2]!, 10) : 1;
       const items: { checked?: boolean; blocks: MarkdownBlock[] }[] = [];
       let tight = true;
       while (index < lines.length) {
-        const match = ITEM.exec(lines[index]);
-        if (!match || /\d/.test(match[2]) !== ordered) break;
+        const match = ITEM.exec(lines[index]!);
+        if (!match || /\d/.test(match[2]!) !== ordered) break;
         const first = match[3] ?? "";
-        const contentIndent = match[1].length + match[2].length + 1;
+        const contentIndent = match[1]!.length + match[2]!.length + 1;
         const own: string[] = [first];
         index += 1;
         let pendingBlanks = 0;
         while (index < lines.length) {
-          const next = lines[index];
+          const next = lines[index]!;
           if (blank(next)) { pendingBlanks += 1; index += 1; continue; }
           const indent = next.length - next.trimStart().length;
           if (indent >= contentIndent) {
@@ -299,22 +300,23 @@ function parseBlocks(lines: readonly string[], headings: MarkdownHeading[], ids:
           break;
         }
         // Blank lines before the next item make the list loose; blank lines at the very end belong to nobody.
-        if (pendingBlanks && index < lines.length && ITEM.test(lines[index])) tight = false;
-        const task = /^\[([ xX])\][ \t]+/.exec(own[0]);
-        if (task) own[0] = own[0].slice(task[0].length);
+        if (pendingBlanks && index < lines.length && ITEM.test(lines[index]!)) tight = false;
+        const task = /^\[([ xX])\][ \t]+/.exec(first);
+        if (task) own[0] = first.slice(task[0].length);
         items.push({ checked: task ? task[1] !== " " : undefined, blocks: parseBlocks(own, headings, ids) });
       }
       blocks.push({ type: "list", ordered, start, tight, items });
       continue;
     }
 
-    if (line.includes("|") && index + 1 < lines.length && TABLE_DELIMITER.test(lines[index + 1]) && lines[index + 1].includes("-")) {
+    const delimiter = lines[index + 1];
+    if (line.includes("|") && delimiter !== undefined && TABLE_DELIMITER.test(delimiter) && delimiter.includes("-")) {
       const header = splitRow(line).map(parseInline);
-      const align = splitRow(lines[index + 1]).map((cell) => (cell.startsWith(":") && cell.endsWith(":") ? "center" : cell.endsWith(":") ? "right" : cell.startsWith(":") ? "left" : null));
+      const align = splitRow(delimiter).map((cell) => (cell.startsWith(":") && cell.endsWith(":") ? "center" : cell.endsWith(":") ? "right" : cell.startsWith(":") ? "left" : null));
       const rows: MarkdownInline[][][] = [];
       index += 2;
-      while (index < lines.length && !blank(lines[index]) && lines[index].includes("|") && !startsBlock(lines[index])) {
-        const cells = splitRow(lines[index]).map(parseInline);
+      while (index < lines.length && !blank(lines[index]) && lines[index]!.includes("|") && !startsBlock(lines[index]!)) {
+        const cells = splitRow(lines[index]!).map(parseInline);
         rows.push(Array.from({ length: header.length }, (_, column) => cells[column] ?? []));
         index += 1;
       }
@@ -325,8 +327,8 @@ function parseBlocks(lines: readonly string[], headings: MarkdownHeading[], ids:
     // A paragraph runs until a blank line or the start of another block.
     const text: string[] = [line];
     index += 1;
-    while (index < lines.length && !blank(lines[index]) && !startsBlock(lines[index]) && !(lines[index].includes("|") && TABLE_DELIMITER.test(lines[index + 1] ?? ""))) {
-      text.push(lines[index]);
+    while (index < lines.length && !blank(lines[index]) && !startsBlock(lines[index]!) && !(lines[index]!.includes("|") && TABLE_DELIMITER.test(lines[index + 1] ?? ""))) {
+      text.push(lines[index]!);
       index += 1;
     }
     const children = parseInline(text.map((part) => part.trimStart()).join("\n").trim());

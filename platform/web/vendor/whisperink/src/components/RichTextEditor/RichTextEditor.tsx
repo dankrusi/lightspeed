@@ -58,8 +58,9 @@ export function RichTextEditor({ uiId, uiDescription, uiComponentId, uiComponent
   const text = { ...kit, ...labels, tools: { ...kit.tools, ...labels?.tools } };
   const generatedId = useId(), id = explicitId ?? generatedId, hintId = `${id}-rich-text-hint`, statusId = `${id}-rich-text-status`, dialogForm = `${id}-rich-text-insert`;
   const permittedModes = modes.length ? modes : defaultModes;
-  const [view, setView] = useState<RichTextMode>(permittedModes.includes(defaultMode) ? defaultMode : permittedModes[0]);
-  const mode = permittedModes.includes(view) ? view : permittedModes[0];
+  const firstMode = permittedModes[0]!;
+  const [view, setView] = useState<RichTextMode>(permittedModes.includes(defaultMode) ? defaultMode : firstMode);
+  const mode = permittedModes.includes(view) ? view : firstMode;
   const [source, setSource] = useState(value), [, refresh] = useState(0), [message, setMessage] = useState(""), [visuallyEmpty, setVisuallyEmpty] = useState(!value);
   const [active, setActive] = useState<Set<RichTextTool>>(new Set());
   const [dialog, setDialog] = useState<{ kind: "link" | "image"; url: string; text: string; error?: string } | null>(null);

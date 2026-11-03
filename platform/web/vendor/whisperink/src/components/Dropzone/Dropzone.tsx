@@ -52,7 +52,7 @@ export function Dropzone({ uiId, uiDescription, uiComponentId, uiComponentDescri
     const refused = all.filter((entry) => !accepts(entry, accept));
     setRejected(refused.length);
     if (refused.length) onReject?.(refused);
-    if (allowed.length) onFiles?.(multiple ? allowed : [allowed[0]]);
+    if (allowed.length) onFiles?.(multiple ? allowed : allowed.slice(0, 1));
   };
   return (
     <label

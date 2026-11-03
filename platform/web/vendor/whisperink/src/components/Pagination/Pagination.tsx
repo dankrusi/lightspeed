@@ -75,7 +75,7 @@ function pageNumbers(page: number, count: number): (number | "…")[] {
   const sorted = [...pages].sort((left, right) => left - right);
   const result: (number | "…")[] = [];
   sorted.forEach((value, index) => {
-    if (index > 0 && value - sorted[index - 1] > 1) result.push("…");
+    if (index > 0 && value - sorted[index - 1]! > 1) result.push("…");
     result.push(value);
   });
   return result;

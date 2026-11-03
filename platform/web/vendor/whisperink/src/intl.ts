@@ -1,5 +1,3 @@
-// @ts-nocheck
-// Host typecheck uses noUncheckedIndexedAccess; this kit file does not.
 import { useMemo, useSyncExternalStore } from "react";
 
 /**
@@ -64,7 +62,7 @@ export function useDateNames(): { weekdays: string[]; months: string[] } {
 }
 
 function fromIso(iso: string): Date {
-  const [year, month, day] = iso.split("-").map(Number);
+  const [year, month, day] = iso.split("-").map(Number) as [number, number, number];
   return new Date(year, month - 1, day, 12);
 }
 
@@ -106,7 +104,7 @@ export function parseDate(text: string, at: string = locale(), reference: Date =
   if (digits.length === 1 && !compact) return null;
   if (compact) {
     // Run together, so the locale's order says where each part starts and the year is the wide one.
-    const run = digits[0];
+    const run = digits[0]!;
     if (run.length === 4) { parts = [run.slice(0, 2), run.slice(2, 4)]; names = order.filter((part) => part !== "year"); }
     else if (run.length === 6 || run.length === 8) {
       const widths = order.map((part) => (part === "year" ? run.length - 4 : 2));
@@ -114,7 +112,7 @@ export function parseDate(text: string, at: string = locale(), reference: Date =
       parts = widths.map((width) => { const piece = run.slice(cursor, cursor + width); cursor += width; return piece; });
       names = order;
     } else return null;
-  } else if (digits.length === 3 && digits[0].length === 4) {
+  } else if (digits.length === 3 && digits[0]!.length === 4) {
     parts = digits;
     names = ["year", "month", "day"];
   } else if (digits.length === 3) {

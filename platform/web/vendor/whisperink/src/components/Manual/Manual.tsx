@@ -292,7 +292,7 @@ export function Manual({ uiId, uiDescription, uiComponentId, uiComponentDescript
   // Links inside a page: `#section`, `page`, `page.md`, `./page#section` are the manual's; the rest is not.
   const onNavigate = (href: string, event: MouseEvent<HTMLAnchorElement>) => {
     if (/^[a-z]+:/i.test(href) || href.startsWith("/")) return;
-    const [path, anchor = null] = href.split("#");
+    const [path = "", anchor = null] = href.split("#");
     const id = path.replace(/^\.\//, "").replace(/\.md$/i, "");
     if (!id) { event.preventDefault(); scrollTo(anchor); return; }
     if (!entries.some((entry) => entry.page.id === id)) return;
@@ -304,8 +304,8 @@ export function Manual({ uiId, uiDescription, uiComponentId, uiComponentDescript
     const items = [...(results.current?.querySelectorAll<HTMLElement>("[data-hit]") ?? [])];
     const at = items.indexOf(document.activeElement as HTMLElement);
     if (event.key === "Escape" && query) { event.stopPropagation(); setQuery(""); searchField.current?.focus(); return; }
-    if (event.key === "ArrowDown" && items.length) { event.preventDefault(); items[Math.min(items.length - 1, at + 1)].focus(); }
-    else if (event.key === "ArrowUp" && at >= 0) { event.preventDefault(); if (at === 0) searchField.current?.focus(); else items[at - 1].focus(); }
+    if (event.key === "ArrowDown" && items.length) { event.preventDefault(); items[Math.min(items.length - 1, at + 1)]!.focus(); }
+    else if (event.key === "ArrowUp" && at >= 0) { event.preventDefault(); if (at === 0) searchField.current?.focus(); else items[at - 1]!.focus(); }
   };
   /** The chapters holding the page being read, and that page, so the contents open to it and to its sections. */
   const openChapters = useMemo(() => new Set([...(active?.trail ?? []), ...(active ? [active.page] : [])].map((page) => page.id)), [active]);

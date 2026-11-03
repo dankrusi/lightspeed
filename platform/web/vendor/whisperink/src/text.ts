@@ -11,6 +11,7 @@ import { createContext, useContext } from "react";
  */
 export type WhisperinkText = {
   actions: {
+    cancel: string;
     close: string;
     remove: string;
     skip: string;
@@ -56,6 +57,8 @@ export type WhisperinkText = {
   error: {
     causes: string;
     details: string;
+    /** Shown when a failed action gave no reason of its own. */
+    generic: string;
     hideDetails: string;
     report: string;
   };
@@ -219,6 +222,7 @@ export type WhisperinkText = {
 
 export const defaultText: WhisperinkText = {
   actions: {
+    cancel: "Cancel",
     close: "Close",
     remove: "Remove",
     skip: "Skip",
@@ -264,6 +268,7 @@ export const defaultText: WhisperinkText = {
   error: {
     causes: "What needs attention",
     details: "Show details",
+    generic: "That didn’t work. Please try again.",
     hideDetails: "Hide details",
     report: "Error report",
   },
@@ -436,6 +441,7 @@ export const defaultText: WhisperinkText = {
  */
 export const swissGermanText: WhisperinkText = {
   actions: {
+    cancel: "Abbrechen",
     close: "Schliessen",
     remove: "Entfernen",
     skip: "Überspringen",
@@ -481,6 +487,7 @@ export const swissGermanText: WhisperinkText = {
   error: {
     causes: "Betroffene Angaben",
     details: "Details anzeigen",
+    generic: "Das hat nicht geklappt. Bitte versuchen Sie es nochmals.",
     hideDetails: "Details ausblenden",
     report: "Fehlerbericht",
   },

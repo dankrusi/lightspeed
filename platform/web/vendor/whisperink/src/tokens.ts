@@ -41,7 +41,7 @@ export function currentTheme(): "light" | "dark" {
 export function applyTokens() {
   const style = document.documentElement.style;
   for (let index = style.length - 1; index >= 0; index -= 1) {
-    const name = style[index];
+    const name = style.item(index);
     if (name.startsWith("--")) style.removeProperty(name);
   }
   for (const scope of ["shared", currentTheme()] as const) {
@@ -117,9 +117,9 @@ export function parseTokenCss(css: string): Overrides {
     return null;
   };
   for (const rule of css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    const scope = scopeOf(rule[1].trim());
+    const scope = scopeOf(rule[1]!.trim());
     if (!scope) continue;
-    for (const declaration of rule[2].matchAll(/(--[\w-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)) result[scope][declaration[1]] = declaration[2];
+    for (const [, name, value] of rule[2]!.matchAll(/(--[\w-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)) result[scope][name!] = value!;
   }
   return result;
 }
@@ -294,11 +294,11 @@ const aliasDefaults: Record<string, string> = {
   "--alert-radius": "--radius", "--alert-border-width": "--border-none",
 };
 
-/** Core token an alias currently points at (override or default). */
+/** Core token an alias currently points at (override or default); empty for an unknown alias. */
 export function aliasTarget(alias: string): string {
   const value = overrides.shared[alias];
   const match = value && /^var\((--[\w-]+)\)$/.exec(value);
-  return match ? match[1] : aliasDefaults[alias];
+  return match ? match[1]! : aliasDefaults[alias] ?? "";
 }
 
 export function setAlias(alias: string, core: string) {

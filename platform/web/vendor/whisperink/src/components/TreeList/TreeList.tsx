@@ -177,17 +177,17 @@ export function TreeList(props: (TreeListProps) & UiMetadataProps) {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     const index = visibleItems.findIndex(({ item }) => item.id === entry.item.id);
     if (event.key === "ArrowDown" && index < visibleItems.length - 1) {
-      event.preventDefault(); focusItem(visibleItems[index + 1].item.id);
+      event.preventDefault(); focusItem(visibleItems[index + 1]!.item.id);
     } else if (event.key === "ArrowUp" && index > 0) {
-      event.preventDefault(); focusItem(visibleItems[index - 1].item.id);
+      event.preventDefault(); focusItem(visibleItems[index - 1]!.item.id);
     } else if (event.key === "Home" && visibleItems.length) {
-      event.preventDefault(); focusItem(visibleItems[0].item.id);
+      event.preventDefault(); focusItem(visibleItems[0]!.item.id);
     } else if (event.key === "End" && visibleItems.length) {
-      event.preventDefault(); focusItem(visibleItems[visibleItems.length - 1].item.id);
+      event.preventDefault(); focusItem(visibleItems[visibleItems.length - 1]!.item.id);
     } else if (event.key === "ArrowRight" && entry.item.children?.length) {
       event.preventDefault();
       if (!expanded.has(entry.item.id)) toggleExpanded(entry.item.id, true);
-      else focusItem(entry.item.children[0].id);
+      else focusItem(entry.item.children[0]!.id);
     } else if (event.key === "ArrowLeft") {
       if (entry.item.children?.length && expanded.has(entry.item.id)) {
         event.preventDefault(); toggleExpanded(entry.item.id, false);

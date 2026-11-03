@@ -128,7 +128,7 @@ it("lets readers inspect model connection details and restores focus on dismissa
   expect(dialog.textContent).toContain("Needs attention");
   expect(button("Replace key")).toBeUndefined();
   expect(button("Remove key")).toBeUndefined();
-  await act(async () => dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.click());
+  await act(async () => dialog.querySelector<HTMLButtonElement>('button[aria-label="Close"]')!.click());
   for (let step = 0; step < 5; step++) await act(async () => { await vi.advanceTimersByTimeAsync(5); });
   expect(document.activeElement).toBe(trigger);
 });

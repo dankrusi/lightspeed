@@ -1,5 +1,3 @@
-// @ts-nocheck
-// Host typecheck uses noUncheckedIndexedAccess; this kit file does not.
 import { createContext, type FocusEvent, type PointerEvent, type ReactNode, type RefObject, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /*
@@ -174,7 +172,7 @@ const keyLayers: { current: KeyLayer }[] = [];
 
 function dispatchKey(event: KeyboardEvent) {
   for (let index = keyLayers.length - 1; index >= 0; index -= 1) {
-    if (keyLayers[index].current(event)) return;
+    if (keyLayers[index]!.current(event)) return;
   }
 }
 

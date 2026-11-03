@@ -48,6 +48,7 @@ export * from "./components/Menu/MenuLabel.js";
 export * from "./components/Menu/MenuSeparator.js";
 export * from "./components/Modal/Modal.js";
 export * from "./components/Modal/ErrorDialog.js";
+export * from "./components/Modal/ConfirmDialog.js";
 export { type ToastOptions, useToast } from "./components/Toast/toast-context.js";
 export * from "./components/Toast/ToastProvider.js";
 export * from "./components/Toast/ToastCard.js";

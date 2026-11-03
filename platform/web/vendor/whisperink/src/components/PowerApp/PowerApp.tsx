@@ -135,7 +135,7 @@ export function PowerApp({ uiId, uiDescription, uiComponentId, uiComponentDescri
   };
 
   const visible = useMemo(() => Object.values(panels).filter((panel) => !layout.hidden.includes(panel.id)), [panels, layout.hidden]);
-  const hidden = useMemo(() => layout.hidden.map((id) => panels[id]).filter(Boolean), [panels, layout.hidden]);
+  const hidden = useMemo(() => layout.hidden.map((id) => panels[id]).filter((panel) => panel !== undefined), [panels, layout.hidden]);
 
   const bar = title !== undefined && (
     <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-2">

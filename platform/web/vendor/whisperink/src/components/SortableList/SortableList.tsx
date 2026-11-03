@@ -38,8 +38,7 @@ export function SortableList<T extends { id: string }>({ uiId, uiDescription, ui
     const from = items.findIndex((item) => item.id === fromId);
     if (from === -1 || to < 0 || to >= items.length || from === to) return false;
     const next = [...items];
-    const [item] = next.splice(from, 1);
-    next.splice(to, 0, item);
+    next.splice(to, 0, ...next.splice(from, 1));
     onChange(next);
     return true;
   };

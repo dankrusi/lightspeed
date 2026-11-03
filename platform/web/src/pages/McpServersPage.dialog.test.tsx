@@ -189,7 +189,7 @@ it("sorts by display name and gives readers inspectable details without manageme
   expect(button("Edit server")).toBeUndefined();
   expect(button("Delete server")).toBeUndefined();
   expect(button("Connect")).toBeUndefined();
-  await click(dialog().querySelector<HTMLButtonElement>('[data-slot="dialog-close"]'));
+  await click(dialog().querySelector<HTMLButtonElement>('button[aria-label="Close"]'));
   expect(document.activeElement).toBe(trigger);
   expect(mocks.api.mock.calls.every(([method]) => method === "GET")).toBe(true);
 });
@@ -233,7 +233,7 @@ it("connects OAuth from details and returns there after dismissing sign-in", asy
   await click(button("Connect"));
   expect(dialog().textContent).toContain("Connect Research tools with OAuth");
   expect(mocks.api.mock.calls.filter(([, path]) => path.endsWith("/oauth/start"))).toHaveLength(1);
-  await click(dialog().querySelector<HTMLButtonElement>('[data-slot="dialog-close"]'));
+  await click(dialog().querySelector<HTMLButtonElement>('button[aria-label="Close"]'));
   expect(document.body.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   expect(dialog().textContent).toContain("Edit server");
 });

@@ -16,7 +16,7 @@ export function startOfWeek(iso: string): string {
   return isoDate(date);
 }
 export function fromIso(iso: string): Date {
-  const [year, month, day] = iso.split("-").map(Number);
+  const [year, month, day] = iso.split("-").map(Number) as [number, number, number];
   return new Date(year, month - 1, day, 12);
 }
 export function monthGrid(year: number, month: number): string[] {

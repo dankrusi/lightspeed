@@ -97,7 +97,7 @@ async function details(name: string) {
 }
 const dialog = () => document.body.querySelector<HTMLElement>('[role="dialog"]')!;
 async function closeDetails() {
-  await act(async () => dialog().querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.click());
+  await act(async () => dialog().querySelector<HTMLButtonElement>('button[aria-label="Close"]')!.click());
   await settle();
 }
 const buttonLabels = () => [...dialog().querySelectorAll("button")].map((button) => button.textContent);

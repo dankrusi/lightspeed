@@ -66,6 +66,7 @@ export function ErrorDialog({ uiId, uiDescription, uiComponentId, uiComponentDes
       onClose={onClose}
       title={title}
       size={size}
+      role="alertdialog"
       inline={inline}
       footer={
         <>

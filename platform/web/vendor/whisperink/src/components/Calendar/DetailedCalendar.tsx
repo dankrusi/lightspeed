@@ -90,7 +90,7 @@ export function DetailedCalendar({ uiId, uiDescription, uiComponentId, uiCompone
   const viewStart = firstOf(view.year, view.month);
   const days = useMemo(() => monthGrid(view.year, view.month), [view]);
   const weeks = useMemo(() => Array.from({ length: 6 }, (_, index) => days.slice(index * 7, index * 7 + 7)), [days]);
-  const allMarkers = useRangeMarkers(days[0], days[41], markers);
+  const allMarkers = useRangeMarkers(days[0]!, days[41]!, markers);
   const text = useText();
   const { weekdays, months } = useDateNames();
   const byDate = useMemo(() => {
@@ -119,7 +119,8 @@ export function DetailedCalendar({ uiId, uiDescription, uiComponentId, uiCompone
       PageDown: () => addMonths(focused, event.shiftKey ? 12 : 1),
     };
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    if (moves[event.key]) { event.preventDefault(); focus(moves[event.key]()); return; }
+    const move = moves[event.key];
+    if (move) { event.preventDefault(); focus(move()); return; }
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); commit(focused); }
     if (event.key.toLowerCase() === "t") { event.preventDefault(); focus(current); }
   };
@@ -176,8 +177,8 @@ export function DetailedCalendar({ uiId, uiDescription, uiComponentId, uiCompone
         </div>
         {weeks.map((week) => (
           <div key={week[0]} role="row" className="grid grid-cols-[40px_repeat(7,minmax(0,1fr))] border-b border-border last:border-0">
-            <span role="rowheader" aria-label={text.calendar.weekNumber(isoWeek(week[0]))} onClick={() => focus(week[0])} title={text.calendar.weekNumber(isoWeek(week[0]))} className="cursor-pointer border-r border-border bg-subtle/40 px-1 py-2 text-center text-2xs font-medium tabular-nums text-fg-subtle hover:bg-subtle hover:text-fg">
-              {isoWeek(week[0])}
+            <span role="rowheader" aria-label={text.calendar.weekNumber(isoWeek(week[0]!))} onClick={() => focus(week[0]!)} title={text.calendar.weekNumber(isoWeek(week[0]!))} className="cursor-pointer border-r border-border bg-subtle/40 px-1 py-2 text-center text-2xs font-medium tabular-nums text-fg-subtle hover:bg-subtle hover:text-fg">
+              {isoWeek(week[0]!)}
             </span>
             {week.map((day, index) => {
               const inMonth = fromIso(day).getMonth() === view.month;

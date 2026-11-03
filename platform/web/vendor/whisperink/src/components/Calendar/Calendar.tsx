@@ -52,7 +52,7 @@ export function Calendar({ uiId, uiDescription, uiComponentId, uiComponentDescri
   useEffect(() => { if (value) { setFocused(within(value)); setView(monthOf(value)); } }, [value]);
   useEffect(() => { if (autoFocus) gridRef.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus(); }, [autoFocus]);
   const days = monthGrid(view.year, view.month);
-  const allMarkers = useRangeMarkers(days[0], days[41], markers);
+  const allMarkers = useRangeMarkers(days[0]!, days[41]!, markers);
   const text = useText();
   const at = useLocale();
   const { weekdays } = useDateNames();
@@ -71,7 +71,8 @@ export function Calendar({ uiId, uiDescription, uiComponentId, uiComponentDescri
       Home: () => startOfWeek(focused), End: () => addDays(startOfWeek(focused), 6),
       PageUp: () => addMonths(focused, event.shiftKey ? -12 : -1), PageDown: () => addMonths(focused, event.shiftKey ? 12 : 1),
     };
-    if (moves[event.key]) { event.preventDefault(); moveFocus(moves[event.key]()); }
+    const move = moves[event.key];
+    if (move) { event.preventDefault(); moveFocus(move()); }
     else if (event.key.toLowerCase() === "t") { event.preventDefault(); moveFocus(today()); }
   };
   const monthLabel = new Intl.DateTimeFormat(at, { month: "long", year: "numeric" }).format(new Date(view.year, view.month, 1));

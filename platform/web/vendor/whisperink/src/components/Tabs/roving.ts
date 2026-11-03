@@ -1,5 +1,3 @@
-// @ts-nocheck
-// Host typecheck uses noUncheckedIndexedAccess; this kit file does not.
 import type { KeyboardEvent, ReactNode } from "react";
 import type { UiMetadataProps } from "../../metadata.js";
 
@@ -13,7 +11,7 @@ export function roving(event: KeyboardEvent<HTMLElement>, items: readonly TabIte
   const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : event.key === "Home" ? -index : event.key === "End" ? enabled.length - 1 - index : 0;
   if (!delta) return;
   event.preventDefault();
-  const next = enabled[(index + delta + enabled.length) % enabled.length];
+  const next = enabled[(index + delta + enabled.length) % enabled.length]!;
   onChange(next.value);
   (event.currentTarget.querySelector(`[data-value="${next.value}"]`) as HTMLElement | null)?.focus();
 }

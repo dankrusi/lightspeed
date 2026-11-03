@@ -167,7 +167,7 @@ export function Dock({ uiId, uiDescription, uiComponentId, uiComponentDescriptio
 }) & UiMetadataProps) {
   const _ui = uiMetadata("dock", "Arrange workspace panels", { uiId, uiDescription, uiComponentId, uiComponentDescription });
   const tabsId = useId();
-  const visible = state.panels.map((id) => panels[id]).filter(Boolean);
+  const visible = state.panels.map((id) => panels[id]).filter((panel) => panel !== undefined);
   const activePanel = state.active ? panels[state.active] : undefined;
   const activate = (id: string) => onChange((layout) => ({ ...layout, docks: { ...layout.docks, [side]: { ...layout.docks[side], active: id } } }));
   const close = (id: string) => onChange((layout) => closePanel(layout, id));

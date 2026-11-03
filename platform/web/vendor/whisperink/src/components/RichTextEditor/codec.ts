@@ -122,7 +122,7 @@ function emphasisEnd(source: string, marker: string, budget: { remaining: number
     const left = source[index - 1], right = source[index + count];
     const close = left && !/\s/.test(left) && !(marker[0] === "_" && right && /[\p{L}\p{N}]/u.test(right));
     if (close) {
-      while (stack.length && remaining >= stack[stack.length - 1]) {
+      while (stack.length && remaining >= stack[stack.length - 1]!) {
         const length = stack.pop()!;
         if (!stack.length) return index + count - remaining;
         remaining -= length;
@@ -139,9 +139,9 @@ function inlineMarkdown(source: string, depth = 0, budget = { remaining: source.
   let out = "";
   for (let i = 0; i < source.length;) {
     const rest = source.slice(i);
-    if (rest[0] === "\\" && rest.length > 1 && /[!"#$%&'()*+,\-./:;<=>?@[\]\\^_`{|}~]/.test(rest[1])) { out += escapeRichText(rest[1]); i += 2; continue; }
+    if (rest[0] === "\\" && rest.length > 1 && /[!"#$%&'()*+,\-./:;<=>?@[\]\\^_`{|}~]/.test(rest[1]!)) { out += escapeRichText(rest[1]!); i += 2; continue; }
     const code = /^(`+)([\s\S]*?)\1(?!`)/.exec(rest);
-    if (code) { out += `<code>${escapeRichText(code[2].replace(/^ (.*) $/, "$1"))}</code>`; i += code[0].length; continue; }
+    if (code) { out += `<code>${escapeRichText(code[2]!.replace(/^ (.*) $/, "$1"))}</code>`; i += code[0].length; continue; }
     // Balanced URL parentheses and escaped label delimiters are handled without a greedy link regex.
     const image = rest.startsWith("![");
     if (image || rest[0] === "[") {
@@ -170,16 +170,16 @@ function inlineMarkdown(source: string, depth = 0, budget = { remaining: source.
       }
     }
     let matched = false;
-    for (const [marker, tag] of [["***", "strong"], ["___", "strong"], ["**", "strong"], ["__", "strong"], ["~~", "s"], ["*", "em"], ["_", "em"]]) {
+    for (const [marker, tag] of [["***", "strong"], ["___", "strong"], ["**", "strong"], ["__", "strong"], ["~~", "s"], ["*", "em"], ["_", "em"]] as const) {
       if (!rest.startsWith(marker) || /\s/.test(rest[marker.length] ?? " ")) continue;
-      if (marker[0] === "_" && i && /[\p{L}\p{N}]/u.test(source[i - 1])) continue;
+      if (marker[0] === "_" && i && /[\p{L}\p{N}]/u.test(source[i - 1]!)) continue;
       const end = emphasisEnd(rest, marker, budget);
       if (end < 0) continue;
       const content = inlineMarkdown(rest.slice(marker.length, end), depth + 1, budget);
       out += marker.length === 3 ? `<strong><em>${content}</em></strong>` : `<${tag}>${content}</${tag}>`;
       i += end + marker.length; matched = true; break;
     }
-    if (!matched) { out += escapeRichText(source[i]); i++; }
+    if (!matched) { out += escapeRichText(source[i]!); i++; }
   }
   return out;
 }
@@ -191,34 +191,36 @@ function markdownBlocks(source: string, depth = 0): string {
   const begins = (line: string) => /^(?:#{1,6} |>|`{3,}|~{3,}|(?:[-*_] *){3,}$)/.test(line) || list(line);
   let html = "", i = 0;
   while (i < lines.length) {
-    const line = lines[i];
+    const line = lines[i]!;
     if (!line.trim()) { i++; continue; }
     const fence = /^(`{3,}|~{3,})[^`]*$/.exec(line);
     if (fence) {
       const body: string[] = []; i++;
-      while (i < lines.length && !(lines[i].trim().startsWith(fence[1]) && new RegExp(`^${fence[1][0]}+$`).test(lines[i].trim()))) body.push(lines[i++]);
+      const marker = fence[1]!;
+      while (i < lines.length && !(lines[i]!.trim().startsWith(marker) && new RegExp(`^${marker[0]}+$`).test(lines[i]!.trim()))) body.push(lines[i++]!);
       if (i < lines.length) i++;
       html += `<pre><code>${escapeRichText(body.join("\n"))}</code></pre>`; continue;
     }
     const heading = /^(#{1,6}) +(.*)$/.exec(line);
-    if (heading) { html += `<h${heading[1].length}>${inlineMarkdown(heading[2])}</h${heading[1].length}>`; i++; continue; }
+    if (heading) { const level = heading[1]!.length; html += `<h${level}>${inlineMarkdown(heading[2]!)}</h${level}>`; i++; continue; }
     if (/^\s*(?:\*\s*){3,}$|^\s*(?:-\s*){3,}$|^\s*(?:_\s*){3,}$/.test(line)) { html += "<hr>"; i++; continue; }
     if (/^> ?/.test(line)) {
       const quote: string[] = [];
-      while (i < lines.length && /^> ?/.test(lines[i])) quote.push(lines[i++].replace(/^> ?/, ""));
+      while (i < lines.length && /^> ?/.test(lines[i]!)) quote.push(lines[i++]!.replace(/^> ?/, ""));
       html += `<blockquote>${markdownBlocks(quote.join("\n"), depth + 1)}</blockquote>`; continue;
     }
     const first = list(line);
     if (first) {
-      const ordered = /^\d/.test(first[2]), indent = first[1].length, start = parseInt(first[2], 10);
+      const ordered = /^\d/.test(first[2]!), indent = first[1]!.length, start = parseInt(first[2]!, 10);
       html += ordered ? `<ol${start > 1 ? ` start="${start}"` : ""}>` : "<ul>";
       while (i < lines.length) {
-        const item = list(lines[i]);
-        if (!item || item[1].length !== indent || /^\d/.test(item[2]) !== ordered) break;
-        const body = [item[3]], padding = item[0].length - item[3].length; i++;
+        const item = list(lines[i]!);
+        if (!item || item[1]!.length !== indent || /^\d/.test(item[2]!) !== ordered) break;
+        const text = item[3]!;
+        const body = [text], padding = item[0].length - text.length; i++;
         while (i < lines.length) {
-          if (!lines[i].trim() && i + 1 < lines.length && lines[i + 1].startsWith(" ".repeat(padding))) { body.push(""); i++; continue; }
-          if (lines[i].trim() && lines[i].startsWith(" ".repeat(padding))) { body.push(lines[i++].slice(padding)); continue; }
+          if (!lines[i]!.trim() && i + 1 < lines.length && lines[i + 1]!.startsWith(" ".repeat(padding))) { body.push(""); i++; continue; }
+          if (lines[i]!.trim() && lines[i]!.startsWith(" ".repeat(padding))) { body.push(lines[i++]!.slice(padding)); continue; }
           break;
         }
         html += `<li>${markdownBlocks(body.join("\n"), depth + 1)}</li>`;
@@ -226,7 +228,7 @@ function markdownBlocks(source: string, depth = 0): string {
       html += ordered ? "</ol>" : "</ul>"; continue;
     }
     const paragraph = [line]; i++;
-    while (i < lines.length && lines[i].trim() && !begins(lines[i])) paragraph.push(lines[i++]);
+    while (i < lines.length && lines[i]!.trim() && !begins(lines[i]!)) paragraph.push(lines[i++]!);
     html += `<p>${paragraph.map((part) => inlineMarkdown(part.replace(/ {2}$/, ""))).join("<br>")}</p>`;
   }
   return html;
