@@ -3,7 +3,8 @@ import { ChevronDown, ChevronUp, Check, Inbox, Loader2, ShieldQuestion, Triangle
 import type { PendingApprovalView } from "@lightspeed-ai/sdk";
 import { BotIcon } from "@/components/icons/bot";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Marker, MarkerContent, MarkerIcon } from "@/components/ui/marker";
 import { Message, MessageContent } from "@/components/ui/message";
 import { MarkdownContent } from "@/components/session/markdown-content";
@@ -357,16 +358,15 @@ export function QueuedRunsBar({
             {item.cancelling || item.steering ? (
               <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
             ) : onCancel ? (
-              <Button
-                variant="ghost"
-                size="icon-xs"
+              <IconButton
+                size="xs"
                 disabled={!item.runId}
-                aria-label="Cancel queued message"
+                label="Cancel queued message"
                 title={item.runId ? "Remove from the queue" : "Waiting for the engine to accept this message"}
                 onClick={() => item.runId && onCancel(item.runId)}
               >
                 <X />
-              </Button>
+              </IconButton>
             ) : null}
           </li>
         ))}

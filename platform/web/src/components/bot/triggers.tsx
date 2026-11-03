@@ -20,9 +20,10 @@ import {
   type PollCursorState,
   type WebhookVerification,
 } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import {
   Combobox,
   ComboboxChip,
@@ -35,11 +36,11 @@ import {
   ComboboxValue,
 } from "@/components/ui/combobox";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Label } from "@/components/ui/label";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import { cn } from "@/lib/utils";
 import { CronBuilder } from "./cron-builder";
 import { deliverySentence, deliveryShapeOf, describeCron, triggerSummary } from "./trigger-summary";
@@ -734,8 +735,8 @@ export function pausedLabel(reason: BotTriggerDisabledReason | null | undefined)
   }
 }
 
-export function pausedVariant(reason: BotTriggerDisabledReason | null | undefined): "destructive" | "outline" {
-  return reason === "breaker" || reason === "poll_failed" ? "destructive" : "outline";
+export function pausedBadge(reason: BotTriggerDisabledReason | null | undefined): { tone: "danger" } | { outline: true } {
+  return reason === "breaker" || reason === "poll_failed" ? { tone: "danger" } : { outline: true };
 }
 
 export function TriggersSection({
@@ -860,7 +861,7 @@ export function TriggersSection({
             secondarySummary={delivery}
             badges={!enabled ? (
               <Badge
-                variant={pausedVariant(trigger.disabledReason)}
+                {...pausedBadge(trigger.disabledReason)}
                 title={trigger.disabledAtMs != null ? `since ${new Date(trigger.disabledAtMs).toLocaleString()}` : undefined}
               >
                 {pausedLabel(trigger.disabledReason)}
@@ -884,18 +885,17 @@ export function TriggersSection({
                       <Send data-icon="inline-start" /> Send sample
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
+                  <IconButton
+                    size="sm"
                     onClick={() => toggle.mutate(trigger)}
                     disabled={toggle.isPending}
-                    aria-label={enabled ? "Pause trigger" : "Resume trigger"}
+                    label={enabled ? "Pause trigger" : "Resume trigger"}
                   >
                     {enabled ? <Pause /> : <Play />}
-                  </Button>
+                  </IconButton>
                   {pendingDelete === trigger.triggerId ? (
                     <Button
-                      variant="destructive"
+                      variant="danger"
                       size="xs"
                       onClick={() => remove.mutate(trigger.triggerId)}
                       disabled={remove.isPending}
@@ -903,14 +903,13 @@ export function TriggersSection({
                       Delete?
                     </Button>
                   ) : (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
+                    <IconButton
+                      size="sm"
                       onClick={() => setPendingDelete(trigger.triggerId)}
-                      aria-label="Delete trigger"
+                      label="Delete trigger"
                     >
                       <Trash2 />
-                    </Button>
+                    </IconButton>
                   )}
               </>
             ) : undefined}
@@ -1203,10 +1202,9 @@ function WebhookRowDetail({ trigger, manage }: { trigger: WebhookTrigger; manage
           >
             {ingestUrl(trigger)}
           </code>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Copy ingest URL"
+          <IconButton
+            size="xs"
+            label="Copy ingest URL"
             onClick={() => {
               void navigator.clipboard.writeText(ingestUrl(trigger)).then(() => {
                 setCopied(true);
@@ -1215,7 +1213,7 @@ function WebhookRowDetail({ trigger, manage }: { trigger: WebhookTrigger; manage
             }}
           >
             {copied ? <Check /> : <Copy />}
-          </Button>
+          </IconButton>
         </div>
       )}
       <p className="mt-1 text-muted-foreground wrap-anywhere">
@@ -1319,10 +1317,9 @@ function ChatRowDetail({
           <code className="min-w-0 truncate font-medium" title={trigger.pairingCode}>
             {trigger.pairingCode}
           </code>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Copy pairing code"
+          <IconButton
+            size="xs"
+            label="Copy pairing code"
             onClick={() => {
               void navigator.clipboard.writeText(trigger.pairingCode ?? "").then(() => {
                 setCopied(true);
@@ -1331,17 +1328,16 @@ function ChatRowDetail({
             }}
           >
             {copied ? <Check /> : <Copy />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Rotate pairing code"
+          </IconButton>
+          <IconButton
+            size="xs"
+            label="Rotate pairing code"
             title="Mint a fresh pairing code; conversations already paired stay connected"
             disabled={rotate.isPending}
             onClick={() => rotate.mutate()}
           >
             <RotateCw />
-          </Button>
+          </IconButton>
           {rotate.error && <span className="text-destructive">{rotate.error.message}</span>}
         </div>
       ) : (
@@ -1578,7 +1574,7 @@ export function ChatFields({
         <Label className="gap-2 font-normal">
           <Checkbox
             checked={form.requirePairing}
-            onCheckedChange={(checked) => setForm({ ...form, requirePairing: checked === true })}
+            onChange={(event) => setForm({ ...form, requirePairing: event.target.checked })}
           />
           <span>
             Require a pairing code

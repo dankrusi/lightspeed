@@ -39,8 +39,9 @@ import {
   type UploadDirectoryHandle,
   type UploadEntry,
 } from "@/lib/workspace-transfers";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
@@ -999,7 +1000,7 @@ export function WorkspaceTransfers({
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant="danger"
               disabled={busy || !canConfigureWorkspace}
               onClick={() => void confirmDeleteWorkspace()}
             >
@@ -1033,7 +1034,7 @@ export function WorkspaceTransfers({
             </Button>
             {!deletion?.error && (
               <Button
-                variant="destructive"
+                variant="danger"
                 disabled={busy}
                 onClick={() => void confirmDelete()}
               >
@@ -1114,16 +1115,14 @@ export function WorkspaceActionsMenu({
       : `${kind === "folder" ? "Folder" : "File"} actions: ${path}`;
   return (
     <Menu align="end" className="w-56" trigger={({ open, toggle }) => (
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={label}
+      <IconButton
+        size="sm"
+        label={label}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={toggle}
         data-workspace-actions
         tabIndex={tabIndex}
-        title={label}
         className={cn(
           "shrink-0 text-muted-foreground",
           kind !== "workspace" &&
@@ -1146,7 +1145,7 @@ export function WorkspaceActionsMenu({
         ) : (
           <Ellipsis />
         )}
-      </Button>
+      </IconButton>
     )}>
       {transfers.canUpload && (
         <>

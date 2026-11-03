@@ -7,7 +7,8 @@ import { api, type Member } from "@/api";
 import { UNIVERSE_ROLES, type UniverseRole } from "@lightspeed-ai/platform-shared";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { FieldDescription, FieldLabel } from "@/components/ui/field";
 import {
   Table,
@@ -116,23 +117,21 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
                   </TableCell>
                   {writable && (
                     <TableActionsCell>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={`Edit role for ${member.name || member.email}`}
+                      <IconButton
+                        size="sm"
+                        label={`Edit role for ${member.name || member.email}`}
                         onClick={() => setEditing(member)}
                       >
                         <Pencil />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
+                      </IconButton>
+                      <IconButton
+                        size="sm"
                         className="text-destructive"
-                        aria-label={`Remove ${member.name || member.email}`}
+                        label={`Remove ${member.name || member.email}`}
                         onClick={() => setRemoving(member)}
                       >
                         <Trash2 />
-                      </Button>
+                      </IconButton>
                     </TableActionsCell>
                   )}
                 </TableRow>
@@ -152,7 +151,7 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
           <Button type="button" variant="outline" onClick={() => setRemoving(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               if (removing) remove.mutate(removing.id);
               setRemoving(null);

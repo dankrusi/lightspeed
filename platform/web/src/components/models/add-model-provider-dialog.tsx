@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { SecretProvider, SubscriptionImportResult } from "@/api";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { subscriptionBinding } from "@/lib/subscriptions";
 import {
@@ -78,14 +79,13 @@ export function AddModelProviderDialog({
       <div className="grid gap-4">
         {definition && !done && (
           <div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Back to catalog"
+            <IconButton
+              size="sm"
+              label="Back to catalog"
               onClick={() => setSelected(null)}
             >
               <ArrowLeft />
-            </Button>
+            </IconButton>
           </div>
         )}
 

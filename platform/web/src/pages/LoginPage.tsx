@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { authClient, useLoginConfig } from "@/auth";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
+import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { beginAutomaticSignIn } from "@/lib/automatic-sign-in";
 
 export function LoginPage() {
@@ -64,10 +60,10 @@ export function LoginPage() {
   return (
     <div className="flex min-h-svh items-center justify-center p-4">
       <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-lg">Lightspeed Platform</CardTitle>
-          <CardDescription>{emergency ? "Local emergency administrator access." : "Sign in to your account."}</CardDescription>
-        </CardHeader>
+        <CardHeader
+          title={<span className="text-lg">Lightspeed Platform</span>}
+          description={emergency ? "Local emergency administrator access." : "Sign in to your account."}
+        />
         <CardContent>
           {config.isPending && <p>Loading sign-in settings…</p>}
           {config.error && <p role="alert" className="text-sm text-destructive">{config.error.message}</p>}

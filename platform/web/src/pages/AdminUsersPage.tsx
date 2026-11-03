@@ -5,10 +5,11 @@ import { Pencil, Plus } from "lucide-react";
 import { authClient, useLoginConfig, type SessionUser } from "@/auth";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   Table,
   TableBody,
@@ -87,7 +88,7 @@ export function AdminUsersPage({ currentUser }: { currentUser: SessionUser }) {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     {user.role?.split(",").includes("admin") ? (
-                      <Badge variant="secondary">admin</Badge>
+                      <Badge>admin</Badge>
                     ) : (
                       <span className="text-muted-foreground">user</span>
                     )}
@@ -104,14 +105,13 @@ export function AdminUsersPage({ currentUser }: { currentUser: SessionUser }) {
                       : "—"}
                   </TableCell>
                   <TableActionsCell>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Edit ${user.email}`}
+                    <IconButton
+                      size="sm"
+                      label={`Edit ${user.email}`}
                       onClick={() => setEditing(user)}
                     >
                       <Pencil />
-                    </Button>
+                    </IconButton>
                   </TableActionsCell>
                 </TableRow>
               ))}

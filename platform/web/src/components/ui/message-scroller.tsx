@@ -1,5 +1,5 @@
 import { createContext, useContext, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react"
-import { Button } from "@/components/ui/button"
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js"
 import { cn } from "@/lib/utils"
 
 type Scroller = {
@@ -153,10 +153,9 @@ function MessageScrollerButton({ className }: { className?: string; direction?: 
   const scroller = useScroller()
   if (scroller.atEnd) return null
   return (
-    <Button variant="secondary" size="icon-sm" className={cn("absolute bottom-4 left-1/2 -translate-x-1/2", className)} onClick={() => scroller.scrollToEnd({ behavior: "smooth" })}>
-      <span className="sr-only">Scroll to end</span>
+    <IconButton variant="secondary" size="sm" label="Scroll to end" className={cn("absolute bottom-4 left-1/2 -translate-x-1/2", className)} onClick={() => scroller.scrollToEnd({ behavior: "smooth" })}>
       ↓
-    </Button>
+    </IconButton>
   )
 }
 

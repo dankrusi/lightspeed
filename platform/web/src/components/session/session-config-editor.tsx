@@ -16,8 +16,9 @@ import {
   Trash2,
   Wrench,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import {
   Combobox,
   ComboboxChip,
@@ -31,11 +32,11 @@ import {
   ComboboxValue,
 } from "@/components/ui/combobox";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Label } from "@/components/ui/label";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { supportsOpenAiProcessingTier } from "@/lib/sessions/run-options";
 import { cn } from "@/lib/utils";
 import { resourceFeatureDisableReasons, selectableEnvironments } from "@/lib/sessions/resource-features";
@@ -1301,8 +1302,8 @@ function FeaturePanel({
           <Switch
             checked={enabled}
             disabled={readOnly || enabled && Boolean(disableReason)}
-            onCheckedChange={(checked) => {
-              const nextEnabled = checked === true;
+            onChange={(event) => {
+              const nextEnabled = event.target.checked;
               setOpen(nextEnabled && configurable);
               onEnabledChange(nextEnabled);
             }}
@@ -1500,15 +1501,14 @@ function VfsFields({
                   </Select>
                 </Field>
               </div>
-              <Button disabled={readOnly}
-                variant="ghost"
-                size="icon-sm"
+              <IconButton disabled={readOnly}
+                size="sm"
                 className="self-start text-destructive"
-                aria-label="Remove workspace attachment"
+                label="Remove workspace attachment"
                 onClick={() => updateAttachments(attachments.filter((_, attachmentIndex) => attachmentIndex !== index))}
               >
                 <Trash2 />
-              </Button>
+              </IconButton>
             </div>
           );
         })}
@@ -1560,8 +1560,8 @@ function WebFields({
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap gap-x-6 gap-y-3">
-        <Label className="gap-2 font-normal"><Checkbox disabled={readOnly} checked={fetchEnabled} onCheckedChange={(checked) => setSubfeature("fetch", checked === true)} />Fetch pages</Label>
-        <Label className="gap-2 font-normal"><Checkbox disabled={readOnly} checked={searchEnabled} onCheckedChange={(checked) => setSubfeature("search", checked === true)} />Search the web</Label>
+        <Label className="gap-2 font-normal"><Checkbox disabled={readOnly} checked={fetchEnabled} onChange={(event) => setSubfeature("fetch", event.target.checked)} />Fetch pages</Label>
+        <Label className="gap-2 font-normal"><Checkbox disabled={readOnly} checked={searchEnabled} onChange={(event) => setSubfeature("search", event.target.checked)} />Search the web</Label>
       </div>
       {searchEnabled && (
         <SettingsDisclosure
@@ -1858,8 +1858,8 @@ function SourceDiscoveryFields({ source, feature, patch }: {
         </div>
         <Switch disabled={readOnly} id={id} aria-label={switchLabel}
           checked={enabled}
-          onCheckedChange={(checked) => patch((next) => {
-            if (checked) next[configKey] = {};
+          onChange={(event) => patch((next) => {
+            if (event.target.checked) next[configKey] = {};
             else delete next[configKey];
           })}
         />
@@ -2036,11 +2036,10 @@ function EnvironmentFields({
                   {environmentAccessDescriptions[string(attachment.access)]}
                 </FieldDescription>
               </Field>
-              <Button disabled={readOnly}
-                variant="ghost"
-                size="icon-sm"
+              <IconButton disabled={readOnly}
+                size="sm"
                 className="self-start text-destructive"
-                aria-label="Remove environment attachment"
+                label="Remove environment attachment"
                 onClick={() =>
                   patch((next) => {
                     const remaining = attachments.filter((_, position) => position !== index);
@@ -2053,18 +2052,19 @@ function EnvironmentFields({
                 }
               >
                 <Trash2 />
-              </Button>
+              </IconButton>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox disabled={readOnly}
                 aria-label={`Default environment ${index + 1}`}
                 checked={attachment.default === true}
-                onCheckedChange={(checked) =>
+                onChange={(event) =>
                   patch((next) => {
+                    const checked = event.target.checked;
                     next.environments = attachments.map((item, position) => {
                       const value = { ...item };
-                      if (position === index && checked === true) value.default = true;
-                      else if (position === index || checked === true) delete value.default;
+                      if (position === index && checked) value.default = true;
+                      else if (position === index || checked) delete value.default;
                       return value;
                     });
                   })
@@ -2092,9 +2092,9 @@ function EnvironmentFields({
         <Switch disabled={readOnly}
           id={selectionId}
           checked={feature.selection === true}
-          onCheckedChange={(checked) =>
+          onChange={(event) =>
             patch((next) => {
-              if (checked) next.selection = true;
+              if (event.target.checked) next.selection = true;
               else delete next.selection;
             })
           }
@@ -2206,15 +2206,14 @@ function McpFields({
               />
             </div>
           </div>
-          <Button disabled={readOnly}
-            variant="ghost"
-            size="icon-sm"
+          <IconButton disabled={readOnly}
+            size="sm"
             className="self-start text-destructive"
-            aria-label="Remove MCP server"
+            label="Remove MCP server"
             onClick={() => updateAttachments(attachments.filter((_, attachmentIndex) => attachmentIndex !== index))}
           >
             <Trash2 />
-          </Button>
+          </IconButton>
         </div>
       ))}
     </div>

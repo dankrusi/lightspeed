@@ -31,7 +31,7 @@ async function setup(value: SessionConfig, options: { environments?: Environment
   }
 }
 async function toggle(name: string) {
-  const button = container.querySelector<HTMLButtonElement>(`[role="switch"][aria-label="${name}"]`);
+  const button = container.querySelector<HTMLInputElement>(`[role="switch"][aria-label="${name}"]`);
   expect(button).not.toBeNull();
   await act(async () => button!.click());
 }
@@ -57,13 +57,13 @@ it("requires explicit MCP attachments and removal before disabling the feature",
   expect(current).toHaveProperty("features.mcp.servers", []);
   expect(container.textContent).toContain("No server attachments.");
   expect(error).toBeNull();
-  const featureSwitch = container.querySelector<HTMLButtonElement>('[role="switch"][aria-label="Enable MCP Servers"]')!;
-  expect(featureSwitch.getAttribute("aria-disabled")).not.toBe("true");
+  const featureSwitch = container.querySelector<HTMLInputElement>('[role="switch"][aria-label="Enable MCP Servers"]')!;
+  expect(featureSwitch.disabled).toBe(false);
   const add = Array.from(container.querySelectorAll<HTMLButtonElement>("button"))
     .find((button) => button.textContent?.trim() === "Add server")!;
   await act(async () => add.click());
   expect(current).toHaveProperty("features.mcp.servers", [{ serverId: "catalog" }]);
-  expect(featureSwitch.getAttribute("aria-disabled")).toBe("true");
+  expect(featureSwitch.disabled).toBe(true);
   expect(container.textContent).toContain("Remove the server attachments before disabling this feature.");
   await toggle("Enable MCP Servers");
   expect(current).toHaveProperty("features.mcp.servers", [{ serverId: "catalog" }]);
@@ -71,7 +71,7 @@ it("requires explicit MCP attachments and removal before disabling the feature",
   await act(async () => remove.click());
   expect(current).toHaveProperty("features.mcp.servers", []);
   expect(error).toBeNull();
-  expect(featureSwitch.getAttribute("aria-disabled")).not.toBe("true");
+  expect(featureSwitch.disabled).toBe(false);
   await toggle("Enable MCP Servers");
   expect(current ?? {}).not.toHaveProperty("features.mcp");
   expect(error).toBeNull();
@@ -186,7 +186,7 @@ it.each([
   await input(label, "");
   expect(error).toBeNull();
   expect(current).toHaveProperty(`features.vfs.${key}`, {});
-  expect(container.querySelector(`[aria-label="${switchName}"]`)?.getAttribute("aria-checked")).toBe("true");
+  expect(container.querySelector<HTMLInputElement>(`[role="switch"][aria-label="${switchName}"]`)?.checked).toBe(true);
   await toggle(switchName);
   expect(error).toBeNull();
   expect(current).not.toHaveProperty(`features.vfs.${key}`);
@@ -293,7 +293,7 @@ it("selects a single default without changing access or source grants", async ()
     { environmentId: "logs", access: "read", default: true },
     { environmentId: "runner", access: "jobs" },
   ], skills: {}, prompts: {} } } });
-  const checkbox = container.querySelector<HTMLButtonElement>('[role="checkbox"][aria-label="Default environment 2"]');
+  const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"][aria-label="Default environment 2"]');
   expect(checkbox).not.toBeNull();
   await act(async () => checkbox!.click());
   expect(current).toHaveProperty("features.environments.environments", [
@@ -359,8 +359,8 @@ it("enables VFS with an empty attachment list and source discovery", async () =>
   await setup({});
   await toggle("Enable Virtual File System: Files, Instructions, Skills");
   expect(current).toEqual({ features: { vfs: { workspaces: [], prompts: {}, skills: {} } } });
-  expect(container.querySelector('[aria-label="VFS prompt loading"]')?.getAttribute("aria-checked")).toBe("true");
-  expect(container.querySelector('[aria-label="VFS skill discovery"]')?.getAttribute("aria-checked")).toBe("true");
+  expect(container.querySelector<HTMLInputElement>('[role="switch"][aria-label="VFS prompt loading"]')?.checked).toBe(true);
+  expect(container.querySelector<HTMLInputElement>('[role="switch"][aria-label="VFS skill discovery"]')?.checked).toBe(true);
   await toggle("Enable Virtual File System: Files, Instructions, Skills");
   expect(current ?? {}).not.toHaveProperty("features.vfs");
 });

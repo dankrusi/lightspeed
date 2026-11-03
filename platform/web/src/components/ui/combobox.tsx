@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js"
-import { Input } from "@/components/ui/input"
+import { Input } from "@versavolta/whisperink/components/Input/Input.js"
 import { cn } from "@/lib/utils"
 
 type ComboboxState<T extends string = string> = {
@@ -105,7 +105,7 @@ function ComboboxInput({
   readOnly,
   showTrigger: _showTrigger,
   ...props
-}: React.ComponentProps<"input"> & { showTrigger?: boolean }) {
+}: Omit<React.ComponentProps<"input">, "size"> & { showTrigger?: boolean }) {
   const box = useCombobox()
   return (
     <Input

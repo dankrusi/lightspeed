@@ -4,23 +4,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api, type Universe } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
+import { CardFooter } from "@versavolta/whisperink/components/Card/CardFooter.js";
+import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   LoadingNote,
   PageHeader,
   UniverseNotFound,
 } from "@/components/page";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { universeSlugSchema, FEATURES, FEATURE_KEYS, type FeatureKey } from "@lightspeed-ai/platform-shared";
 import { useActiveUniverse } from "@/lib/universes";
 import { UniverseAppearanceCard } from "@/components/universe-appearance-card";
@@ -62,13 +58,13 @@ function FeaturesCard({ universe }: { universe: Universe }) {
   });
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Features</CardTitle>
-        <CardDescription>
+      <CardHeader
+        title="Features"
+        description={<>
           Turning a feature off hides it for everyone in this universe. What already runs keeps
           running: a bot keeps answering on its channels.
-        </CardDescription>
-      </CardHeader>
+        </>}
+      />
       <CardContent className="grid gap-4">
         {FEATURE_KEYS.map((key) => {
           const feature = FEATURES[key];
@@ -87,7 +83,7 @@ function FeaturesCard({ universe }: { universe: Universe }) {
                 id={id}
                 checked={universe.features[key]}
                 disabled={missing.length > 0 || change.isPending}
-                onCheckedChange={(checked) => change.mutate({ [key]: checked })}
+                onChange={(event) => change.mutate({ [key]: event.target.checked })}
               />
             </div>
           );
@@ -114,10 +110,7 @@ export function SlugCard({ universe }: { universe: Universe }) {
   const valid = universeSlugSchema.safeParse(slug.trim()).success;
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Slug</CardTitle>
-        <CardDescription>Changes the runtime slug and this universe's URL. Existing links may stop working.</CardDescription>
-      </CardHeader>
+      <CardHeader title="Slug" description="Changes the runtime slug and this universe's URL. Existing links may stop working." />
       <CardContent>
         <form className="flex max-w-md items-end gap-3" onSubmit={event => { event.preventDefault(); if (valid) rename.mutate(); }}>
           <Field className="flex-1">
@@ -151,12 +144,10 @@ function RenameCard({ universe }: { universe: Universe }) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Name</CardTitle>
-        <CardDescription>
-          The display name shown in the switcher. Changing it does not change the URL slug.
-        </CardDescription>
-      </CardHeader>
+      <CardHeader
+        title="Name"
+        description="The display name shown in the switcher. Changing it does not change the URL slug."
+      />
       <CardContent>
         <form onSubmit={submit} className="flex max-w-md items-end gap-3">
           <Field className="flex-1">
@@ -189,9 +180,7 @@ function RenameCard({ universe }: { universe: Universe }) {
 function IdentifiersCard({ universe }: { universe: Universe }) {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Identifiers</CardTitle>
-      </CardHeader>
+      <CardHeader title="Identifiers" />
       <CardContent className="grid gap-3 text-sm">
         <div className="grid gap-1">
           <span className="text-muted-foreground">URL slug</span>
@@ -229,13 +218,13 @@ function DangerZone({ universe }: { universe: Universe }) {
 
   return (
     <Card className="border-destructive/40">
-      <CardHeader>
-        <CardTitle className="text-destructive">Danger zone</CardTitle>
-        <CardDescription>
+      <CardHeader
+        title={<span className="text-destructive">Danger zone</span>}
+        description={<>
           Archiving hides this universe from the switcher and keeps its data.
           Bots, chats, and API access remain active until you stop them separately.
-        </CardDescription>
-      </CardHeader>
+        </>}
+      />
       <CardFooter>
         {archived ? (
           <Button variant="outline" onClick={() => setStatus.mutate("active")}>
@@ -243,7 +232,7 @@ function DangerZone({ universe }: { universe: Universe }) {
           </Button>
         ) : (
           <>
-            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
+            <Button variant="danger" onClick={() => setConfirmOpen(true)}>
               Archive universe
             </Button>
             <Modal
@@ -259,7 +248,7 @@ function DangerZone({ universe }: { universe: Universe }) {
                 </Button>
                 <Button
                   type="button"
-                  variant="destructive"
+                  variant="danger"
                   onClick={() => {
                     setStatus.mutate("archived");
                     setConfirmOpen(false);

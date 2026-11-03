@@ -3,7 +3,7 @@ import { LockKeyhole, Users } from "lucide-react";
 import type { ResourceAccessSummary } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Tooltip } from "@versavolta/whisperink/components/Tooltip/Tooltip.js";
 import { usePermissionIdentity, useUniverseRole } from "@/lib/permissions";
 
@@ -103,7 +103,7 @@ export function ShareSessionDialog({
           <Button type="button" variant="outline" onClick={close}>
             Cancel
           </Button>
-          <Button type="button" variant="destructive" disabled={share.isPending} onClick={() => share.mutate()}>
+          <Button type="button" variant="danger" disabled={share.isPending} onClick={() => share.mutate()}>
             Share
           </Button>
         </>

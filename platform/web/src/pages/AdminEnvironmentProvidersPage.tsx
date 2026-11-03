@@ -7,13 +7,13 @@ import type {
   DeploymentEnvironmentProviderView,
 } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import {
   Table,
   TableActionsCell,
@@ -149,7 +149,7 @@ export function AdminEnvironmentProvidersPage() {
                     <span className="font-mono text-xs text-muted-foreground">
                       {provider.providerId}
                     </span>
-                    <Badge variant="outline">
+                    <Badge outline>
                       {provider.hasCredential ? "credential" : "no credential"}
                     </Badge>
                   </div>
@@ -174,7 +174,7 @@ export function AdminEnvironmentProvidersPage() {
                     Bind universe
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="danger"
                     size="sm"
                     disabled={removeProvider.isPending}
                     onClick={() => setDeleting(provider)}
@@ -228,7 +228,7 @@ export function AdminEnvironmentProvidersPage() {
           <Button type="button" variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               // Its outcome shows on the page: the provider goes, or the error line appears.
               if (deleting) removeProvider.mutate(deleting.providerId, { onSettled: () => setDeleting(null) });
@@ -282,7 +282,7 @@ function BindingRow({
           aria-label={`Enable ${binding.providerId} for ${universe.name}`}
           checked={binding.enabled}
           disabled={setEnabled.isPending}
-          onCheckedChange={(enabled) => setEnabled.mutate(enabled)}
+          onChange={(event) => setEnabled.mutate(event.target.checked)}
         />
       </TableCell>
       <TableActionsCell>
@@ -300,7 +300,7 @@ function BindingRow({
             <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Cancel</Button>
             <Button
               type="button"
-              variant="destructive"
+              variant="danger"
               // Its outcome shows in the row: the binding goes, or the error line appears.
               onClick={() => remove.mutate(undefined, { onSettled: () => setConfirming(false) })}
             >

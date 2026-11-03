@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 const DAY_MS = 86_400_000;
 const MAX_DELETE_AFTER_CLOSE_MS = 100 * 365 * DAY_MS;

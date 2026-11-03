@@ -6,7 +6,8 @@ import { validWorkspaceTransferPath } from "@lightspeed-ai/platform-shared";
 import { api, type SessionView, type WorkspaceTree, type VfsTreeEntry } from "@/api";
 import { LoadingNote, UniverseNotFound } from "@/components/page";
 import { ReadError } from "@/components/read-error";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { ButtonLink } from "@versavolta/whisperink/components/Button/ButtonLink.js";
 import { MarkdownViewToggle } from "@/components/markdown-view-toggle";
 import { MarkdownContent } from "@/components/session/markdown-content";
 import { formatBytes } from "@/lib/composer-attachments";
@@ -201,10 +202,10 @@ function DownloadLink({ bytes, name }: { bytes: Uint8Array; name: string }) {
   const url = useObjectUrl(bytes, "application/octet-stream");
   if (!url) return null;
   return (
-    <Button variant="outline" size="sm" nativeButton={false} render={<a href={url} download={name} />}>
+    <ButtonLink variant="outline" size="sm" href={url} download={name}>
       <Download data-icon="inline-start" />
       Download
-    </Button>
+    </ButtonLink>
   );
 }
 

@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import { ChevronRight, LoaderCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Table, TableActionsCell, TableBody, TableCard, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ResourceStatusInfo } from "@/lib/resource-status";
 import { cn } from "@/lib/utils";
@@ -38,10 +38,10 @@ export function ResourceRow({ name, onOpen, children }: {
     <TableRow className="cursor-pointer focus-within:bg-muted/50" onClick={() => onOpen(triggerRef.current)}>
       {children}
       <TableActionsCell>
-        <Button ref={triggerRef} variant="ghost" size="icon-sm" className="text-muted-foreground"
-          aria-label={`Details for ${name}`} aria-haspopup="dialog">
+        <IconButton ref={triggerRef} size="sm" className="text-muted-foreground"
+          label={`Details for ${name}`} aria-haspopup="dialog">
           <ChevronRight aria-hidden="true" className="size-4" />
-        </Button>
+        </IconButton>
       </TableActionsCell>
     </TableRow>
   );
@@ -84,7 +84,7 @@ export function ResourceValue({ children, description, mono = false }: {
 
 export function ResourceStatusBadge({ status }: { status: ResourceStatusInfo }) {
   return (
-    <Badge variant={status.tone === "positive" ? "secondary" : "outline"} className={cn(
+    <Badge outline={status.tone !== "positive"} className={cn(
       status.tone === "warning" && "border-amber-600/35 text-amber-700 dark:text-amber-400",
       status.tone === "danger" && "border-destructive/50 text-destructive",
       status.tone === "neutral" && "text-muted-foreground",

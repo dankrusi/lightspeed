@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ChevronDown, Minimize2, Ellipsis, LoaderCircle, Share2, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
@@ -54,18 +54,16 @@ export function SessionActionsMenu({
       className="max-h-[min(28rem,calc(100vh-1rem))] w-80 max-w-[calc(100vw-1rem)]"
       trigger={({ open: menuOpen, toggle }) =>
         variant === "more" ? (
-          <Button
-            variant="ghost"
-            size="icon-sm"
+          <IconButton
+            size="sm"
             className="shrink-0 text-muted-foreground"
-            aria-label="Session actions"
-            title="Session actions"
+            label="Session actions"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={toggle}
           >
             <Ellipsis />
-          </Button>
+          </IconButton>
         ) : (
           <button
             type="button"

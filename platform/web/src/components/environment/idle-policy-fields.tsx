@@ -1,6 +1,6 @@
 import type { EnvironmentIdlePolicyView, EnvironmentPowerStateView } from "@lightspeed-ai/sdk";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 type IdlePolicy = EnvironmentIdlePolicyView;
 

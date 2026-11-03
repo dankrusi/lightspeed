@@ -8,11 +8,13 @@ import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { api, type UniverseSetup } from "@/api";
 import { KeyPresetField, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
+import { CardFooter } from "@versavolta/whisperink/components/Card/CardFooter.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";
 import { groupSummary, groupsFor, UNIVERSE_KEY_PRESETS } from "@/lib/method-groups";
 import { useActiveUniverse } from "@/lib/universes";
@@ -124,16 +126,16 @@ function SetupCard({
 
   return (
     <Card className="flex flex-col">
-      <CardHeader>
+      <div className="flex flex-col gap-1 px-5 py-4">
         <div className="mb-2 flex items-start justify-between gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <PackageOpen className="size-5" />
           </div>
           <SetupStatus setup={setup} />
         </div>
-        <CardTitle>{setup.name}</CardTitle>
-        <CardDescription>{setup.description}</CardDescription>
-      </CardHeader>
+        <div className="font-heading text-base font-semibold">{setup.name}</div>
+        <div className="text-sm text-fg-muted">{setup.description}</div>
+      </div>
       <CardContent className="grid flex-1 content-start gap-3">
         {ready && setup.resources?.profileId && (
           <div className="rounded-lg bg-muted p-3 text-sm">
@@ -181,7 +183,7 @@ function SetupCard({
         <Button
           onClick={onInstall}
           disabled={installing || unavailable || !installable}
-          variant={ready && !upgradeAvailable ? "outline" : "default"}
+          variant={ready && !upgradeAvailable ? "outline" : "primary"}
         >
           {installing ? (
             <RefreshCw className="animate-spin" data-icon="inline-start" />
@@ -200,15 +202,15 @@ function SetupCard({
 function SetupStatus({ setup }: { setup: UniverseSetup }) {
   switch (setup.status) {
     case "ready":
-      return <Badge variant="secondary">installed</Badge>;
+      return <Badge>installed</Badge>;
     case "installing":
-      return <Badge variant="outline">installing</Badge>;
+      return <Badge outline>installing</Badge>;
     case "failed":
-      return <Badge variant="destructive">failed</Badge>;
+      return <Badge tone="danger">failed</Badge>;
     case "unavailable":
-      return <Badge variant="outline">unavailable</Badge>;
+      return <Badge outline>unavailable</Badge>;
     default:
-      return <Badge variant="outline">available</Badge>;
+      return <Badge outline>available</Badge>;
   }
 }
 

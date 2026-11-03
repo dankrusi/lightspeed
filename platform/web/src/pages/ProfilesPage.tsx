@@ -11,14 +11,15 @@ import {
 } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import {
   MetadataMapEditor,
 } from "@/components/session/metadata-editor";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailPrompt, ListNote, LoadingNote, UniverseNotFound } from "@/components/page";
@@ -104,15 +105,14 @@ function ProfilePane({
       <div className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
         <h1 className="text-sm font-semibold">Profiles</h1>
         {canCreate && (
-          <Button
-          variant="ghost"
-          size="icon-sm"
+          <IconButton
+          size="sm"
           className="ml-auto"
           onClick={() => setCreateOpen(true)}
-          aria-label="New profile"
+          label="New profile"
         >
             <Plus />
-          </Button>
+          </IconButton>
         )}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -346,15 +346,14 @@ function ProfileEditor({
             </Button>
           )}
           {manage && <>
-            <Button
-              variant="ghost"
-              size="icon-sm"
+            <IconButton
+              size="sm"
               className="text-destructive"
-              aria-label="Delete profile"
+              label="Delete profile"
               onClick={() => setConfirmDelete(true)}
             >
               <Trash2 />
-            </Button>
+            </IconButton>
             <Modal
               role="alertdialog"
               size="sm"
@@ -366,7 +365,7 @@ function ProfileEditor({
                 <Button type="button" variant="outline" onClick={() => setConfirmDelete(false)}>Cancel</Button>
                 <Button
                   type="button"
-                  variant="destructive"
+                  variant="danger"
                   onClick={() => {
                     remove.mutate();
                     setConfirmDelete(false);

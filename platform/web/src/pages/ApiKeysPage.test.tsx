@@ -48,9 +48,7 @@ async function render() {
 }
 const button = (label: string) => [...document.body.querySelectorAll<HTMLButtonElement>("button")].find((node) => node.textContent?.trim() === label);
 const dialogText = () => document.querySelector('[role="dialog"]')?.textContent ?? "";
-/// Base UI keeps the id on a hidden input beside the visible checkbox.
-const checkbox = (group: string) =>
-  document.getElementById(`api-key-group-${group}`)!.parentElement!.querySelector<HTMLElement>('[role="checkbox"]')!;
+const checkbox = (group: string) => document.getElementById(`api-key-group-${group}`) as HTMLInputElement;
 
 it("lists active keys with what each may call, and revoked keys only on request", async () => {
   await render();
@@ -71,7 +69,7 @@ it("starts a key as an agent client and sends exactly the groups chosen", async 
   await act(async () => button("Create key")!.click());
   await settle();
   expect(button("Agent client")!.getAttribute("aria-pressed")).toBe("true");
-  expect(checkbox("auth/lease").getAttribute("aria-checked")).toBe("false");
+  expect(checkbox("auth/lease").checked).toBe(false);
 
   await act(async () => button("Configuration")!.click());
   await settle();

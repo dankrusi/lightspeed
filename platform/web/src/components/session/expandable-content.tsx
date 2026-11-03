@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 
 export type FullTextLoader = (blobRef: string) => Promise<string>;
 

@@ -23,8 +23,8 @@ import {
   workspaceAttachmentsFromConfig,
   type SessionConfig,
 } from "@/components/session/session-config-editor";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { useSessionConfigEditorOptions } from "@/lib/sessions/editor-options";

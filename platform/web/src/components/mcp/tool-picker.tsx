@@ -1,10 +1,10 @@
 import { useEffect, useId, useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
 import type { McpAdvertisedTool } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Label } from "@/components/ui/label";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
@@ -273,14 +273,15 @@ function ToolRow({
   return (
     <div className="flex items-start gap-3 border-b p-3 last:border-b-0">
       {selected !== undefined && (
-        <Checkbox
-          id={id}
-          aria-label={name}
-          className="mt-0.5"
-          checked={selected}
-          disabled={disabled}
-          onCheckedChange={(checked) => onChange(checked === true)}
-        />
+        <span className="mt-0.5">
+          <Checkbox
+            id={id}
+            aria-label={name}
+            checked={selected}
+            disabled={disabled}
+            onChange={(event) => onChange(event.target.checked)}
+          />
+        </span>
       )}
       <div className="grid min-w-0 flex-1 gap-1">
         <Label
@@ -307,19 +308,19 @@ function ToolRow({
             </span>
           )}
           {tool?.annotations?.readOnlyHint === true && (
-            <Badge variant="outline">read only</Badge>
+            <Badge outline>read only</Badge>
           )}
           {tool?.annotations?.readOnlyHint === false && (
-            <Badge variant="outline">may write</Badge>
+            <Badge outline>may write</Badge>
           )}
           {tool?.annotations?.destructiveHint === true && (
-            <Badge variant="outline">destructive</Badge>
+            <Badge outline>destructive</Badge>
           )}
           {tool?.annotations?.idempotentHint === true && (
-            <Badge variant="outline">idempotent</Badge>
+            <Badge outline>idempotent</Badge>
           )}
           {tool?.annotations?.openWorldHint === true && (
-            <Badge variant="outline">external access</Badge>
+            <Badge outline>external access</Badge>
           )}
         </div>
         {tool?.description && (

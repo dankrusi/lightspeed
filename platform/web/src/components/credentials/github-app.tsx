@@ -2,12 +2,12 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { api, type GitHubApp, type GitHubInstallation, type SecretGrant } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import {
   IdText,
   Table,
@@ -309,14 +309,14 @@ export function GitHubAppDetails({
                         {existing ? (
                           <InstallationStatusBadge status={existing.status} />
                         ) : (
-                          <Badge variant="outline">not granted</Badge>
+                          <Badge outline>not granted</Badge>
                         )}
                       </TableCell>
                       <TableActionsCell>
                         {(!existing || existing.status !== "active") && (
                           <Button
                             size="sm"
-                            variant={existing ? "outline" : "default"}
+                            variant={existing ? "outline" : "primary"}
                             disabled={granting}
                             onClick={() => grant.mutate(installation)}
                           >
@@ -354,9 +354,9 @@ export function GitHubAppDetails({
 }
 
 export function GitHubAppStatusBadge({ app }: { app: GitHubApp }) {
-  if (app.status === "active" && app.hasCredential) return <Badge variant="secondary">active</Badge>;
+  if (app.status === "active" && app.hasCredential) return <Badge>active</Badge>;
   return (
-    <Badge variant="outline" className="border-destructive/50 text-destructive">
+    <Badge outline className="border-destructive/50 text-destructive">
       needs private key
     </Badge>
   );
@@ -368,7 +368,7 @@ function PermissionList({ permissions }: { permissions: Record<string, unknown> 
   return (
     <div className="flex max-w-md flex-wrap gap-1">
       {entries.map(([name, level]) => (
-        <Badge key={name} variant="outline" className="font-mono text-[11px] font-normal">
+        <Badge key={name} outline className="font-mono text-[11px] font-normal">
           {name}: {level}
         </Badge>
       ))}
@@ -377,13 +377,13 @@ function PermissionList({ permissions }: { permissions: Record<string, unknown> 
 }
 
 function InstallationStatusBadge({ status }: { status: SecretGrant["status"] }) {
-  if (status === "active") return <Badge variant="secondary">granted</Badge>;
+  if (status === "active") return <Badge>granted</Badge>;
   if (status === "needsReauth" || status === "failed") {
     return (
-      <Badge variant="outline" className="border-destructive/50 text-destructive">
+      <Badge outline className="border-destructive/50 text-destructive">
         {status === "needsReauth" ? "needs reinstall" : status}
       </Badge>
     );
   }
-  return <Badge variant="outline">revoked</Badge>;
+  return <Badge outline>revoked</Badge>;
 }

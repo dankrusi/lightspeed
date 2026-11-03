@@ -38,7 +38,7 @@ async function show(platformAdmin: boolean) {
 const button = (label: string) => [...document.body.querySelectorAll<HTMLButtonElement>("button")].find((node) => node.textContent === label)!;
 async function check(label: string) {
   const field = [...document.body.querySelectorAll("label")].find((node) => node.textContent?.includes(label))!;
-  await act(async () => field.querySelector<HTMLButtonElement>('[role="checkbox"]')!.click());
+  await act(async () => field.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click());
 }
 async function submit(label: string) {
   await act(async () => button(label).click());

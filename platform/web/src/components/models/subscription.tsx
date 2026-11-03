@@ -4,10 +4,10 @@ import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
 import { api, type SecretGrant, type SubscriptionImportResult } from "@/api";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import {
   CODEX_AUTH_JSON_BOOTSTRAP,
   isCodexTokenSet,

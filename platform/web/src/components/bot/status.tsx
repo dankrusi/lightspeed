@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import type { SessionActivity } from "@lightspeed-ai/sdk";
 import type { BotControllerSnapshot, BotControllerStatus, BotView } from "@/api";
 import { cn } from "@/lib/utils";
@@ -72,12 +72,12 @@ export function StatusDot({ tone, className }: { tone: BotTone; className?: stri
 }
 
 export function BotStatusBadge({ status }: { status?: BotControllerStatus }) {
-  if (!status) return <Badge variant="outline">starting</Badge>;
-  if (status === "degraded") return <Badge variant="destructive">needs attention</Badge>;
-  if (status === "budget_exhausted") return <Badge variant="destructive">out of budget</Badge>;
-  if (status === "idle") return <Badge variant="secondary">idle</Badge>;
-  if (status === "delivering_event") return <Badge variant="secondary">working</Badge>;
-  return <Badge variant="outline">{status.replaceAll("_", " ")}</Badge>;
+  if (!status) return <Badge outline>starting</Badge>;
+  if (status === "degraded") return <Badge tone="danger">needs attention</Badge>;
+  if (status === "budget_exhausted") return <Badge tone="danger">out of budget</Badge>;
+  if (status === "idle") return <Badge>idle</Badge>;
+  if (status === "delivering_event") return <Badge>working</Badge>;
+  return <Badge outline>{status.replaceAll("_", " ")}</Badge>;
 }
 
 /** A titled block of the bot workspace. */

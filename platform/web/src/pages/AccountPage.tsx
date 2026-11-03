@@ -2,16 +2,12 @@ import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { authClient, useLoginConfig, type SessionUser } from "@/auth";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
+import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { PageHeader } from "@/components/page";
 import { useTheme, type Theme } from "@/lib/theme";
 
@@ -48,9 +44,7 @@ function ProfileCard({ user }: { user: SessionUser }) {
 
   return (
     <Card id="profile" className="scroll-mt-6">
-      <CardHeader>
-        <CardTitle>Profile</CardTitle>
-      </CardHeader>
+      <CardHeader title="Profile" />
       <CardContent>
         <form onSubmit={submit} className="grid max-w-md gap-4">
           <Field>
@@ -124,10 +118,7 @@ function PasswordCard() {
 
   return (
     <Card id="security" className="scroll-mt-6">
-      <CardHeader>
-        <CardTitle>Password</CardTitle>
-        <CardDescription>Other sessions are signed out after a change.</CardDescription>
-      </CardHeader>
+      <CardHeader title="Password" description="Other sessions are signed out after a change." />
       <CardContent>
         <form onSubmit={submit} className="grid max-w-md gap-4">
           <Field>
@@ -190,9 +181,7 @@ function ThemeCard() {
 
   return (
     <Card id="appearance" className="scroll-mt-6">
-      <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-      </CardHeader>
+      <CardHeader title="Appearance" />
       <CardContent className="flex gap-2">
         {options.map(({ value, label, icon: Icon }) => (
           <Button

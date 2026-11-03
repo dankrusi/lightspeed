@@ -13,7 +13,8 @@ import {
   writeRunChoice,
   type RunChoice,
 } from "@/lib/composer-model";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { readSessionDraft, writeSessionDraft } from "@/lib/sessions/draft";
@@ -327,10 +328,10 @@ export function SessionComposer({
               <TriangleAlert className="mt-px size-3.5 shrink-0" aria-hidden />
               <span className="min-w-0 flex-1 py-px wrap-break-word">{item.text}</span>
               {item.dismiss && (
-                <Button type="button" variant="ghost" size="icon-xs" aria-label="Dismiss" className="text-current hover:bg-foreground/10 hover:text-current"
+                <IconButton size="xs" label="Dismiss" className="text-current hover:bg-foreground/10 hover:text-current"
                   onClick={item.dismiss}>
                   <X />
-                </Button>
+                </IconButton>
               )}
             </div>
           ))}
@@ -368,11 +369,11 @@ export function SessionComposer({
                       event.target.value = "";
                       textarea.current?.focus();
                     }} />
-                  <Button type="button" variant="ghost" size="icon-sm" aria-label="Attach files"
+                  <IconButton size="sm" label="Attach files"
                     title={`Attach files. ${ATTACHMENT_SUMMARY}. You can also drop or paste them.`}
                     className="text-muted-foreground hover:text-foreground" onClick={() => fileInput.current?.click()}>
                     <Plus />
-                  </Button>
+                  </IconButton>
                 </>
               )}
               {modelChoice && model && !disabled && (
@@ -392,23 +393,23 @@ export function SessionComposer({
                   demo={isDemoDictation} onStart={startVoice} />
               )}
               {runActive && canStop && (
-                <Button type="button" variant="outline" size="icon-sm" onClick={onStop} disabled={stopping}
-                  aria-label={stopping ? "Stopping run" : "Stop run"}
+                <IconButton variant="outline" size="sm" onClick={onStop} disabled={stopping}
+                  label={stopping ? "Stopping run" : "Stop run"}
                   title={stopping ? "Stopping the active run…" : "Stop the active run"}>
                   {stopping ? <LoaderCircle className="animate-spin" /> : <Square className="size-3 fill-current" />}
-                </Button>
+                </IconButton>
               )}
               {!disabled && (
                 <div className="flex shrink-0">
-                  <Button type="button" size="icon-sm" onClick={() => submit(false)}
+                  <IconButton variant="primary" size="sm" onClick={() => submit(false)}
                     disabled={!hasContent && !voiceCanSubmit}
-                    aria-label={sendLabel} title={sendTitle}
+                    label={sendLabel} title={sendTitle}
                     className={cn(runActive && "rounded-r-none")}>
                     {pendingSubmit ? <LoaderCircle className="animate-spin" /> : <ArrowUp />}
-                  </Button>
+                  </IconButton>
                   {runActive && (
                     <Menu side="top" align="end" className="w-72" trigger={({ open, toggle }) => (
-                      <Button type="button" size="icon-sm" aria-label="Queue or steer" disabled={!hasContent && !voiceCanSubmit}
+                      <Button type="button" size="sm" aria-label="Queue or steer" disabled={!hasContent && !voiceCanSubmit}
                         className="w-5 rounded-l-none border-l border-l-primary-foreground/20"
                         aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
                         <ChevronDown className="size-3" />

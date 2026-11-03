@@ -56,7 +56,7 @@ const limitsToggle = '[aria-label="Customize code mode limits"]';
 
 it("enables all granted tools by default and reveals only three optional limits", async () => {
   await setup();
-  expect(container.querySelector(featureToggle)?.getAttribute("aria-checked")).toBe("false");
+  expect(container.querySelector<HTMLInputElement>(featureToggle)?.checked).toBe(false);
   await click(featureToggle);
   expect(current).toEqual({ features: { codeMode: {} } });
   expect(error).toBeNull();

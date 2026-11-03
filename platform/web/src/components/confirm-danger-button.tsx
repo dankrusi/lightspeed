@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 
 /// Destructive action with a confirmation step, shared by model provider and
 /// GitHub App details.
@@ -40,7 +40,7 @@ export function ConfirmDangerButton({
             </Button>
             <Button
               type="button"
-              variant="destructive"
+              variant="danger"
               onClick={() => {
                 setOpen(false);
                 onConfirm();

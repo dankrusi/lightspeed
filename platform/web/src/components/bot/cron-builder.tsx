@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 

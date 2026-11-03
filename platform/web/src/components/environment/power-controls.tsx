@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { EnvironmentPowerStateView } from "@lightspeed-ai/sdk";
 import { api, type Environment } from "@/api";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 
 const OPTIONS: Array<[EnvironmentPowerStateView, string]> = [
   ["running", "Resume"],

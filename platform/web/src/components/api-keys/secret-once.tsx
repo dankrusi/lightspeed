@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 /** Title and description of a create dialog once it shows the new key's secret. */
 export const API_KEY_SECRET_TITLE = "Copy your API key";

@@ -13,9 +13,9 @@ import {
   type BotStateView,
   type BotView,
 } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { cn } from "@/lib/utils";
 import { SendEventDialog } from "./send-event-dialog";
@@ -372,13 +372,13 @@ function EventRow({
         </span>
         <span className="flex shrink-0 items-center gap-1.5">
           {batchSize > 1 && (
-            <Badge variant="outline" title={(active ?? recent)?.deliveryId}>
+            <Badge outline title={(active ?? recent)?.deliveryId}>
               batch of {batchSize}
             </Badge>
           )}
-          {hops > 0 && <Badge variant="outline">{hops} hop{hops === 1 ? "" : "s"}</Badge>}
+          {hops > 0 && <Badge outline>{hops} hop{hops === 1 ? "" : "s"}</Badge>}
           <Badge
-            variant={outcomeVariant(outcome, working)}
+            {...outcomeBadge(outcome, working)}
             title={event.resolvedAtMs != null ? `resolved ${timeLabel(event.resolvedAtMs)}` : undefined}
           >
             {chip}
@@ -427,14 +427,14 @@ function EventRow({
   );
 }
 
-function outcomeVariant(
+function outcomeBadge(
   outcome: BotEventOutcome | null,
   working: boolean,
-): "destructive" | "secondary" | "outline" | "default" {
-  if (outcome === "run_failed" || outcome === "blocked") return "destructive";
-  if (outcome === "handled") return "secondary";
-  if (outcome === null && working) return "default";
-  return "outline";
+): { tone?: "danger"; outline?: boolean } {
+  if (outcome === "run_failed" || outcome === "blocked") return { tone: "danger" };
+  if (outcome === "handled") return {};
+  if (outcome === null && working) return {};
+  return { outline: true };
 }
 
 function flushLabel(flushAtMs: number): string {

@@ -9,12 +9,13 @@ import { API_KEY_SECRET_DESCRIPTION, API_KEY_SECRET_TITLE, ApiKeySecret, ApiKeyS
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { ReadError } from "@/components/read-error";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import {
   Table,
   TableActionsCell,
@@ -111,24 +112,23 @@ export function AdminApiKeysPage() {
                       {key.lastUsedAtMs == null ? "Never" : formatTimestamp(key.lastUsedAtMs)}
                     </TableCell>
                     <TableCell>
-                      {revoked ? <Badge variant="outline">revoked</Badge> : <Badge variant="secondary">active</Badge>}
+                      {revoked ? <Badge outline>revoked</Badge> : <Badge>active</Badge>}
                     </TableCell>
                     <TableActionsCell>
                       {!revoked && (
-                        <Button variant="ghost" size="icon-sm" aria-label={`Rotate ${key.displayName ?? key.keyPrefix}`} onClick={() => setRotatingKey(key)}>
+                        <IconButton size="sm" label={`Rotate ${key.displayName ?? key.keyPrefix}`} onClick={() => setRotatingKey(key)}>
                           <RotateCw />
-                        </Button>
+                        </IconButton>
                       )}
                       {!revoked && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
+                        <IconButton
+                          size="sm"
                           className="text-destructive"
-                          aria-label={`Revoke ${key.displayName ?? key.keyPrefix}`}
+                          label={`Revoke ${key.displayName ?? key.keyPrefix}`}
                           onClick={() => setRevokingKey(key)}
                         >
                           <ShieldOff />
-                        </Button>
+                        </IconButton>
                       )}
                     </TableActionsCell>
                   </TableRow>
@@ -160,7 +160,7 @@ export function AdminApiKeysPage() {
           <Button type="button" variant="outline" onClick={() => setRevokingKey(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               if (revokingKey) revoke.mutate(revokingKey.keyPrefix);
               setRevokingKey(null);
@@ -298,7 +298,7 @@ function CreateKeyDialog({
                 like this Platform.
               </span>
             </Label>
-            <Switch id="admin-key-assert-actor" checked={assertActor} onCheckedChange={setAssertActor} />
+            <Switch id="admin-key-assert-actor" checked={assertActor} onChange={(event) => setAssertActor(event.target.checked)} />
           </div>
           {create.error && <p className="text-sm text-destructive">{create.error.message}</p>}
         </form>

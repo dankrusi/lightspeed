@@ -18,18 +18,19 @@ import {
   type SecretsInventory,
 } from "@/api";
 import { TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { EmptyState, LoadingNote, PageHeader, SectionHeader, ShowHiddenToggle, UniverseNotFound } from "@/components/page";
 import type { EnvironmentIdlePolicyView } from "@lightspeed-ai/sdk";
 import { EnvironmentPowerControls } from "@/components/environment/power-controls";
@@ -221,7 +222,7 @@ function EnvironmentList({ universeId }: { universeId: string }) {
           </Button>
         )}
         <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          <Switch checked={showClosed} onCheckedChange={setShowClosed} />
+          <Switch checked={showClosed} onChange={(event) => setShowClosed(event.target.checked)} />
           Show closed environments
         </label>
       </div>
@@ -508,20 +509,19 @@ function EnvironmentCredentials({
                   {environmentCredentialSourceLabel(credential.source, secrets)}
                 </span>
                 {!available && (
-                  <Badge variant="outline" className="border-destructive/50 text-destructive">
+                  <Badge outline className="border-destructive/50 text-destructive">
                     unavailable
                   </Badge>
                 )}
                 {writable && (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
+                  <IconButton
+                    size="sm"
                     className="text-destructive"
-                    aria-label={`Unassign ${credential.envName}`}
+                    label={`Unassign ${credential.envName}`}
                     onClick={() => setUnassigning(credential.envName)}
                   >
                     <Trash2 />
-                  </Button>
+                  </IconButton>
                 )}
               </div>
             );
@@ -539,7 +539,7 @@ function EnvironmentCredentials({
           <Button type="button" variant="outline" onClick={() => setUnassigning(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               // Its outcome shows on the list itself: the row goes, or the error line appears.
               if (unassigning) unbind.mutate(unassigning, { onSettled: () => setUnassigning(null) });
@@ -731,7 +731,7 @@ function RegistrationKeys({
                     {key.keyPrefix}… · {key.registrationKeyId}
                   </p>
                 </div>
-                <Badge variant="outline">{key.identityMode}</Badge>
+                <Badge outline>{key.identityMode}</Badge>
                 <span className="text-xs text-muted-foreground">
                   {key.activeEnvironmentCount} active / {key.registeredEnvironmentCount} total
                   {key.maxActiveEnvironments ? ` · limit ${key.maxActiveEnvironments}` : ""}
@@ -743,9 +743,9 @@ function RegistrationKeys({
                   {key.expiresAtMs ? ` · expires ${relativeTime(key.expiresAtMs).replace(" ago", "")}` : ""}
                 </span>
                 {key.status === "active" ? (
-                  <Badge variant="secondary">active</Badge>
+                  <Badge>active</Badge>
                 ) : (
-                  <Badge variant="outline">{key.status}</Badge>
+                  <Badge outline>{key.status}</Badge>
                 )}
                 {key.status !== "revoked" && (
                   <Button variant="outline" size="xs" onClick={() => setEditing(key)}>
@@ -825,7 +825,7 @@ function RevokeRegistrationKeyButton({
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>Keep</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => revoke.mutate(undefined, { onSuccess: () => setOpen(false) })}
             disabled={revoke.isPending}
           >
@@ -885,7 +885,7 @@ function RotateRegistrationKeyButton({
         description="The current secret stops admitting new daemons at once; give the new one to the machines that should still register. Daemons that already registered keep reconnecting by their own identity."
         footer={<>
           <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Keep</Button>
-          <Button type="button" variant="destructive" onClick={() => rotate.mutate()} disabled={rotate.isPending}>
+          <Button type="button" variant="danger" onClick={() => rotate.mutate()} disabled={rotate.isPending}>
             {rotate.isPending ? "Rotating…" : "Rotate key"}
           </Button>
         </>}
@@ -1231,9 +1231,9 @@ function ProviderBindings({ bindings }: { bindings: EnvironmentProviderBinding[]
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium">{humanizeIdentifier(binding.providerId)}</p>
                     {binding.enabled ? (
-                      <Badge variant="secondary">enabled</Badge>
+                      <Badge>enabled</Badge>
                     ) : (
-                      <Badge variant="outline" className="border-destructive/50 text-destructive">disabled</Badge>
+                      <Badge outline className="border-destructive/50 text-destructive">disabled</Badge>
                     )}
                   </div>
                   <p className="mt-2 font-mono text-xs text-muted-foreground">
@@ -1540,9 +1540,9 @@ function CreateEnvironmentDialog({
                 <Switch
                   id="environment-custom-idle"
                   checked={customIdle}
-                  onCheckedChange={(checked) => {
-                    setCustomIdle(checked);
-                    if (checked) resetIdle(selectedTemplate);
+                  onChange={(event) => {
+                    setCustomIdle(event.target.checked);
+                    if (event.target.checked) resetIdle(selectedTemplate);
                   }}
                 />
                 <FieldLabel htmlFor="environment-custom-idle">
@@ -1624,7 +1624,7 @@ function RegisterExternalEnvironmentDialog({
   return (
     <>
       <Button
-        variant={suggestedEndpoint && !alreadyRegistered ? "default" : "outline"}
+        variant={suggestedEndpoint && !alreadyRegistered ? "primary" : "outline"}
         onClick={() => {
           setEndpoint(suggestedEndpoint && !alreadyRegistered ? suggestedEndpoint : "");
           setDisplayName(suggestedEndpoint && !alreadyRegistered ? "Local daemon" : "");

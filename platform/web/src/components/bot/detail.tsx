@@ -16,7 +16,7 @@ import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { SessionActionsMenu } from "@/components/session/session-actions-menu";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { activityTone, foldActivity } from "@/components/activity-dot";
 import type { SessionActivity } from "@lightspeed-ai/sdk";
 import { cn } from "@/lib/utils";
@@ -449,7 +449,7 @@ function ConversationMenu({
             <Button type="button" variant="outline" onClick={() => setResetOpen(false)}>
               Keep
             </Button>
-            <Button type="button" variant="destructive" disabled={!manage || reset.isPending} onClick={() => manage && reset.mutate()}>
+            <Button type="button" variant="danger" disabled={!manage || reset.isPending} onClick={() => manage && reset.mutate()}>
               {reset.isPending ? "Resetting…" : "Reset"}
             </Button>
           </>

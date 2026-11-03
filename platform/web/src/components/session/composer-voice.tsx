@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { LoaderCircle, Mic, MicOff, RotateCw, Square, X } from "lucide-react";
 import { MAX_DICTATION_SECONDS } from "@lightspeed-ai/platform-shared";
 import type { useDictation } from "@/lib/use-dictation";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +66,7 @@ export function VoiceControl({ voice, unavailableReason, settingsHref, demo, onS
         <MicOff className="size-3.5 shrink-0" aria-hidden />
         <span role="alert" className="max-w-28 truncate sm:max-w-64" title={voice.error}>{voice.error ?? "Dictation failed."}</span>
         {voice.canRetry
-          ? <PillButton label="Retry transcription" title="Retry transcription" onClick={voice.retry}><RotateCw /></PillButton>
+          ? <PillButton label="Retry transcription" onClick={voice.retry}><RotateCw /></PillButton>
           : <PillButton label="Dictate message" title="Try again" onClick={onStart}><RotateCw /></PillButton>}
         <PillButton label="Cancel dictation" title="Dismiss" onClick={voice.cancel}><X /></PillButton>
       </Pill>
@@ -75,11 +75,11 @@ export function VoiceControl({ voice, unavailableReason, settingsHref, demo, onS
   if (unavailableReason) {
     return (
       <Popover side="top" align="end" className="w-72 p-3 text-sm" trigger={({ open, toggle }) => (
-        <Button type="button" variant="ghost" size="icon-sm" aria-label="Dictate message" aria-disabled="true"
+        <IconButton size="sm" label="Dictate message" aria-disabled="true"
           aria-expanded={open} aria-haspopup="dialog" onClick={toggle}
           className="text-muted-foreground/50 hover:text-muted-foreground">
           <Mic />
-        </Button>
+        </IconButton>
       )}>
         <p className="font-medium">Dictation is unavailable</p>
         <p className="mt-1 text-xs text-muted-foreground">{unavailableReason}</p>
@@ -90,11 +90,11 @@ export function VoiceControl({ voice, unavailableReason, settingsHref, demo, onS
     );
   }
   return (
-    <Button type="button" variant="ghost" size="icon-sm" aria-label="Dictate message"
+    <IconButton size="sm" label="Dictate message"
       title={demo ? "Dictate (demo inserts a sample transcript)" : "Dictate. Stop inserts the text; Send or Enter sends after transcription; Esc discards."}
       className="text-muted-foreground hover:text-foreground" onClick={onStart}>
       <Mic />
-    </Button>
+    </IconButton>
   );
 }
 
@@ -114,10 +114,10 @@ function Pill({ tone, label, children }: { tone: "muted" | "recording" | "error"
 
 function PillButton({ label, title, onClick, children }: { label: string; title?: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <Button type="button" variant="ghost" size="icon-xs" aria-label={label} title={title ?? label}
+    <IconButton size="xs" label={label} title={title}
       className="text-current hover:bg-foreground/10 hover:text-current" onClick={onClick}>
       {children}
-    </Button>
+    </IconButton>
   );
 }
 

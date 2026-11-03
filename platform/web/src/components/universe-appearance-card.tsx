@@ -2,8 +2,11 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { UNIVERSE_ICONS, UNIVERSE_ICON_COLORS, type UniverseIconName, type UniverseIconColor } from "@lightspeed-ai/platform-shared";
 import { api, type Universe } from "@/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { UniverseIcon } from "@/components/universe-icon";
 
 export function UniverseAppearanceCard({ universe }: { universe: Universe }) {
@@ -24,10 +27,7 @@ export function UniverseAppearanceCard({ universe }: { universe: Universe }) {
   }
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-        <CardDescription>The icon and color shown in the universe switcher for everyone.</CardDescription>
-      </CardHeader>
+      <CardHeader title="Appearance" description="The icon and color shown in the universe switcher for everyone." />
       <CardContent>
         <form onSubmit={submit} className="grid max-w-md gap-5">
           <div className="flex items-center gap-3" aria-label="Universe appearance preview">
@@ -38,12 +38,12 @@ export function UniverseAppearanceCard({ universe }: { universe: Universe }) {
             <legend className="mb-2 text-sm font-medium">Icon</legend>
             <div className="flex flex-wrap gap-2">
               {UNIVERSE_ICONS.map(choice => (
-                <Button key={choice} type="button" variant="outline" size="icon" aria-label={`${label(choice)} icon`}
-                  title={label(choice)} aria-pressed={icon === choice}
+                <IconButton key={choice} variant="outline" label={`${label(choice)} icon`}
+                  aria-pressed={icon === choice}
                   className={icon === choice ? "ring-2 ring-ring" : undefined}
                   onClick={() => setIcon(choice)}>
                   <UniverseIcon icon={choice} iconColor={iconColor} className="size-7 rounded-md" />
-                </Button>
+                </IconButton>
               ))}
             </div>
           </fieldset>
@@ -51,12 +51,12 @@ export function UniverseAppearanceCard({ universe }: { universe: Universe }) {
             <legend className="mb-2 text-sm font-medium">Color</legend>
             <div className="flex flex-wrap gap-2">
               {UNIVERSE_ICON_COLORS.map(choice => (
-                <Button key={choice} type="button" variant="outline" size="icon" aria-label={`${label(choice)} color`}
-                  title={label(choice)} aria-pressed={iconColor === choice}
+                <IconButton key={choice} variant="outline" label={`${label(choice)} color`}
+                  aria-pressed={iconColor === choice}
                   className={iconColor === choice ? "ring-2 ring-ring" : undefined}
                   onClick={() => setIconColor(choice)}>
                   <UniverseIcon icon={icon} iconColor={choice} className="size-7 rounded-md" />
-                </Button>
+                </IconButton>
               ))}
             </div>
           </fieldset>

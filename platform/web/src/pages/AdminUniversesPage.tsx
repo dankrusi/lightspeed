@@ -13,10 +13,10 @@ import {
   type UniverseSlugSyncResult,
 } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   IdText,
   Table,
@@ -143,7 +143,7 @@ export function AdminUniversesPage() {
                   <TableTitleCell title={universe.name} subtitle={universe.slug} />
                   <TableCell>
                     <Badge
-                      variant={universe.status === "active" ? "secondary" : "outline"}
+                      outline={universe.status !== "active"}
                     >
                       {universe.status}
                     </Badge>
@@ -281,7 +281,7 @@ export function AdminUniversesPage() {
           <Button type="button" variant="outline" onClick={() => setPurging(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               if (purging) purge.mutate(purging.id);
               setPurging(null);
@@ -304,7 +304,7 @@ export function AdminUniversesPage() {
           <Button type="button" variant="outline" onClick={() => setDeletingOrphan(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               if (deletingOrphan) deleteOrphan.mutate(deletingOrphan.universeId);
               setDeletingOrphan(null);
@@ -335,17 +335,17 @@ function EngineBadge({ status }: { status: "ok" | "missing" | "unchecked" | unde
     return <span className="text-muted-foreground">—</span>;
   }
   if (status === "ok") {
-    return <Badge variant="secondary">ok</Badge>;
+    return <Badge>ok</Badge>;
   }
   if (status === "missing") {
     return (
-      <Badge variant="outline" className="border-destructive/50 text-destructive">
+      <Badge outline className="border-destructive/50 text-destructive">
         missing
       </Badge>
     );
   }
   return (
-    <Badge variant="outline" title="Custom gateway URL — not checked here">
+    <Badge outline title="Custom gateway URL — not checked here">
       unchecked
     </Badge>
   );

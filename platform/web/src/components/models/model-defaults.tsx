@@ -4,8 +4,8 @@ import { AGENT_MODEL_API_KINDS, modelDefaultsPutSchema } from "@lightspeed-ai/pl
 import { api, ApiError, type ModelConfig, type ModelDefaults, type ModelDefaultsPutParams } from "@/api";
 import { modelDefaultsKey, modelLabel, useModelDefaults, useModelDiscovery } from "@/lib/model-defaults";
 import { summarizeProviderReadiness } from "@/lib/provider-readiness";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";

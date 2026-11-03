@@ -2,7 +2,7 @@ import { useActionPermissions } from "@/lib/permissions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { EnvironmentPowerControls } from "@/components/environment/power-controls";
 import {
   describeIdlePolicy,
@@ -76,7 +76,7 @@ export function BotEnvironmentCard({
           <KeyValue
             label="Status"
             value={
-              <Badge variant={GONE.has(current.status) ? "destructive" : current.status === "ready" ? "secondary" : "outline"}>
+              <Badge tone={GONE.has(current.status) ? "danger" : undefined} outline={!GONE.has(current.status) && current.status !== "ready"}>
                 {current.status}
               </Badge>
             }

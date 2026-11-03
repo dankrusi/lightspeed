@@ -6,7 +6,7 @@ import {
   type ComposerModelChoice,
   type RunChoice,
 } from "@/lib/composer-model";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { cn } from "@/lib/utils";
 

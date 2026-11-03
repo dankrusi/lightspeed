@@ -21,10 +21,12 @@ import {
 } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { DetailPrompt, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";
 import { useActiveUniverse } from "@/lib/universes";
@@ -191,15 +193,14 @@ function WorkspacePane({
       <div className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
         <h1 className="text-sm font-semibold">Workspaces</h1>
         {canCreate && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
+          <IconButton
+            size="sm"
             className="ml-auto"
             onClick={() => setCreateOpen(true)}
-            aria-label="New workspace"
+            label="New workspace"
           >
             <Plus />
-          </Button>
+          </IconButton>
         )}
       </div>
       <div className="flex min-w-0 items-center gap-2 border-b p-3">
@@ -493,16 +494,16 @@ function FileDetail({
         </span>
         <div className="ml-auto flex shrink-0 basis-full items-center justify-end gap-1.5 sm:basis-auto">
           {blobLink && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              nativeButton={false}
-              render={<a href={appHref(blobLink)} target="_blank" rel="noopener noreferrer" />}
+            <a
+              className={buttonClasses("ghost", "sm", undefined, true)}
+              href={appHref(blobLink)}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Open in blob viewer (new tab)"
               title={dirty ? "Open saved version in blob viewer (new tab)" : "Open in blob viewer (new tab)"}
             >
               <ExternalLink />
-            </Button>
+            </a>
           )}
           {decoded?.kind === "text" && (
             <MarkdownViewToggle preview={preview} onPreviewChange={onPreviewChange} />

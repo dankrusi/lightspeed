@@ -18,13 +18,13 @@ import {
   type McpServer,
   type McpServerAuthDiscovery,
 } from "@/api";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { TableCell } from "@/components/ui/table";
@@ -688,7 +688,7 @@ function ServerDialog({
           <Label className="flex items-start gap-3 font-normal">
             <Checkbox
               checked={allowPrivateNetwork}
-              onCheckedChange={(checked) => setAllowPrivateNetwork(checked === true)}
+              onChange={(event) => setAllowPrivateNetwork(event.target.checked)}
             />
             <span>
               <span className="block text-sm font-medium">Allow private-network egress</span>
@@ -807,7 +807,7 @@ function ServerDialog({
                   aria-label="Enabled"
                   aria-describedby="mcp-status"
                   checked={status === "active"}
-                  onCheckedChange={(checked) => setStatus(checked ? "active" : "disabled")}
+                  onChange={(event) => setStatus(event.target.checked ? "active" : "disabled")}
                 />
               </div>
               {serverFields}
@@ -1007,7 +1007,7 @@ function OAuthDialog({
       title={`Connect ${server?.displayName ?? server?.serverId} with OAuth`}
       description="Sign in with the provider once; Lightspeed keeps the connection for this universe and every session that uses the server."
       footer={
-        <Button type="button" variant={complete.data ? "default" : "outline"} onClick={() => onOpenChange(false)}>
+        <Button type="button" variant={complete.data ? "primary" : "outline"} onClick={() => onOpenChange(false)}>
           {complete.data ? "Done" : "Close"}
         </Button>
       }

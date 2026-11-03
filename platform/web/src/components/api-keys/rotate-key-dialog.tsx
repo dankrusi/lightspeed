@@ -3,7 +3,7 @@ import type { DeploymentApiKeyCreateResponse, DeploymentApiKeyView } from "@ligh
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { api } from "@/api";
 import { API_KEY_SECRET_DESCRIPTION, API_KEY_SECRET_TITLE, ApiKeySecret, ApiKeySecretDone } from "./secret-once";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 
 export function RotateKeyDialog({ apiKey, basePath, onClose, onRotated }: {
   apiKey: DeploymentApiKeyView;

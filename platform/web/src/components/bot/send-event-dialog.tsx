@@ -3,10 +3,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useActionPermissions } from "@/lib/permissions";
 import { api } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 
 export function SendEventDialog({
   universeId,

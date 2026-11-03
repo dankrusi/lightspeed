@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
 
 export function PdfPreview({
   bytes,
@@ -40,7 +40,7 @@ export function PdfPreview({
       <a
         href={url}
         download={name.split("/").at(-1) || "document.pdf"}
-        className={buttonVariants({ variant: "outline", size: "sm" })}
+        className={buttonClasses("outline", "sm")}
       >
         <Download />
         Download PDF

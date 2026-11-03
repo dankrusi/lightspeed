@@ -2,8 +2,8 @@ import type { DeploymentDeletedSessionsListResponse, DeploymentSessionPurgeRespo
 import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { LoadingNote } from "@/components/page";
 
@@ -89,10 +89,10 @@ function DeletedSessionsContent({ universe, onClose }: { universe: Universe; onC
     description="These sessions are hidden from everyone in the universe. Select sessions to purge, or purge all deleted sessions in this universe."
     footer={confirmation ? <>
       <Button variant="outline" disabled={busy} onClick={() => { setConfirmation(null); purge.reset(); }}>Back</Button>
-      <Button variant="destructive" disabled={busy} onClick={() => purge.mutate(confirmation.ids)}>{purge.isPending ? "Purging…" : purge.data?.failures.length ? "Retry failed" : confirmation.all ? "Purge all" : "Purge selected"}</Button>
+      <Button variant="danger" disabled={busy} onClick={() => purge.mutate(confirmation.ids)}>{purge.isPending ? "Purging…" : purge.data?.failures.length ? "Retry failed" : confirmation.all ? "Purge all" : "Purge selected"}</Button>
     </> : <>
       <Button variant="outline" disabled={busy || rows.length === 0} onClick={() => { purge.reset(); prepareAll.mutate(); }}>{prepareAll.isPending ? "Collecting sessions…" : "Purge all…"}</Button>
-      <Button variant="destructive" disabled={busy || selectedIds.length === 0} onClick={reviewSelected}>Purge selected…</Button>
+      <Button variant="danger" disabled={busy || selectedIds.length === 0} onClick={reviewSelected}>Purge selected…</Button>
     </>}
   >
     <div className="grid gap-4">
@@ -108,14 +108,14 @@ function DeletedSessionsContent({ universe, onClose }: { universe: Universe; onC
         {sessions.error && <p role="alert">{sessions.error.message}</p>}
         {prepareAll.error && <p role="alert" className="text-destructive">{prepareAll.error.message}</p>}
         {rows.length > 0 && <label className="flex items-center gap-2 text-sm">
-          <Checkbox checked={allLoadedSelected} indeterminate={!allLoadedSelected && selectedIds.length > 0} disabled={busy} onCheckedChange={(checked) => setSelected(checked === true ? new Set(rows.map((session) => session.sessionId)) : new Set())} />
+          <Checkbox checked={allLoadedSelected} indeterminate={!allLoadedSelected && selectedIds.length > 0} disabled={busy} onChange={(event) => setSelected(event.target.checked ? new Set(rows.map((session) => session.sessionId)) : new Set())} />
           Select loaded sessions <span className="ml-auto text-muted-foreground">{selectedIds.length} selected</span>
         </label>}
         <div className="max-h-96 space-y-3 overflow-auto">
           {rows.map((session) => <label key={session.sessionId} className="flex items-center gap-3 rounded-lg border p-3">
-            <Checkbox aria-label={`Select session ${session.sessionId}`} checked={selected.has(session.sessionId)} disabled={busy} onCheckedChange={(checked) => setSelected((current) => {
+            <Checkbox aria-label={`Select session ${session.sessionId}`} checked={selected.has(session.sessionId)} disabled={busy} onChange={(event) => setSelected((current) => {
               const next = new Set(current);
-              if (checked === true) next.add(session.sessionId); else next.delete(session.sessionId);
+              if (event.target.checked) next.add(session.sessionId); else next.delete(session.sessionId);
               return next;
             })} />
             <div className="min-w-0"><div className="truncate">{session.displayName ?? session.sessionId}</div><div className="text-xs text-muted-foreground">{new Date(session.deletedAtMs).toLocaleString()}</div></div>

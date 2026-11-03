@@ -36,13 +36,14 @@ import { modelFromConfig } from "@/lib/model-defaults";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Label } from "@/components/ui/label";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import { ProgressSteps } from "@/components/ui/progress-steps";
 import { useSessionConfigEditorOptions } from "@/lib/sessions/editor-options";
 import { setupResourceFeatureError } from "@/lib/sessions/resource-features";
@@ -565,16 +566,15 @@ function Wizard({
                           }
                           idPrefix={`wakeup-${draft.key}`}
                           actions={(
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label="Remove trigger"
+                            <IconButton
+                              size="sm"
+                              label="Remove trigger"
                               onClick={() =>
                                 setWakeups((current) => current.filter((entry) => entry.key !== draft.key))
                               }
                             >
                               <Trash2 />
-                            </Button>
+                            </IconButton>
                           )}
                         />
                       );
@@ -605,7 +605,8 @@ function Wizard({
                     <Switch
                       id="new-bot-emit"
                       checked={emit}
-                      onCheckedChange={(checked) => {
+                      onChange={(event) => {
+                        const checked = event.target.checked;
                         setEmit(checked);
                         if (checked && inboxMode === "off") setInbox("any");
                       }}
@@ -760,7 +761,7 @@ function Wizard({
                         Ask it in Chat to add a schedule or rewrite its job. Off: it can only look.
                       </span>
                     </Label>
-                    <Switch id="new-bot-self-config" checked={selfConfig} onCheckedChange={setSelfConfig} />
+                    <Switch id="new-bot-self-config" checked={selfConfig} onChange={(event) => setSelfConfig(event.target.checked)} />
                   </div>
                 </div>
               </section>

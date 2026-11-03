@@ -3,8 +3,9 @@
 /// wins, which is exactly what the put will store.
 import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 export interface MetadataRow {
   key: string;
@@ -101,16 +102,14 @@ export function MetadataEditor({
             maxLength={METADATA_MAX_VALUE_BYTES}
             disabled={disabled}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={`Remove metadata row ${index + 1}`}
+          <IconButton
+            size="sm"
+            label={`Remove metadata row ${index + 1}`}
             disabled={disabled}
             onClick={() => onChange(rows.filter((_, i) => i !== index))}
           >
             <X />
-          </Button>
+          </IconButton>
         </div>
       ))}
       <div>

@@ -10,12 +10,13 @@ import {
   type ModelOption,
   type SecretProvider,
 } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import { ConfirmDangerButton } from "@/components/confirm-danger-button";
 import { providerEndpoint } from "./use-model-providers";
 
@@ -709,19 +710,17 @@ export function ProviderModelList({
             browser.
           </p>
         </div>
-        <Button
-          type="button"
+        <IconButton
           variant="outline"
-          size="icon-sm"
-          aria-label="Refresh available models"
-          title="Refresh available models"
+          size="sm"
+          label="Refresh available models"
           disabled={discovery.isFetching}
           onClick={() => void discovery.refetch()}
         >
           <RefreshCw
             className={discovery.isFetching ? "animate-spin" : undefined}
           />
-        </Button>
+        </IconButton>
       </div>
 
       {allModels.length > 8 && (
@@ -776,7 +775,7 @@ export function ProviderModelList({
                 {model.apiKinds.map((apiKind) => (
                   <Badge
                     key={apiKind}
-                    variant="outline"
+                    outline
                     className="text-[10px]"
                   >
                     {formatApiKind(apiKind)}

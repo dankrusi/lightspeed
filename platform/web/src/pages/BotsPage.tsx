@@ -16,7 +16,7 @@ import { BotCreateDialog } from "@/pages/BotCreatePage";
 import { BotAvatar } from "@/components/bot/face";
 import { StatusDot, relativeTime, type BotTone } from "@/components/bot/status";
 import { BotFace } from "@/components/icons/bot";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { DetailPrompt, ListNote, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";
 import { useActiveUniverse } from "@/lib/universes";
@@ -153,15 +153,14 @@ function BotsPane({
         <h1 className="text-sm font-semibold">Bots</h1>
         {bots.data && <span className="text-xs text-muted-foreground">{roster.length}</span>}
         {create && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
+          <IconButton
+            size="sm"
             className="ml-auto"
             onClick={onCreate}
-            aria-label="New bot"
+            label="New bot"
           >
             <Plus />
-          </Button>
+          </IconButton>
         )}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">

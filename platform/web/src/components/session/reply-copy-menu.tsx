@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import { Check, ChevronDown, Copy, TriangleAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { replyFormatted, replyMarkdown } from "./reply-copy";

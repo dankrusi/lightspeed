@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
 import { usePlatformAdmin } from "@/lib/permissions";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 
 /** Mount for one deletion attempt; keep a failed purge retryable after soft deletion. */
 export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted }: {
@@ -50,21 +50,21 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
       : "This hides the session and its history from all universe members, including admins. History is retained until a platform admin permanently deletes it."}
     footer={<>
       <Button type="button" variant="outline" disabled={deletion.isPending} onClick={dismiss}>{softDeleted ? "Done" : "Cancel"}</Button>
-      <Button type="button" variant="destructive" disabled={deletion.isPending} onClick={() => deletion.mutate()}>
+      <Button type="button" variant="danger" disabled={deletion.isPending} onClick={() => deletion.mutate()}>
         {deletion.isPending ? "Deleting…" : permanent ? softDeleted ? "Retry permanent deletion" : "Permanently delete" : "Delete session"}
       </Button>
     </>}
   >
     <div className="grid gap-3">
       <label className="flex min-w-0 items-start gap-2 rounded-lg border p-3 text-sm">
-        <Checkbox checked={cascade} onCheckedChange={(checked) => setCascade(checked === true)} disabled={deletion.isPending || softDeleted} />
+        <Checkbox checked={cascade} onChange={(event) => setCascade(event.target.checked)} disabled={deletion.isPending || softDeleted} />
         <span className="min-w-0">
           <span className="block font-medium">Also delete forks and delegated children</span>
           <span className="block text-xs text-muted-foreground">Required if the session has history forks or delegated children. Every selected session must already be closed. Config-only clones are not included.</span>
         </span>
       </label>
       {platformAdmin && <label className="flex min-w-0 items-start gap-2 rounded-lg border p-3 text-sm">
-        <Checkbox checked={permanent} onCheckedChange={(checked) => setPermanent(checked === true)} disabled={deletion.isPending || softDeleted} />
+        <Checkbox checked={permanent} onChange={(event) => setPermanent(event.target.checked)} disabled={deletion.isPending || softDeleted} />
         <span className="min-w-0">
           <span className="block font-medium">Also permanently delete retained history</span>
           <span className="block text-xs text-muted-foreground">Platform admins only. Permanent deletion is recorded in the audit log.</span>

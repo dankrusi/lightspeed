@@ -25,7 +25,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { BotIcon } from "@/components/icons/bot";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MarkdownContent } from "@/components/session/markdown-content";
 import {
@@ -511,12 +511,10 @@ function DetailBlock({ value, tone = "default" }: { value: string; tone?: "defau
       >
         {value}
       </pre>
-      <Button
-        variant="ghost"
-        size="icon-xs"
+      <IconButton
+        size="xs"
         className="absolute right-2 top-2 bg-background/80"
-        aria-label={copied ? "Copied" : "Copy details"}
-        title={copied ? "Copied" : "Copy details"}
+        label={copied ? "Copied" : "Copy details"}
         onClick={() => {
           void navigator.clipboard.writeText(value).then(() => {
             setCopied(true);
@@ -525,7 +523,7 @@ function DetailBlock({ value, tone = "default" }: { value: string; tone?: "defau
         }}
       >
         {copied ? <Check /> : <Copy />}
-      </Button>
+      </IconButton>
     </div>
   );
 }

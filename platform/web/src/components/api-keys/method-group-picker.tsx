@@ -1,6 +1,6 @@
 import type { MethodGroup } from "@lightspeed-ai/sdk";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { METHOD_GROUPS, presetFor, UNIVERSE_KEY_PRESETS } from "@/lib/method-groups";
@@ -66,7 +66,7 @@ export function MethodGroupPicker({
             <Checkbox
               id={`${idPrefix}-group-${group}`}
               checked={chosen.has(group)}
-              onCheckedChange={(checked) => toggle(group, checked === true)}
+              onChange={(event) => toggle(group, event.target.checked)}
             />
             <Label htmlFor={`${idPrefix}-group-${group}`} className="text-sm font-normal">
               {METHOD_GROUPS[group].label}

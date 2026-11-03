@@ -19,12 +19,13 @@ import {
 } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
@@ -595,13 +596,12 @@ function ProfileSwitcher({
             </Button>
           </>
         ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            nativeButton={false} render={<Link to={`/u/${slug}/profiles/${encodeURIComponent(bot.profileId)}`} />}
+          <Link
+            className={buttonClasses("ghost", "sm")}
+            to={`/u/${slug}/profiles/${encodeURIComponent(bot.profileId)}`}
           >
             Open on the Profiles page <ArrowUpRight data-icon="inline-end" />
-          </Button>
+          </Link>
         )}
       </div>
       <FieldDescription>
@@ -972,7 +972,7 @@ function ToggleRow({
         {label}
         <span className="block text-xs font-normal text-muted-foreground">{hint}</span>
       </Label>
-      <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />
+      <Switch id={id} checked={checked} onChange={(event) => onCheckedChange(event.target.checked)} disabled={disabled} />
     </div>
   );
 }
@@ -1049,7 +1049,7 @@ function DangerSection({
                 </Button>
                 <Button
                   type="button"
-                  variant="destructive"
+                  variant="danger"
                   onClick={() => {
                     setConfirming(null);
                     close.mutate();
@@ -1070,7 +1070,7 @@ function DangerSection({
           retains its conversations, and frees the id{closed ? "." : " — it closes the bot first."} Environments and
           profiles are never deleted with a bot.
         </p>
-        <Button variant="destructive" size="sm" disabled={remove.isPending} onClick={() => setConfirming("delete")}>
+        <Button variant="danger" size="sm" disabled={remove.isPending} onClick={() => setConfirming("delete")}>
           {remove.isPending ? "Deleting…" : "Delete bot"}
         </Button>
         <Modal
@@ -1089,7 +1089,7 @@ function DangerSection({
               </Button>
               <Button
                 type="button"
-                variant="destructive"
+                variant="danger"
                 onClick={() => {
                   setConfirming(null);
                   remove.mutate();

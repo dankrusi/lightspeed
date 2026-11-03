@@ -1,6 +1,6 @@
 import { FileText, LoaderCircle, RotateCw, TriangleAlert, X } from "lucide-react";
 import { attachmentLabel, formatBytes, type ComposerAttachment } from "@/lib/composer-attachments";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { cn } from "@/lib/utils";
 
 /// Attached files above the message field. Each chip owns its state:
@@ -59,15 +59,15 @@ function AttachmentChip({ item, disabled, onRemove, onRetry }: {
       </span>
       <span className="flex shrink-0 items-center">
         {failed && (
-          <Button type="button" variant="ghost" size="icon-xs" aria-label={`Retry uploading ${item.name}`} title="Retry upload"
+          <IconButton size="xs" label={`Retry uploading ${item.name}`}
             disabled={disabled} onClick={() => onRetry(item.id)}>
             <RotateCw />
-          </Button>
+          </IconButton>
         )}
-        <Button type="button" variant="ghost" size="icon-xs" aria-label={`Remove ${item.name}`} title="Remove"
+        <IconButton size="xs" label={`Remove ${item.name}`}
           disabled={disabled} onClick={() => onRemove(item.id)}>
           <X />
-        </Button>
+        </IconButton>
       </span>
     </li>
   );

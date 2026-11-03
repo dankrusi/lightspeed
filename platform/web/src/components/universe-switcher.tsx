@@ -10,9 +10,9 @@ import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { memberships, universeHome, useUniverses } from "@/lib/universes";
 
 /// Top-of-sidebar universe switcher. Lists memberships only; platform

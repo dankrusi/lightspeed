@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { NewUniverseDialog } from "@/components/universe-switcher";
 import { CenteredNote } from "@/components/page";
 import { lastUniverse, memberships, universeHome, useUniverses } from "@/lib/universes";

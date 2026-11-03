@@ -32,9 +32,10 @@ import {
   type SessionSummary,
   type SessionView,
 } from "@/api";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { BotFaceIcon } from "@/components/icons/bot";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
@@ -48,7 +49,7 @@ import { SessionSettingsDialog } from "@/components/session/session-settings-she
 import { SessionHistoryLoader } from "@/components/session/history-loader";
 import { SetupEditorSection } from "@/components/session/setup-editor-section";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import {
   MessageScroller,
@@ -66,7 +67,7 @@ import { SessionResourceChips, useSessionResources } from "@/components/session/
 import { hasResources } from "@/lib/sessions/session-resources";
 import { findFileReference, filesByHandle } from "@/lib/file-references";
 import { appHref, blobHref } from "@/lib/blob-view";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import {
   ApprovalCards,
   QueuedRunsBar,
@@ -364,11 +365,10 @@ function SessionList({
           rootClassName="ml-auto"
           className="grid gap-4 p-4"
           trigger={({ open, toggle }) => (
-            <Button
-              variant="ghost"
-              size="icon-sm"
+            <IconButton
+              size="sm"
               className={cn("relative", activeFilterCount > 0 && "text-primary")}
-              aria-label={activeFilterCount > 0
+              label={activeFilterCount > 0
                 ? `Filter sessions, ${activeFilterCount} active`
                 : "Filter sessions"}
               aria-haspopup="dialog"
@@ -381,7 +381,7 @@ function SessionList({
                   {activeFilterCount}
                 </span>
               )}
-            </Button>
+            </IconButton>
           )}
         >
           <h2 className="text-sm font-semibold">Filter sessions</h2>
@@ -390,9 +390,9 @@ function SessionList({
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={showClosed}
-                onCheckedChange={(checked) => setPreferences((current) => ({
+                onChange={(event) => setPreferences((current) => ({
                   ...current,
-                  showClosed: checked === true,
+                  showClosed: event.target.checked,
                 }))}
               />
               Closed sessions
@@ -400,9 +400,9 @@ function SessionList({
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={showSubagents}
-                onCheckedChange={(checked) => setPreferences((current) => ({
+                onChange={(event) => setPreferences((current) => ({
                   ...current,
-                  showSubagents: checked === true,
+                  showSubagents: event.target.checked,
                 }))}
               />
               Sub-agent sessions
@@ -410,9 +410,9 @@ function SessionList({
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={showManagedSessions}
-                onCheckedChange={(checked) => setPreferences((current) => ({
+                onChange={(event) => setPreferences((current) => ({
                   ...current,
-                  showManagedSessions: checked === true,
+                  showManagedSessions: event.target.checked,
                 }))}
               />
               Managed sessions
@@ -436,7 +436,6 @@ function SessionList({
                 {filterEntries.map(([key, value]) => (
                   <Badge
                     key={key}
-                    variant="secondary"
                     className="max-w-full gap-1 font-mono text-[11px]"
                   >
                     <span className="truncate">{value ? `${key}=${value}` : key}</span>
@@ -478,9 +477,9 @@ function SessionList({
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox
                 checked={showSessionIds}
-                onCheckedChange={(checked) => setPreferences((current) => ({
+                onChange={(event) => setPreferences((current) => ({
                   ...current,
-                  showSessionIds: checked === true,
+                  showSessionIds: event.target.checked,
                 }))}
               />
               Show session IDs
@@ -491,7 +490,6 @@ function SessionList({
                 {metadataKeys.map((key) => (
                   <Badge
                     key={key}
-                    variant="secondary"
                     className="max-w-full gap-1 font-mono text-[11px]"
                   >
                     <span className="truncate">{key}</span>
@@ -526,32 +524,30 @@ function SessionList({
             </form>
           </div>
         </Popover>
-        {(canSelect || selecting) && <Button
-          variant="ghost"
-          size="icon-sm"
+        {(canSelect || selecting) && <IconButton
+          size="sm"
           className={cn(selecting && "text-primary")}
           onClick={() => (selecting ? exitSelecting() : setSelecting(true))}
-          aria-label={selecting ? "Exit selection" : "Select sessions"}
-          title={selecting ? "Exit selection" : "Select sessions to close or delete"}
+          label={selecting ? "Exit selection" : "Select sessions"}
+          title={selecting ? undefined : "Select sessions to close or delete"}
         >
           <ListChecks />
-        </Button>}
-        {canCreate && <Button
-          variant="ghost"
-          size="icon-sm"
+        </IconButton>}
+        {canCreate && <IconButton
+          size="sm"
           onClick={() => setCreateOpen(true)}
-          aria-label="New session"
+          label="New session"
         >
           <Plus />
-        </Button>}
+        </IconButton>}
       </div>
       {selecting && (
         <div className="flex shrink-0 flex-wrap items-center gap-2 border-b bg-muted/40 px-4 py-2 text-xs">
           <Checkbox
             checked={allVisibleSelected}
             disabled={selectingAll}
-            onCheckedChange={(checked) =>
-              setSelected(checked === true ? new Set(visibleIds) : new Set())
+            onChange={(event) =>
+              setSelected(event.target.checked ? new Set(visibleIds) : new Set())
             }
             aria-label="Select all listed sessions"
           />
@@ -713,7 +709,7 @@ function BulkActionDialog({
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button
               type="button"
-              variant="destructive"
+              variant="danger"
               onClick={() => {
                 setOpen(false);
                 onConfirm();
@@ -831,14 +827,14 @@ function SessionListItem({
         {!origin && <SharingMark access={session.access} quiet />}
         {origin && (
           <Badge
-            variant="outline"
+            outline
             title={`Sub-agent of ${origin.parentSessionId} (depth ${origin.depth}, profile ${origin.agent.profileId} rev ${origin.agent.revision})`}
           >
             sub-agent
           </Badge>
         )}
         {session.managed && (
-          <Badge className="shrink-0" variant="secondary" title={botManaged ? "Bot-managed session" : undefined}>
+          <Badge className="shrink-0" title={botManaged ? "Bot-managed session" : undefined}>
             {botManaged && <BotFaceIcon />}
             {botManaged ? "Bot" : "Managed"}
           </Badge>
@@ -877,12 +873,13 @@ function SessionListItem({
       {selecting ? (
         <label className={cn(rowClass, "cursor-pointer")} style={indent}>
           <span className="flex items-start gap-2">
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={() => onToggle(session.id)}
-              className="mt-0.5"
-              aria-label={`Select ${session.displayName ?? session.id}`}
-            />
+            <span className="mt-0.5">
+              <Checkbox
+                checked={isSelected}
+                onChange={() => onToggle(session.id)}
+                aria-label={`Select ${session.displayName ?? session.id}`}
+              />
+            </span>
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">{summary}</span>
           </span>
         </label>
@@ -1991,7 +1988,7 @@ export function SessionDetail({
             ) : (
               <Tooltip content={`Lifecycle and chat input are controlled by ${managerLabel}.`}>
                 <span className="shrink-0">
-                  <Badge variant="secondary" className="gap-1">
+                  <Badge className="gap-1">
                     <ShieldCheck />
                     <span className="hidden xl:inline">Managed by {managerLabel}</span>
                   </Badge>
@@ -2069,7 +2066,7 @@ export function SessionDetail({
               </Button>
               <Button
                 type="button"
-                variant="destructive"
+                variant="danger"
                 disabled={closeSession.isPending}
                 onClick={() => closeSession.mutate()}
               >
@@ -2243,9 +2240,8 @@ export function SessionDetail({
         banner={canControl && managedGate && !closed ? (
           <div className="flex min-w-0 items-center gap-2 pb-2 text-xs">
             <Switch
-              className="shrink-0"
               checked={directInput}
-              onCheckedChange={setDirectInput}
+              onChange={(event) => setDirectInput(event.target.checked)}
               aria-label="Direct input"
             />
             <span className="shrink-0 font-medium">Direct input</span>

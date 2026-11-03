@@ -15,13 +15,14 @@ import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import {
   IdText,
   Table,
@@ -188,13 +189,13 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                   <TableCell className="text-muted-foreground">
                     {grantTypeLabel(grant)}
                     {managedBy(grant) && (
-                      <Badge variant="outline" className="ml-2 font-normal">
+                      <Badge outline className="ml-2 font-normal">
                         {managedBy(grant)}
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={grant.exposure === "retrievable" ? "secondary" : "outline"}>
+                    <Badge outline={grant.exposure !== "retrievable"}>
                       {grant.exposure}
                     </Badge>
                   </TableCell>
@@ -209,15 +210,14 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                   </TableCell>
                   <TableActionsCell>
                     {grant.status !== "revoked" && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
+                      <IconButton
+                        size="sm"
                         className="text-destructive"
-                        aria-label={`Revoke ${grant.displayName ?? grant.grantId}`}
+                        label={`Revoke ${grant.displayName ?? grant.grantId}`}
                         onClick={() => setRevokingGrant(grant)}
                       >
                         <ShieldOff />
-                      </Button>
+                      </IconButton>
                     )}
                   </TableActionsCell>
                 </TableRow>
@@ -321,7 +321,7 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
           <Button type="button" variant="outline" onClick={() => setRevokingGrant(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               if (revokingGrant) revokeGrant.mutate(revokingGrant.grantId);
               setRevokingGrant(null);
@@ -530,7 +530,7 @@ function PasteCredentialDialog({
             <label className="flex items-start gap-3">
               <Checkbox
                 checked={retrievable}
-                onCheckedChange={(checked) => setRetrievable(checked === true)}
+                onChange={(event) => setRetrievable(event.target.checked)}
                 aria-label="Allow trusted services to retrieve this credential"
               />
               <span className="grid gap-1">
@@ -623,16 +623,16 @@ function credentialIdConflictMessage(grant: SecretGrant): string {
 
 function GrantStatusBadge({ status }: { status: SecretGrant["status"] }) {
   if (status === "active") {
-    return <Badge variant="secondary">active</Badge>;
+    return <Badge>active</Badge>;
   }
   if (status === "needsReauth" || status === "failed") {
     return (
-      <Badge variant="outline" className="border-destructive/50 text-destructive">
+      <Badge outline className="border-destructive/50 text-destructive">
         {status === "needsReauth" ? "needs reauth" : status}
       </Badge>
     );
   }
-  return <Badge variant="outline">revoked</Badge>;
+  return <Badge outline>revoked</Badge>;
 }
 
 /// What created a grant, for the list tag; null for plain tokens and secrets.

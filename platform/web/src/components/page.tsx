@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 
 export function PageHeader({
   title,
@@ -134,7 +134,7 @@ export function ShowHiddenToggle({
   if (count === 0) return null;
   return (
     <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch checked={checked} onChange={(event) => onCheckedChange(event.target.checked)} />
       {label} ({count})
     </label>
   );

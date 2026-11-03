@@ -16,18 +16,16 @@ import {
 } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
+import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
+import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
+import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   Table,
   TableActionsCell,
@@ -129,7 +127,7 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
           <Button type="button" variant="outline" onClick={() => setUnpairing(null)}>Cancel</Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               if (unpairing) unpair.mutate(unpairing);
               setUnpairing(null);
@@ -161,12 +159,10 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
       ) : (
         <div className="grid gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Messaging accounts</CardTitle>
-              <CardDescription>
-                Credentials are encrypted automatically. Add a chat trigger on a bot to start routing messages.
-              </CardDescription>
-            </CardHeader>
+            <CardHeader
+              title="Messaging accounts"
+              description="Credentials are encrypted automatically. Add a chat trigger on a bot to start routing messages."
+            />
             <CardContent>
               {accounts.data && (
                 <TableCard>
@@ -219,21 +215,15 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-start justify-between gap-4">
-              <div className="grid gap-1.5">
-                <CardTitle>Connected conversations</CardTitle>
-                <CardDescription>
-                  Pairings bind one provider conversation to one bot trigger. Unpairing makes that conversation connect again.
-                </CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                nativeButton={false} render={<Link to={`/u/${slug}/bots`} />}
-              >
-                View bots
-              </Button>
-            </CardHeader>
+            <CardHeader
+              title="Connected conversations"
+              description="Pairings bind one provider conversation to one bot trigger. Unpairing makes that conversation connect again."
+              action={
+                <Link to={`/u/${slug}/bots`} className={buttonClasses("outline", "sm")}>
+                  View bots
+                </Link>
+              }
+            />
             <CardContent>
               {pairings.error && <ReadError error={pairings.error} loading={!pairings.data} />}
               {pairings.data && pairingRows.length === 0 && (
@@ -266,15 +256,14 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
                             {new Date(pairing.pairedAtMs).toLocaleString()}
                           </TableCell>
                           <TableActionsCell>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
+                            <IconButton
+                              size="sm"
                               className="text-destructive"
-                              aria-label={`Unpair conversation ${pairing.chatId}`}
+                              label={`Unpair conversation ${pairing.chatId}`}
                               onClick={() => setUnpairing(pairing)}
                             >
                               <Unplug />
-                            </Button>
+                            </IconButton>
                           </TableActionsCell>
                         </TableRow>
                       ))}
@@ -429,7 +418,7 @@ function ConnectChannelDialog({
             <label className="flex items-start gap-3 rounded-lg border bg-muted/15 p-3">
               <Checkbox
                 checked={printQr}
-                onCheckedChange={(checked) => setPrintQr(checked === true)}
+                onChange={(event) => setPrintQr(event.target.checked)}
               />
               <span className="grid gap-1">
                 <span className="text-sm font-medium">Print pairing QR code</span>
@@ -505,7 +494,7 @@ function AccountStatusBadge({
   const status = channelAccountConnectionState(account, health);
   return (
     <div className="grid gap-1">
-      <Badge variant={status.healthy ? "secondary" : status.label === "Failed" ? "destructive" : "outline"}>
+      <Badge tone={!status.healthy && status.label === "Failed" ? "danger" : "neutral"} outline={!status.healthy && status.label !== "Failed"}>
         {status.label}
       </Badge>
       {status.detail && (

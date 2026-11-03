@@ -1,5 +1,5 @@
 import { Ellipsis, LoaderCircle, Pause, Play, SlidersHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
@@ -25,18 +25,16 @@ export function BotActionsMenu({
       align="end"
       className="w-80 max-w-[calc(100vw-1rem)]"
       trigger={({ open, toggle }) => (
-        <Button
-          variant="ghost"
-          size="icon-sm"
+        <IconButton
+          size="sm"
           className="shrink-0 text-muted-foreground"
-          aria-label="Bot actions"
-          title="Bot actions"
+          label="Bot actions"
           aria-haspopup="menu"
           aria-expanded={open}
           onClick={toggle}
         >
           {pause?.pending ? <LoaderCircle className="size-3.5 animate-spin" /> : <Ellipsis />}
-        </Button>
+        </IconButton>
       )}
     >
       <MenuItem icon={<SlidersHorizontal />} onClick={onSettings}>

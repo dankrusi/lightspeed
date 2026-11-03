@@ -53,8 +53,8 @@ async function mode(label: string) {
 }
 
 async function checkbox(name: string) {
-  const target = container.querySelector<HTMLButtonElement>(
-    `[role="checkbox"][aria-label="${name}"]`,
+  const target = container.querySelector<HTMLInputElement>(
+    `input[type="checkbox"][aria-label="${name}"]`,
   )!;
   expect(target).not.toBeNull();
   await act(async () => target.click());
@@ -196,10 +196,9 @@ it("preserves selections through structured failures, transport errors, and refr
   expect(selected).toEqual(["search"]);
   await button("Refresh tools");
   expect(
-    container
-      .querySelector('[aria-label="new_tool"]')
-      ?.getAttribute("aria-checked"),
-  ).toBe("false");
+    container.querySelector<HTMLInputElement>('input[type="checkbox"][aria-label="new_tool"]')
+      ?.checked,
+  ).toBe(false);
   expect(selected).toEqual(["search"]);
 });
 

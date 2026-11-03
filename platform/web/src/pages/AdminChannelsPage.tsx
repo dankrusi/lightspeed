@@ -8,14 +8,10 @@ import {
   type ChannelsStatus,
   type DeploymentChannelAccountListResponse,
 } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
+import { Card } from "@versavolta/whisperink/components/Card/Card.js";
+import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
+import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
 import {
   Table,
   TableBody,
@@ -66,12 +62,10 @@ export function AdminChannelsPage() {
       />
       <div className="grid gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Connector health</CardTitle>
-            <CardDescription>
-              Runtime diagnostics from each configured connector host, refreshed every ten seconds.
-            </CardDescription>
-          </CardHeader>
+          <CardHeader
+            title="Connector health"
+            description="Runtime diagnostics from each configured connector host, refreshed every ten seconds."
+          />
           <CardContent>
             {status.isLoading && <LoadingNote />}
             {status.error && <p className="text-sm text-destructive">{status.error.message}</p>}
@@ -103,7 +97,7 @@ export function AdminChannelsPage() {
                             : "—"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={health?.state === "ready" ? "secondary" : "destructive"}>
+                          <Badge tone={health?.state === "ready" ? "neutral" : "danger"}>
                             {health?.state ?? (connector.reachable ? "no accounts" : "unreachable")}
                           </Badge>
                         </TableCell>
@@ -122,12 +116,10 @@ export function AdminChannelsPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Account inventory</CardTitle>
-            <CardDescription>
-              Read-only deployment view. Open the owning universe to connect, enable, or disable an account.
-            </CardDescription>
-          </CardHeader>
+          <CardHeader
+            title="Account inventory"
+            description="Read-only deployment view. Open the owning universe to connect, enable, or disable an account."
+          />
           <CardContent>
             {accounts.isLoading && <LoadingNote />}
             {accounts.error && <p className="text-sm text-destructive">{accounts.error.message}</p>}
@@ -154,7 +146,7 @@ export function AdminChannelsPage() {
                           {universeByCoreId.get(account.universeId)?.name ?? account.universeId}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={(account.enabled ?? true) ? "secondary" : "outline"}>
+                          <Badge outline={!(account.enabled ?? true)}>
                             {(account.enabled ?? true) ? "enabled" : "disabled"}
                           </Badge>
                         </TableCell>
