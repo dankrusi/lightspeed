@@ -9,7 +9,7 @@ import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import {
   Table,
   TableActionsCell,
@@ -215,16 +215,18 @@ function EditMemberRoleDialog({ universeId, member, onClose, onDone }: {
       </>}
     >
       <form id={formId} className="grid gap-3" onSubmit={(event) => { event.preventDefault(); edit.mutate(); }}>
-        <FieldLabel htmlFor="edit-member-role">Role</FieldLabel>
-        <Select
-          id="edit-member-role"
-          value={role}
-          onChange={(event) => setRole(event.target.value as UniverseRole)}
-          disabled={edit.isPending}
-        >
-          {roleOptions()}
-        </Select>
-        <FieldDescription>{ROLE_SUMMARY[role]}</FieldDescription>
+        <Field id="edit-member-role" label="Role" hint={ROLE_SUMMARY[role]}>
+          {(field) => (
+            <Select
+              {...field.control}
+              value={role}
+              onChange={(event) => setRole(event.target.value as UniverseRole)}
+              disabled={edit.isPending}
+            >
+              {roleOptions()}
+            </Select>
+          )}
+        </Field>
         {edit.error && <p role="alert" className="text-sm text-destructive">{edit.error.message}</p>}
       </form>
     </Modal>
@@ -298,37 +300,42 @@ function AddMemberDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-3">
-        <FieldLabel htmlFor="member-user">Account</FieldLabel>
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-          <Select
-            id="member-user"
-            className="w-full"
-            value={userId}
-            onChange={(event) => setUserId(event.target.value)}
-          >
-            <option value="" disabled>
-              {candidates.length === 0 ? "No accounts left to add" : "Pick a user…"}
-            </option>
-            {candidates.map((user) => (
-              <option key={user.id} value={user.id}>
-                {userLabel(user)}
-              </option>
-            ))}
-          </Select>
-          <Select
-            aria-label="Role"
-            className="w-full sm:w-32"
-            value={role}
-            onChange={(event) => setRole(event.target.value as UniverseRole)}
-          >
-            {roleOptions()}
-          </Select>
-        </div>
-        <FieldDescription>{ROLE_SUMMARY[role]}</FieldDescription>
+        <Field id="member-user" label="Account">
+          {(field) => (
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <Select
+                {...field.control}
+                aria-describedby="member-user-note"
+                className="w-full"
+                value={userId}
+                onChange={(event) => setUserId(event.target.value)}
+              >
+                <option value="" disabled>
+                  {candidates.length === 0 ? "No accounts left to add" : "Pick a user…"}
+                </option>
+                {candidates.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {userLabel(user)}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                aria-label="Role"
+                aria-describedby="member-role-summary"
+                className="w-full sm:w-32"
+                value={role}
+                onChange={(event) => setRole(event.target.value as UniverseRole)}
+              >
+                {roleOptions()}
+              </Select>
+            </div>
+          )}
+        </Field>
+        <p id="member-role-summary" className="text-sm text-fg-muted">{ROLE_SUMMARY[role]}</p>
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <FieldDescription>
+        <p id="member-user-note" className="text-sm text-fg-muted">
           Accounts are created by platform admins under Admin → Users.
-        </FieldDescription>
+        </p>
       </form>
     </Modal>
   );

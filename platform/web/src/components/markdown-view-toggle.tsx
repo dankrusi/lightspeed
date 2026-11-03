@@ -1,16 +1,21 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Segmented } from "@versavolta/whisperink/components/Tabs/Segmented.js";
+
+const views = [
+  { value: "source", label: "Source" },
+  { value: "preview", label: "Preview" },
+] as const;
 
 export function MarkdownViewToggle({ preview, onPreviewChange }: {
   preview: boolean;
   onPreviewChange: (preview: boolean) => void;
 }) {
   return (
-    <Tabs value={preview ? "preview" : "source"}
-      onValueChange={(value) => onPreviewChange(value === "preview")}>
-      <TabsList aria-label="Markdown view" activateOnFocus>
-        <TabsTrigger value="source">Source</TabsTrigger>
-        <TabsTrigger value="preview" title="Preview Markdown">Preview</TabsTrigger>
-      </TabsList>
-    </Tabs>
+    <Segmented
+      label="Markdown view"
+      size="sm"
+      items={views}
+      value={preview ? "preview" : "source"}
+      onChange={(value) => onPreviewChange(value === "preview")}
+    />
   );
 }

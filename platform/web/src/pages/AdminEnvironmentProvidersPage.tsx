@@ -9,7 +9,7 @@ import type {
 import { api } from "@/api";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
@@ -387,69 +387,85 @@ function ProviderDialog({
       </>}
     >
         <form id={formId} onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="provider-id">Provider id</FieldLabel>
-            <Input
-              id="provider-id"
-              value={providerId}
-              onChange={(e) => setProviderId(e.target.value)}
-              placeholder="incus-hz02"
-              disabled={editing}
-              autoFocus={!editing}
-            />
-            <FieldDescription className="text-xs">
-              Stable deployment-wide identifier; profiles reference providers by this id.
-            </FieldDescription>
+          <Field
+            id="provider-id"
+            label="Provider id"
+            hint="Stable deployment-wide identifier; profiles reference providers by this id."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={providerId}
+                onChange={(e) => setProviderId(e.target.value)}
+                placeholder="incus-hz02"
+                disabled={editing}
+                autoFocus={!editing}
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="provider-name">Display name (optional)</FieldLabel>
-            <Input
-              id="provider-name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Incus on hz02"
-            />
+          <Field id="provider-name" label="Display name" optional>
+            {(field) => (
+              <Input
+                {...field.control}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Incus on hz02"
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="provider-endpoint">Controller endpoint</FieldLabel>
-            <Input
-              id="provider-endpoint"
-              value={endpoint}
-              onChange={(e) => setEndpoint(e.target.value)}
-              placeholder="wss://provider.internal:19090/control"
-            />
+          <Field id="provider-endpoint" label="Controller endpoint">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={endpoint}
+                onChange={(e) => setEndpoint(e.target.value)}
+                placeholder="wss://provider.internal:19090/control"
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="provider-data-route-base">Data route base (optional)</FieldLabel>
-            <Input
-              id="provider-data-route-base"
-              value={dataRouteBase}
-              onChange={(e) => setDataRouteBase(e.target.value)}
-              placeholder={derivedDataRouteBase(endpoint) ?? "wss://provider.internal:19090/routes"}
-            />
-            <FieldDescription className="text-xs">
+          <Field
+            id="provider-data-route-base"
+            label="Data route base"
+            optional
+            hint={<>
               {editing && provider.effectiveDataRouteBase
                 ? <>Lightspeed dials <span className="font-mono">{provider.effectiveDataRouteBase}</span>. </>
                 : null}
               Empty derives it from the controller endpoint's origin plus{" "}
               <span className="font-mono">/routes</span>; a unix:// controller needs one.
-            </FieldDescription>
+            </>}
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={dataRouteBase}
+                onChange={(e) => setDataRouteBase(e.target.value)}
+                placeholder={derivedDataRouteBase(endpoint) ?? "wss://provider.internal:19090/routes"}
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="provider-credential">Credential (optional)</FieldLabel>
-            <Input
+          <div className="grid gap-2">
+            <Field
               id="provider-credential"
-              type="password"
-              autoComplete="off"
-              value={credential}
-              disabled={clearCredential}
-              onChange={(e) => setCredential(e.target.value)}
-              placeholder={editing && provider.hasCredential ? "Unchanged" : "None"}
-            />
-            <FieldDescription className="text-xs">
-              The bearer secret the provider is configured with. Write-only: it is never shown
-              again. Without one, Lightspeed sends no Authorization header.
-            </FieldDescription>
+              label="Credential"
+              optional
+              hint={<>
+                The bearer secret the provider is configured with. Write-only: it is never shown
+                again. Without one, Lightspeed sends no Authorization header.
+              </>}
+            >
+              {(field) => (
+                <Input
+                  {...field.control}
+                  type="password"
+                  autoComplete="off"
+                  value={credential}
+                  disabled={clearCredential}
+                  onChange={(e) => setCredential(e.target.value)}
+                  placeholder={editing && provider.hasCredential ? "Unchanged" : "None"}
+                />
+              )}
+            </Field>
             {editing && provider.hasCredential && (
               <label className="flex items-center gap-2 text-sm">
                 <input
@@ -463,7 +479,7 @@ function ProviderDialog({
                 Remove the stored credential
               </label>
             )}
-          </Field>
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </form>
     </Modal>
@@ -540,28 +556,30 @@ function BindUniverseDialog({
       </>}
     >
         <form id={formId} onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="bind-universe">Universe</FieldLabel>
-            <Select
-              id="bind-universe"
-              className="w-full"
-              value={universeId || "__none__"}
-              onChange={(event) => setUniverseId(event.target.value === "__none__" ? "" : event.target.value)}
-            >
-              <option value="__none__">Select a universe</option>
-              {candidates.map((universe) => (
-                <option key={universe.lightspeedUniverseId} value={universe.lightspeedUniverseId}>
-                  {universe.name}
-                </option>
-              ))}
-            </Select>
-            <FieldDescription className="text-xs">
-              {candidates.length === 0
-                ? "Every active universe on this deployment is already bound to this provider."
-                : selected
-                  ? <span className="font-mono">{selected.lightspeedUniverseId}</span>
-                  : "Only active universes without an existing binding are listed."}
-            </FieldDescription>
+          <Field
+            id="bind-universe"
+            label="Universe"
+            hint={candidates.length === 0
+              ? "Every active universe on this deployment is already bound to this provider."
+              : selected
+                ? <span className="font-mono">{selected.lightspeedUniverseId}</span>
+                : "Only active universes without an existing binding are listed."}
+          >
+            {(field) => (
+              <Select
+                {...field.control}
+                className="w-full"
+                value={universeId || "__none__"}
+                onChange={(event) => setUniverseId(event.target.value === "__none__" ? "" : event.target.value)}
+              >
+                <option value="__none__">Select a universe</option>
+                {candidates.map((universe) => (
+                  <option key={universe.lightspeedUniverseId} value={universe.lightspeedUniverseId}>
+                    {universe.name}
+                  </option>
+                ))}
+              </Select>
+            )}
           </Field>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </form>

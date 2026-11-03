@@ -24,7 +24,7 @@ import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   Table,
@@ -369,75 +369,77 @@ function ConnectChannelDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel>Provider</FieldLabel>
-          <Select
-            className="w-full"
-            aria-label="Channel provider"
-            value={provider}
-            onChange={(event) => setProvider(event.target.value as typeof provider)}
-          >
-            <option value="telegram">Telegram</option>
-            <option value="whatsapp">WhatsApp</option>
-          </Select>
+        <Field label="Provider">
+          {(field) => (
+            <Select
+              {...field.control}
+              className="w-full"
+              aria-label="Channel provider"
+              value={provider}
+              onChange={(event) => setProvider(event.target.value as typeof provider)}
+            >
+              <option value="telegram">Telegram</option>
+              <option value="whatsapp">WhatsApp</option>
+            </Select>
+          )}
         </Field>
 
         {provider === "telegram" ? (
-          <Field>
-            <FieldLabel htmlFor="telegram-bot-token">Bot token</FieldLabel>
-            <Input
-              id="telegram-bot-token"
-              type="password"
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              autoComplete="new-password"
-              spellCheck={false}
-              className="font-mono"
-              placeholder="Paste the token from BotFather"
-              autoFocus
-            />
-            <FieldDescription>
-              Lightspeed checks the token with Telegram and fills in the bot username for you. The token is encrypted and never shown again.
-            </FieldDescription>
+          <Field
+            id="telegram-bot-token"
+            label="Bot token"
+            hint="Lightspeed checks the token with Telegram and fills in the bot username for you. The token is encrypted and never shown again."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={token}
+                onChange={(event) => setToken(event.target.value)}
+                autoComplete="new-password"
+                spellCheck={false}
+                className="font-mono"
+                placeholder="Paste the token from BotFather"
+                autoFocus
+              />
+            )}
           </Field>
         ) : (
           <>
-            <Field>
-              <FieldLabel htmlFor="whatsapp-phone">Phone number</FieldLabel>
-              <Input
-                id="whatsapp-phone"
-                value={phoneNumber}
-                onChange={(event) => setPhoneNumber(event.target.value)}
-                placeholder="+41 79 123 45 67"
-                autoFocus
-              />
-              <FieldDescription>
-                After connecting, scan the QR code printed by the connector host.
-              </FieldDescription>
+            <Field
+              id="whatsapp-phone"
+              label="Phone number"
+              hint="After connecting, scan the QR code printed by the connector host."
+            >
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={phoneNumber}
+                  onChange={(event) => setPhoneNumber(event.target.value)}
+                  placeholder="+41 79 123 45 67"
+                  autoFocus
+                />
+              )}
             </Field>
-            <label className="flex items-start gap-3 rounded-lg border bg-muted/15 p-3">
-              <Checkbox
-                checked={printQr}
-                onChange={(event) => setPrintQr(event.target.checked)}
-              />
-              <span className="grid gap-1">
-                <span className="text-sm font-medium">Print pairing QR code</span>
-                <span className="text-xs text-muted-foreground">
-                  Show the QR code in the connector process output until this account is paired.
-                </span>
-              </span>
-            </label>
+            <Checkbox
+              className="rounded-lg border bg-muted/15 p-3"
+              checked={printQr}
+              onChange={(event) => setPrintQr(event.target.checked)}
+              label={<span className="text-sm font-medium">Print pairing QR code</span>}
+              description="Show the QR code in the connector process output until this account is paired."
+            />
           </>
         )}
 
-        <Field>
-          <FieldLabel htmlFor="channel-display-name">Display name (optional)</FieldLabel>
-          <Input
-            id="channel-display-name"
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            placeholder={provider === "telegram" ? "Defaults to the Telegram bot name" : "Support WhatsApp"}
-          />
+        <Field id="channel-display-name" label="Display name" optional>
+          {(field) => (
+            <Input
+              {...field.control}
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              placeholder={provider === "telegram" ? "Defaults to the Telegram bot name" : "Support WhatsApp"}
+            />
+          )}
         </Field>
         {connect.error && <p className="text-sm text-destructive">{connect.error.message}</p>}
       </form>

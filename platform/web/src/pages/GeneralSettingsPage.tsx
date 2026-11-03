@@ -9,7 +9,7 @@ import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { CardFooter } from "@versavolta/whisperink/components/Card/CardFooter.js";
 import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   LoadingNote,
@@ -113,9 +113,8 @@ export function SlugCard({ universe }: { universe: Universe }) {
       <CardHeader title="Slug" description="Changes the runtime slug and this universe's URL. Existing links may stop working." />
       <CardContent>
         <form className="flex max-w-md items-end gap-3" onSubmit={event => { event.preventDefault(); if (valid) rename.mutate(); }}>
-          <Field className="flex-1">
-            <FieldLabel htmlFor="universe-slug">Runtime slug</FieldLabel>
-            <Input id="universe-slug" value={slug} onChange={event => setSlug(event.target.value)} required maxLength={128} />
+          <Field id="universe-slug" label="Runtime slug" className="min-w-0 flex-1">
+            {field => <Input {...field.control} value={slug} onChange={event => setSlug(event.target.value)} required maxLength={128} />}
           </Field>
           <Button type="submit" disabled={rename.isPending || !valid || slug.trim() === universe.slug}>
             {rename.isPending ? "Saving…" : "Save slug"}
@@ -150,14 +149,15 @@ function RenameCard({ universe }: { universe: Universe }) {
       />
       <CardContent>
         <form onSubmit={submit} className="flex max-w-md items-end gap-3">
-          <Field className="flex-1">
-            <FieldLabel htmlFor="universe-name">Display name</FieldLabel>
-            <Input
-              id="universe-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+          <Field id="universe-name" label="Display name" className="min-w-0 flex-1">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            )}
           </Field>
           <Button
             type="submit"

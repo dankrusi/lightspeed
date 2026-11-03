@@ -6,7 +6,7 @@ import { modelDefaultsKey, modelLabel, useModelDefaults, useModelDiscovery } fro
 import { summarizeProviderReadiness } from "@/lib/provider-readiness";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
@@ -118,28 +118,28 @@ export function DefaultModelDialog({ universeId, initial, slot, onClose }: { uni
     </>}>
       <form id={formId} className="grid gap-4" onSubmit={(event) => { event.preventDefault(); if (valid && !conflict && !save.isPending) save.mutate(); }}>
         <fieldset className="grid gap-4" disabled={save.isPending || reloading}>
-        <Field>
-          <FieldLabel htmlFor={`${id}-search`}>Find a model</FieldLabel>
-          <Combobox<string> items={choices} value={null} inputValue={search} onInputValueChange={setSearch}
-            itemToStringLabel={(key) => { const route = routeFor(key); return route ? `${modelLabel(route)} · ${apiLabels[route.apiKind]}` : key; }}
-            filter={(key, query) => key.toLowerCase().includes(query.toLowerCase())}
-            onValueChange={(key) => { const route = key ? routeFor(key) : undefined; if (route) { setModel({ providerId: route.providerId, apiKind: route.apiKind, model: route.model }); setSearch(""); } }}>
-            <ComboboxInput id={`${id}-search`} placeholder="Search discovered models…" />
-            <ComboboxContent><ComboboxEmpty>No matching models. Enter a model below.</ComboboxEmpty><ComboboxList>{(key: string) => {
-              const route = routeFor(key);
-              return <ComboboxItem key={key} value={key}><span>{route ? modelLabel(route) : key}<span className="block text-xs text-muted-foreground">{route && apiLabels[route.apiKind]}</span></span></ComboboxItem>;
-            }}</ComboboxList></ComboboxContent>
-          </Combobox>
-          <FieldDescription>{discovery.isLoading ? "Loading suggestions…" : discovery.error ? "Suggestions are unavailable. You can still enter and save a model." : "Manual models do not need to appear in discovery."}</FieldDescription>
+        <Field id={`${id}-search`} label="Find a model" hint={discovery.isLoading ? "Loading suggestions…" : discovery.error ? "Suggestions are unavailable. You can still enter and save a model." : "Manual models do not need to appear in discovery."}>
+          {(field) => (
+            <Combobox<string> items={choices} value={null} inputValue={search} onInputValueChange={setSearch}
+              itemToStringLabel={(key) => { const route = routeFor(key); return route ? `${modelLabel(route)} · ${apiLabels[route.apiKind]}` : key; }}
+              filter={(key, query) => key.toLowerCase().includes(query.toLowerCase())}
+              onValueChange={(key) => { const route = key ? routeFor(key) : undefined; if (route) { setModel({ providerId: route.providerId, apiKind: route.apiKind, model: route.model }); setSearch(""); } }}>
+              <ComboboxInput {...field.control} placeholder="Search discovered models…" />
+              <ComboboxContent><ComboboxEmpty>No matching models. Enter a model below.</ComboboxEmpty><ComboboxList>{(key: string) => {
+                const route = routeFor(key);
+                return <ComboboxItem key={key} value={key}><span>{route ? modelLabel(route) : key}<span className="block text-xs text-muted-foreground">{route && apiLabels[route.apiKind]}</span></span></ComboboxItem>;
+              }}</ComboboxList></ComboboxContent>
+            </Combobox>
+          )}
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field><FieldLabel htmlFor={`${id}-provider`}>Provider</FieldLabel><Input id={`${id}-provider`} value={model.providerId} list={`${id}-providers`} placeholder="Provider ID" onChange={(event) => setModel({ ...model, providerId: event.target.value })} /></Field>
+          <Field id={`${id}-provider`} label="Provider">{(field) => <Input {...field.control} value={model.providerId} list={`${id}-providers`} placeholder="Provider ID" onChange={(event) => setModel({ ...model, providerId: event.target.value })} />}</Field>
           <datalist id={`${id}-providers`}>{discovery.data?.providers?.map((provider) => <option key={provider.providerId} value={provider.providerId} />)}</datalist>
-          <Field><FieldLabel htmlFor={`${id}-api`}>API</FieldLabel><Select id={`${id}-api`} className="w-full" value={model.apiKind} onChange={(event) => { const value = event.target.value; if (value) setModel({ ...model, apiKind: value }); }}>
+          <Field id={`${id}-api`} label="API">{(field) => <Select {...field.control} className="w-full" value={model.apiKind} onChange={(event) => { const value = event.target.value; if (value) setModel({ ...model, apiKind: value }); }}>
             {apiKinds.map((kind) => <option key={kind} value={kind}>{apiLabels[kind]}</option>)}
-          </Select></Field>
+          </Select>}</Field>
         </div>
-        <Field><FieldLabel htmlFor={`${id}-model`}>Model</FieldLabel><Input id={`${id}-model`} value={model.model} placeholder="Model name" onChange={(event) => setModel({ ...model, model: event.target.value })} /></Field>
+        <Field id={`${id}-model`} label="Model">{(field) => <Input {...field.control} value={model.model} placeholder="Model name" onChange={(event) => setModel({ ...model, model: event.target.value })} />}</Field>
         </fieldset>
         {save.error && <p role="alert" className="text-sm text-destructive">{conflict ? "Defaults changed elsewhere. Reload and review the saved default before making another change." : save.error.message}</p>}
         {reloadError && <p role="alert" className="text-sm text-destructive">{reloadError}</p>}

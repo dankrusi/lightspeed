@@ -4,7 +4,7 @@ import { ArrowsClockwise } from "@phosphor-icons/react";
 import { api, type GitHubApp, type GitHubInstallation, type SecretGrant } from "@/api";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
@@ -89,59 +89,68 @@ export function GitHubAppForm({
         encrypted, and never returned. Afterwards, install the App on the GitHub accounts you want
         to reach and grant those installations from the App's details.
       </p>
-      <Field>
-        <FieldLabel htmlFor="github-app-name">Display name</FieldLabel>
-        <Input
-          id="github-app-name"
-          value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
-          placeholder="Acme Lightspeed"
-          autoFocus
-        />
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="github-app-id">App ID</FieldLabel>
-        <Input
-          id="github-app-id"
-          value={appId}
-          onChange={(event) => {
-            setAppId(event.target.value);
-            setError(null);
-          }}
-          inputMode="numeric"
-          placeholder="123456"
-          className="font-mono"
-        />
-        <FieldDescription>
-          The numeric App ID shown on the App's settings page (not the client ID or slug).
-        </FieldDescription>
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="github-app-key">Private key (PEM)</FieldLabel>
-        <Textarea
-          id="github-app-key"
-          value={privateKey}
-          onChange={(event) => {
-            setPrivateKey(event.target.value);
-            setError(null);
-          }}
-          autoComplete="off"
-          spellCheck={false}
-          rows={4}
-          className="max-h-24 min-h-20 resize-y overflow-y-auto font-mono text-xs"
-          placeholder="-----BEGIN RSA PRIVATE KEY-----"
-        />
-        <div className="flex items-center gap-2">
+      <Field id="github-app-name" label="Display name">
+        {(field) => (
           <Input
-            id="github-app-key-file"
-            type="file"
-            accept=".pem,application/x-pem-file,text/plain"
-            onChange={readPemFile}
-            className="max-w-xs"
-            aria-label="Upload private key file"
+            {...field.control}
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder="Acme Lightspeed"
+            autoFocus
           />
-          <FieldDescription>Or upload the .pem file downloaded from GitHub.</FieldDescription>
-        </div>
+        )}
+      </Field>
+      <Field
+        id="github-app-id"
+        label="App ID"
+        hint="The numeric App ID shown on the App's settings page (not the client ID or slug)."
+      >
+        {(field) => (
+          <Input
+            {...field.control}
+            value={appId}
+            onChange={(event) => {
+              setAppId(event.target.value);
+              setError(null);
+            }}
+            inputMode="numeric"
+            placeholder="123456"
+            className="font-mono"
+          />
+        )}
+      </Field>
+      <Field id="github-app-key" label="Private key (PEM)">
+        {(field) => (
+          <>
+            <Textarea
+              {...field.control}
+              value={privateKey}
+              onChange={(event) => {
+                setPrivateKey(event.target.value);
+                setError(null);
+              }}
+              autoComplete="off"
+              spellCheck={false}
+              rows={4}
+              className="max-h-24 min-h-20 resize-y overflow-y-auto font-mono text-xs"
+              placeholder="-----BEGIN RSA PRIVATE KEY-----"
+            />
+            <div className="flex items-center gap-2">
+              <Input
+                id="github-app-key-file"
+                type="file"
+                accept=".pem,application/x-pem-file,text/plain"
+                onChange={readPemFile}
+                className="max-w-xs"
+                aria-label="Upload private key file"
+                aria-describedby="github-app-key-file-hint"
+              />
+              <p id="github-app-key-file-hint" className="text-xs text-fg-muted">
+                Or upload the .pem file downloaded from GitHub.
+              </p>
+            </div>
+          </>
+        )}
       </Field>
       <SettingsDisclosure
         summary={[
@@ -151,31 +160,39 @@ export function GitHubAppForm({
         action="Customize"
         label="Customize API base URL and provider ID"
       >
-        <Field>
-          <FieldLabel htmlFor="github-app-api-url">API base URL</FieldLabel>
-          <Input
-            id="github-app-api-url"
-            value={apiBaseUrl}
-            onChange={(event) => setApiBaseUrl(event.target.value)}
-            className="font-mono"
-          />
-          <FieldDescription>
-            Change only for GitHub Enterprise Server, e.g.{" "}
-            <span className="font-mono">https://github.example.com/api/v3</span>.
-          </FieldDescription>
+        <Field
+          id="github-app-api-url"
+          label="API base URL"
+          hint={
+            <>
+              Change only for GitHub Enterprise Server, e.g.{" "}
+              <span className="font-mono">https://github.example.com/api/v3</span>.
+            </>
+          }
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={apiBaseUrl}
+              onChange={(event) => setApiBaseUrl(event.target.value)}
+              className="font-mono"
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="github-app-provider-id">Custom provider ID</FieldLabel>
-          <Input
-            id="github-app-provider-id"
-            value={providerId}
-            onChange={(event) => setProviderId(event.target.value)}
-            placeholder="github-app:<App ID> when blank"
-            className="font-mono"
-          />
-          <FieldDescription>
-            Stable identifier referenced by installation credentials and automation.
-          </FieldDescription>
+        <Field
+          id="github-app-provider-id"
+          label="Custom provider ID"
+          hint="Stable identifier referenced by installation credentials and automation."
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={providerId}
+              onChange={(event) => setProviderId(event.target.value)}
+              placeholder="github-app:<App ID> when blank"
+              className="font-mono"
+            />
+          )}
         </Field>
       </SettingsDisclosure>
       {error && <p className="text-sm text-destructive">{error}</p>}

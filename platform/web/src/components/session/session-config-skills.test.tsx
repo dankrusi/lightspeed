@@ -141,8 +141,8 @@ it("adds environments with jobs access, defaults the first, and enables selectio
     selection: true,
   });
   const label = Array.from(container.querySelectorAll("label"))
-    .find((label) => label.textContent === "Environment selection tools")!;
-  await act(async () => document.getElementById(label.htmlFor)!.click());
+    .find((label) => label.textContent?.startsWith("Environment selection tools"))!;
+  await act(async () => label.querySelector<HTMLInputElement>('[role="switch"]')!.click());
   const nextDefault = container.querySelector<HTMLButtonElement>('[aria-label="Default environment 2"]')!;
   await act(async () => nextDefault.click());
   expect(current).not.toHaveProperty("features.environments.selection");

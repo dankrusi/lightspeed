@@ -20,8 +20,7 @@ import {
 } from "@/api";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
@@ -466,73 +465,61 @@ function ServerDialog({
 
   const serverFields = (
     <>
-      <Field>
-        <FieldLabel htmlFor="mcp-name">Name</FieldLabel>
-        <Input
-          id="mcp-name"
-          value={displayName}
-          onChange={(event) => {
-            setDisplayName(event.target.value);
-            if (!editing) {
-              if (!idTouched) setServerId(slugify(event.target.value));
-              setError(null);
-            }
-          }}
-          placeholder="GitHub"
-          autoFocus={!editing}
-        />
-        {editing ? (
-          <FieldDescription>
-            Profiles reference it as <code className="font-mono">{server.serverId}</code>.
-          </FieldDescription>
-        ) : (
-          <SettingsDisclosure
-            summary={serverId ? (
-              <>Profiles reference it as <code className="font-mono">{serverId}</code></>
-            ) : (
-              "Profiles reference the server by an id derived from this name"
+      <Field
+        id="mcp-name"
+        label="Name"
+        hint={editing ? (
+          <>Profiles reference it as <code className="font-mono">{server.serverId}</code>.</>
+        ) : undefined}
+      >
+        {(field) => (
+          <>
+            <Input
+              {...field.control}
+              value={displayName}
+              onChange={(event) => {
+                setDisplayName(event.target.value);
+                if (!editing) {
+                  if (!idTouched) setServerId(slugify(event.target.value));
+                  setError(null);
+                }
+              }}
+              placeholder="GitHub"
+              autoFocus={!editing}
+            />
+            {!editing && (
+              <SettingsDisclosure
+                summary={serverId ? (
+                  <>Profiles reference it as <code className="font-mono">{serverId}</code></>
+                ) : (
+                  "Profiles reference the server by an id derived from this name"
+                )}
+                action="Change"
+                label="Change server ID"
+                forceOpen={idMissing}
+              >
+                <Field id="mcp-id" label="Server ID" hint="Stable identifier used by profiles and sessions.">
+                  {(idField) => (
+                    <Input
+                      {...idField.control}
+                      value={serverId}
+                      onChange={(event) => {
+                        setServerId(event.target.value);
+                        setIdTouched(true);
+                      }}
+                      className="font-mono"
+                    />
+                  )}
+                </Field>
+              </SettingsDisclosure>
             )}
-            action="Change"
-            label="Change server ID"
-            forceOpen={idMissing}
-          >
-            <Field>
-              <FieldLabel htmlFor="mcp-id">Server ID</FieldLabel>
-              <Input
-                id="mcp-id"
-                value={serverId}
-                onChange={(event) => {
-                  setServerId(event.target.value);
-                  setIdTouched(true);
-                }}
-                className="font-mono"
-              />
-              <FieldDescription>Stable identifier used by profiles and sessions.</FieldDescription>
-            </Field>
-          </SettingsDisclosure>
+          </>
         )}
       </Field>
-      <Field>
-        <FieldLabel htmlFor="mcp-url">Server URL</FieldLabel>
-        <Input
-          id="mcp-url"
-          value={serverUrl}
-          onChange={(event) => {
-            setServerUrl(event.target.value);
-            if (editing) return;
-            setDiscovery(null);
-            setLastProbedUrl("");
-            if (!authTouched) {
-              setAuthPolicy("none");
-              setOAuthResource("");
-            }
-            setError(null);
-          }}
-          onBlur={() => void discoverAuth()}
-          placeholder="https://mcp.example.com/mcp"
-          className="font-mono"
-        />
-        {!editing && (
+      <Field
+        id="mcp-url"
+        label="Server URL"
+        hint={editing ? undefined : (
           <AuthDiscoveryNote
             pending={probe.isPending}
             checked={discoveryCurrent}
@@ -540,45 +527,70 @@ function ServerDialog({
             error={probe.error?.message}
           />
         )}
+      >
+        {(field) => (
+          <Input
+            {...field.control}
+            value={serverUrl}
+            onChange={(event) => {
+              setServerUrl(event.target.value);
+              if (editing) return;
+              setDiscovery(null);
+              setLastProbedUrl("");
+              if (!authTouched) {
+                setAuthPolicy("none");
+                setOAuthResource("");
+              }
+              setError(null);
+            }}
+            onBlur={() => void discoverAuth()}
+            placeholder="https://mcp.example.com/mcp"
+            className="font-mono"
+          />
+        )}
       </Field>
-      <Field>
-        <FieldLabel htmlFor="mcp-description">Description (optional)</FieldLabel>
-        <Input
-          id="mcp-description"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="What this server offers"
-        />
+      <Field id="mcp-description" label="Description" optional>
+        {(field) => (
+          <Input
+            {...field.control}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="What this server offers"
+          />
+        )}
       </Field>
     </>
   );
 
   const connectionFields = (
     <>
-      <Field>
-        <FieldLabel>Authentication</FieldLabel>
-        {detectedOAuth && (
-          <div className="mb-2 flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
-            <CheckCircle className="size-4" />
-            OAuth sign-in detected from the server
-          </div>
+      <Field
+        label="Authentication"
+        hint={authKind === "oauth"
+          ? credentialGrantId
+            ? "An existing OAuth connection is selected."
+            : "After saving, Lightspeed will open the provider sign-in and finish setup automatically."
+          : authKind === "bearer"
+            ? "Choose a universe credential to send as a bearer token."
+            : detectedOAuth
+              ? "The server advertises OAuth, so unauthenticated access may fail."
+              : "Use this for public MCP servers."}
+      >
+        {(field) => (
+          <>
+            {detectedOAuth && (
+              <div className="mb-2 flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
+                <CheckCircle className="size-4" />
+                OAuth sign-in detected from the server
+              </div>
+            )}
+            <Select {...field.control} className="w-full" aria-label="Authentication" value={authKind} onChange={(event) => chooseAuth(event.target.value as McpAuthKind)}>
+              <option value="none">No authentication</option>
+              <option value="bearer">Bearer token</option>
+              <option value="oauth">OAuth sign-in</option>
+            </Select>
+          </>
         )}
-        <Select className="w-full" aria-label="Authentication" value={authKind} onChange={(event) => chooseAuth(event.target.value as McpAuthKind)}>
-          <option value="none">No authentication</option>
-          <option value="bearer">Bearer token</option>
-          <option value="oauth">OAuth sign-in</option>
-        </Select>
-        <FieldDescription>
-          {authKind === "oauth"
-            ? credentialGrantId
-              ? "An existing OAuth connection is selected."
-              : "After saving, Lightspeed will open the provider sign-in and finish setup automatically."
-            : authKind === "bearer"
-              ? "Choose a universe credential to send as a bearer token."
-              : detectedOAuth
-                ? "The server advertises OAuth, so unauthenticated access may fail."
-                : "Use this for public MCP servers."}
-        </FieldDescription>
       </Field>
 
       {authKind === "bearer" && (
@@ -635,116 +647,122 @@ function ServerDialog({
         contentClassName="gap-6"
       >
         <SettingsGroup title="Tools">
-          <Field>
-            <FieldLabel>Execution</FieldLabel>
-            <Select
-              className="w-full"
-              aria-label="MCP execution"
-              value={execution}
-              onChange={(event) => {
-                const value = event.target.value;
-                setExecution(value as McpServer["execution"]);
-                if (value === "provider") setExposure("inject");
-              }}
-            >
-              <option value="provider">Model provider connects directly</option>
-              <option value="native">Lightspeed connects</option>
-            </Select>
-            <FieldDescription>
-              {execution === "native"
-                ? "Use this for private servers and models without provider-hosted MCP. Credentials and tool traffic stay between Lightspeed and the server."
-                : "The model provider lists and calls the server directly. The endpoint must be publicly reachable."}
-            </FieldDescription>
+          <Field
+            label="Execution"
+            hint={execution === "native"
+              ? "Use this for private servers and models without provider-hosted MCP. Credentials and tool traffic stay between Lightspeed and the server."
+              : "The model provider lists and calls the server directly. The endpoint must be publicly reachable."}
+          >
+            {(field) => (
+              <Select
+                {...field.control}
+                className="w-full"
+                aria-label="MCP execution"
+                value={execution}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setExecution(value as McpServer["execution"]);
+                  if (value === "provider") setExposure("inject");
+                }}
+              >
+                <option value="provider">Model provider connects directly</option>
+                <option value="native">Lightspeed connects</option>
+              </Select>
+            )}
           </Field>
           {execution === "native" && (
-            <Field>
-              <FieldLabel>Tool exposure</FieldLabel>
-              <Select
-                className="w-full"
-                aria-label="MCP tool exposure"
-                value={exposure}
-                onChange={(event) => setExposure(event.target.value as McpServer["exposure"])}
-              >
-                <option value="inject">Show tools to the model up front</option>
-                <option value="search">Let the model search on demand</option>
-              </Select>
-              <FieldDescription>
-                {exposure === "search"
-                  ? "Recommended for large or frequently changing servers. Only two stable search and call tools are shown up front."
-                  : "Best for a small, stable inventory or a selected allowlist. The live tools are injected as ordinary function tools."}
-              </FieldDescription>
+            <Field
+              label="Tool exposure"
+              hint={exposure === "search"
+                ? "Recommended for large or frequently changing servers. Only two stable search and call tools are shown up front."
+                : "Best for a small, stable inventory or a selected allowlist. The live tools are injected as ordinary function tools."}
+            >
+              {(field) => (
+                <Select
+                  {...field.control}
+                  className="w-full"
+                  aria-label="MCP tool exposure"
+                  value={exposure}
+                  onChange={(event) => setExposure(event.target.value as McpServer["exposure"])}
+                >
+                  <option value="inject">Show tools to the model up front</option>
+                  <option value="search">Let the model search on demand</option>
+                </Select>
+              )}
             </Field>
           )}
-          <Field>
-            <FieldLabel>Tool approval</FieldLabel>
-            <Select className="w-full" aria-label="Tool approval" value={approval} onChange={(event) => setApproval(event.target.value)}>
-              {APPROVALS.map((value) => (
-                <option key={value} value={value}>{approvalLabel(value)}</option>
-              ))}
-            </Select>
+          <Field label="Tool approval">
+            {(field) => (
+              <Select {...field.control} className="w-full" aria-label="Tool approval" value={approval} onChange={(event) => setApproval(event.target.value)}>
+                {APPROVALS.map((value) => (
+                  <option key={value} value={value}>{approvalLabel(value)}</option>
+                ))}
+              </Select>
+            )}
           </Field>
         </SettingsGroup>
         <SettingsGroup title="Network">
-          <Label className="flex items-start gap-3 font-normal">
-            <Checkbox
-              checked={allowPrivateNetwork}
-              onChange={(event) => setAllowPrivateNetwork(event.target.checked)}
-            />
-            <span>
-              <span className="block text-sm font-medium">Allow private-network egress</span>
-              <span className="block text-xs text-muted-foreground">
-                Enables live discovery and native execution only for hosts or CIDRs in the deployment-level MCP private-network allowlist.
-              </span>
-            </span>
-          </Label>
+          <Checkbox
+            label="Allow private-network egress"
+            description="Enables live discovery and native execution only for hosts or CIDRs in the deployment-level MCP private-network allowlist."
+            checked={allowPrivateNetwork}
+            onChange={(event) => setAllowPrivateNetwork(event.target.checked)}
+          />
         </SettingsGroup>
         {authKind === "oauth" && (
           <SettingsGroup title="OAuth">
-            <Field>
-              <FieldLabel htmlFor="mcp-oauth-resource">OAuth resource</FieldLabel>
-              <Input
-                id="mcp-oauth-resource"
-                value={oauthResource}
-                onChange={(event) => setOAuthResource(event.target.value)}
-                placeholder={serverUrl}
-                className="font-mono"
-              />
+            <Field id="mcp-oauth-resource" label="OAuth resource">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={oauthResource}
+                  onChange={(event) => setOAuthResource(event.target.value)}
+                  placeholder={serverUrl}
+                  className="font-mono"
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor="mcp-oauth-scopes">Requested scopes</FieldLabel>
-              <Input
-                id="mcp-oauth-scopes"
-                value={oauthScopes}
-                onChange={(event) => setOAuthScopes(event.target.value)}
-                placeholder="Use server defaults"
-              />
-              {discovery?.oauth?.scopesSupported.length ? (
-                <FieldDescription>
+            <Field
+              id="mcp-oauth-scopes"
+              label="Requested scopes"
+              hint={discovery?.oauth?.scopesSupported.length ? (
+                <>
                   Server advertises: {discovery.oauth.scopesSupported.join(", ")}. Add
                   scopes deliberately; discovery never expands consent.
-                </FieldDescription>
-              ) : null}
+                </>
+              ) : undefined}
+            >
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={oauthScopes}
+                  onChange={(event) => setOAuthScopes(event.target.value)}
+                  placeholder="Use server defaults"
+                />
+              )}
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor="mcp-oauth-metadata">Resource metadata URL</FieldLabel>
-                <Input
-                  id="mcp-oauth-metadata"
-                  value={oauthMetadataUrl}
-                  onChange={(event) => setOAuthMetadataUrl(event.target.value)}
-                  placeholder="Discover automatically"
-                  className="font-mono"
-                />
+              <Field id="mcp-oauth-metadata" label="Resource metadata URL">
+                {(field) => (
+                  <Input
+                    {...field.control}
+                    value={oauthMetadataUrl}
+                    onChange={(event) => setOAuthMetadataUrl(event.target.value)}
+                    placeholder="Discover automatically"
+                    className="font-mono"
+                  />
+                )}
               </Field>
-              <Field>
-                <FieldLabel htmlFor="mcp-oauth-issuer">Authorization server</FieldLabel>
-                <Input
-                  id="mcp-oauth-issuer"
-                  value={oauthAuthorizationServer}
-                  onChange={(event) => setOAuthAuthorizationServer(event.target.value)}
-                  placeholder="Discover automatically"
-                  className="font-mono"
-                />
+              <Field id="mcp-oauth-issuer" label="Authorization server">
+                {(field) => (
+                  <Input
+                    {...field.control}
+                    value={oauthAuthorizationServer}
+                    onChange={(event) => setOAuthAuthorizationServer(event.target.value)}
+                    placeholder="Discover automatically"
+                    className="font-mono"
+                  />
+                )}
               </Field>
             </div>
           </SettingsGroup>
@@ -851,28 +869,24 @@ function AuthDiscoveryNote({
 }) {
   if (pending) {
     return (
-      <FieldDescription className="flex items-center gap-1.5">
+      <span className="flex items-center gap-1.5">
         <CircleNotch className="size-3.5 animate-spin" /> Checking for OAuth sign-in…
-      </FieldDescription>
+      </span>
     );
   }
   if (checked && oauth) {
     return (
-      <FieldDescription className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
+      <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
         <CheckCircle className="size-3.5" /> OAuth sign-in detected
-      </FieldDescription>
+      </span>
     );
   }
   if (checked) {
-    return (
-      <FieldDescription>
-        {error
-          ? "Automatic detection was unavailable. You can choose authentication on the next step."
-          : "No standard OAuth metadata was found. You can choose authentication on the next step."}
-      </FieldDescription>
-    );
+    return error
+      ? "Automatic detection was unavailable. You can choose authentication on the next step."
+      : "No standard OAuth metadata was found. You can choose authentication on the next step.";
   }
-  return <FieldDescription>Lightspeed will check the server without saving it.</FieldDescription>;
+  return "Lightspeed will check the server without saving it.";
 }
 
 function CredentialSelect({
@@ -893,33 +907,35 @@ function CredentialSelect({
   optional?: boolean;
 }) {
   return (
-    <Field>
-      <FieldLabel>Credential</FieldLabel>
-      <Select
-        className="w-full"
-        aria-label="Credential"
-        value={value || "none"}
-        onChange={(event) => onChange(event.target.value === "none" ? "" : event.target.value)}
-      >
-        <option value="none">{optional ? "Start a new sign-in" : "Choose a credential"}</option>
-        {value && !boundAvailable && (
-          <option value={value}>{`${value} (unavailable)`}</option>
-        )}
-        {grants.map((grant) => (
-          <option key={grant.grantId} value={grant.grantId}>
-            {authGrantLabel(grant)}
-          </option>
-        ))}
-      </Select>
-      <FieldDescription>
-        {loading
-          ? "Loading credentials…"
-          : grants.length === 0 && !value
-            ? emptyCopy
-            : optional
-              ? "Reuse a compatible connection, or start a new sign-in."
-              : "This credential will be used whenever the server is selected."}
-      </FieldDescription>
+    <Field
+      label="Credential"
+      hint={loading
+        ? "Loading credentials…"
+        : grants.length === 0 && !value
+          ? emptyCopy
+          : optional
+            ? "Reuse a compatible connection, or start a new sign-in."
+            : "This credential will be used whenever the server is selected."}
+    >
+      {(field) => (
+        <Select
+          {...field.control}
+          className="w-full"
+          aria-label="Credential"
+          value={value || "none"}
+          onChange={(event) => onChange(event.target.value === "none" ? "" : event.target.value)}
+        >
+          <option value="none">{optional ? "Start a new sign-in" : "Choose a credential"}</option>
+          {value && !boundAvailable && (
+            <option value={value}>{`${value} (unavailable)`}</option>
+          )}
+          {grants.map((grant) => (
+            <option key={grant.grantId} value={grant.grantId}>
+              {authGrantLabel(grant)}
+            </option>
+          ))}
+        </Select>
+      )}
     </Field>
   );
 }

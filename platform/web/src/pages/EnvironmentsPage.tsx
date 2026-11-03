@@ -4,7 +4,7 @@ import { ResourceActions, ResourceDetail, ResourceDetailsDialog, ResourceDetails
 import { ConfirmDangerButton } from "@/components/confirm-danger-button";
 import { environmentStatus, resourceTimestamp } from "@/lib/resource-status";
 import { ReadError } from "@/components/read-error";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowClockwise, CaretDown, Check, Copy, Cube, Key, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import {
@@ -26,7 +26,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
@@ -637,49 +637,57 @@ function AssignCredentialDialog({
         </>}
       >
           <div className="grid gap-4">
-            <Field>
-              <FieldLabel htmlFor="credential-env-name">Environment variable</FieldLabel>
-              <input
-                id="credential-env-name"
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 font-mono text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-                value={envName}
-                onChange={(event) => {
-                  setEnvName(event.target.value);
-                  setError(null);
-                }}
-                placeholder="GITHUB_TOKEN"
-                autoFocus
-                spellCheck={false}
-              />
-              <FieldDescription>
+            <Field
+              id="credential-env-name"
+              label="Environment variable"
+              hint={<>
                 If a process explicitly sets the same variable, Lightspeed rejects the request
                 instead of choosing one value silently.
-              </FieldDescription>
+              </>}
+            >
+              {(field) => (
+                <input
+                  {...field.control}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 font-mono text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                  value={envName}
+                  onChange={(event) => {
+                    setEnvName(event.target.value);
+                    setError(null);
+                  }}
+                  placeholder="GITHUB_TOKEN"
+                  autoFocus
+                  spellCheck={false}
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor="credential-source">Secret source</FieldLabel>
-              <Select
-                id="credential-source"
-                className="w-full"
-                value={selectedSource}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setSourceValue(value);
-                  setError(null);
-                  const suggested = sources.find((s) => s.value === value)?.suggestedEnvName;
-                  if (suggested && !envName.trim()) setEnvName(suggested);
-                }}
-              >
-                {sources.map((source) => (
-                  <option key={source.value} value={source.value}>
-                    {source.label}
-                  </option>
-                ))}
-              </Select>
-              <FieldDescription>
+            <Field
+              id="credential-source"
+              label="Secret source"
+              hint={<>
                 Environment secrets and access grants are resolved at runtime; provider API keys
                 use their stored value directly.
-              </FieldDescription>
+              </>}
+            >
+              {(field) => (
+                <Select
+                  {...field.control}
+                  className="w-full"
+                  value={selectedSource}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setSourceValue(value);
+                    setError(null);
+                    const suggested = sources.find((s) => s.value === value)?.suggestedEnvName;
+                    if (suggested && !envName.trim()) setEnvName(suggested);
+                  }}
+                >
+                  {sources.map((source) => (
+                    <option key={source.value} value={source.value}>
+                      {source.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
             </Field>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
@@ -965,55 +973,68 @@ function RegistrationKeyFields({
 }) {
   return (
     <>
-      <Field>
-        <FieldLabel htmlFor="registration-key-name">Group name</FieldLabel>
-        <Input
-          id="registration-key-name"
-          value={form.displayName}
-          onChange={(event) => onChange({ ...form, displayName: event.target.value })}
-          placeholder="CI runners"
-          maxLength={128}
-          autoFocus
-        />
+      <Field id="registration-key-name" label="Group name">
+        {(field) => (
+          <Input
+            {...field.control}
+            value={form.displayName}
+            onChange={(event) => onChange({ ...form, displayName: event.target.value })}
+            placeholder="CI runners"
+            maxLength={128}
+            autoFocus
+          />
+        )}
       </Field>
       {identityMode === "ephemeral" ? (
-        <Field>
-          <FieldLabel htmlFor="registration-key-grace">Disconnect grace (minutes)</FieldLabel>
-          <Input
-            id="registration-key-grace"
-            value={form.graceMinutes}
-            onChange={(event) => onChange({ ...form, graceMinutes: event.target.value })}
-            placeholder={String(DEFAULT_EPHEMERAL_GRACE_MS / 60_000)}
-            inputMode="decimal"
-          />
-          <FieldDescription>An environment whose daemon stays away this long is closed. Empty uses the default.</FieldDescription>
+        <Field
+          id="registration-key-grace"
+          label="Disconnect grace (minutes)"
+          hint="An environment whose daemon stays away this long is closed. Empty uses the default."
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.graceMinutes}
+              onChange={(event) => onChange({ ...form, graceMinutes: event.target.value })}
+              placeholder={String(DEFAULT_EPHEMERAL_GRACE_MS / 60_000)}
+              inputMode="decimal"
+            />
+          )}
         </Field>
       ) : (
-        <Field>
-          <FieldLabel htmlFor="registration-key-offline">Close when offline for (minutes)</FieldLabel>
-          <Input
-            id="registration-key-offline"
-            value={form.offlineCloseMinutes}
-            onChange={(event) => onChange({ ...form, offlineCloseMinutes: event.target.value })}
-            placeholder="never"
-            inputMode="decimal"
-          />
-          <FieldDescription>
+        <Field
+          id="registration-key-offline"
+          label="Close when offline for (minutes)"
+          hint={<>
             Empty keeps a disconnected environment open until it is closed, for machines that
             come back; set it when scaled-down machines do not.
-          </FieldDescription>
+          </>}
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.offlineCloseMinutes}
+              onChange={(event) => onChange({ ...form, offlineCloseMinutes: event.target.value })}
+              placeholder="never"
+              inputMode="decimal"
+            />
+          )}
         </Field>
       )}
-      <Field>
-        <FieldLabel htmlFor="registration-key-max">Active environment limit</FieldLabel>
-        <Input
-          id="registration-key-max"
-          value={form.maxActive}
-          onChange={(event) => onChange({ ...form, maxActive: event.target.value })}
-          placeholder="unlimited"
-          inputMode="numeric"
-        />
-        <FieldDescription>Bounds what a leaked key can add to this universe.</FieldDescription>
+      <Field
+        id="registration-key-max"
+        label="Active environment limit"
+        hint="Bounds what a leaked key can add to this universe."
+      >
+        {(field) => (
+          <Input
+            {...field.control}
+            value={form.maxActive}
+            onChange={(event) => onChange({ ...form, maxActive: event.target.value })}
+            placeholder="unlimited"
+            inputMode="numeric"
+          />
+        )}
       </Field>
     </>
   );
@@ -1044,34 +1065,40 @@ function RegistrationSecret({
       footer={<Button type="button" onClick={onDone}>I saved the key</Button>}
     >
       <div className="grid gap-2">
-        <FieldLabel htmlFor="registration-key-secret">Registration key</FieldLabel>
-        <div className="flex gap-2">
-          <Input
-            id="registration-key-secret"
-            value={created.secret}
-            readOnly
-            className="font-mono text-xs"
-            onFocus={(event) => event.currentTarget.select()}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              void navigator.clipboard.writeText(created.secret).then(() => setCopied(true));
-            }}
-          >
-            {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
-            {copied ? "Copied" : "Copy"}
-          </Button>
-        </div>
-        <FieldLabel htmlFor="registration-key-bootstrap">Bootstrap</FieldLabel>
-        <textarea
-          id="registration-key-bootstrap"
-          className="min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs outline-none"
-          value={bootstrap}
-          readOnly
-          onFocus={(event) => event.currentTarget.select()}
-        />
+        <Field id="registration-key-secret" label="Registration key">
+          {(field) => (
+            <div className="flex gap-2">
+              <Input
+                {...field.control}
+                value={created.secret}
+                readOnly
+                className="font-mono text-xs"
+                onFocus={(event) => event.currentTarget.select()}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  void navigator.clipboard.writeText(created.secret).then(() => setCopied(true));
+                }}
+              >
+                {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </div>
+          )}
+        </Field>
+        <Field id="registration-key-bootstrap" label="Bootstrap">
+          {(field) => (
+            <textarea
+              {...field.control}
+              className="min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-xs outline-none"
+              value={bootstrap}
+              readOnly
+              onFocus={(event) => event.currentTarget.select()}
+            />
+          )}
+        </Field>
       </div>
     </Modal>
   );
@@ -1131,21 +1158,25 @@ function CreateRegistrationKeyDialog({ universeId }: { universeId: string }) {
           </>}
         >
               <div className="grid gap-4">
-                <Field>
-                  <FieldLabel htmlFor="registration-key-identity">Identity</FieldLabel>
-                  <Select
-                    id="registration-key-identity"
-                    className="w-full"
-                    value={identityMode}
-                    onChange={(event) => setIdentityMode(event.target.value as "persistent" | "ephemeral")}
-                  >
-                    <option value="persistent">Persistent · wait for the daemon to reconnect</option>
-                    <option value="ephemeral">Ephemeral · close after the daemon stays away</option>
-                  </Select>
-                  <FieldDescription>
+                <Field
+                  id="registration-key-identity"
+                  label="Identity"
+                  hint={<>
                     Persistent suits VMs and stateful pods whose daemon state survives restarts.
                     Ephemeral suits replaceable workers and sandboxes. It cannot be changed later.
-                  </FieldDescription>
+                  </>}
+                >
+                  {(field) => (
+                    <Select
+                      {...field.control}
+                      className="w-full"
+                      value={identityMode}
+                      onChange={(event) => setIdentityMode(event.target.value as "persistent" | "ephemeral")}
+                    >
+                      <option value="persistent">Persistent · wait for the daemon to reconnect</option>
+                      <option value="ephemeral">Ephemeral · close after the daemon stays away</option>
+                    </Select>
+                  )}
                 </Field>
                 <RegistrationKeyFields form={form} identityMode={identityMode} onChange={setForm} />
                 {create.error && <p className="text-sm text-destructive">{create.error.message}</p>}
@@ -1376,6 +1407,7 @@ function EditEnvironmentDialog({
       onOpenChange(false);
     },
   });
+  const metadataLabelId = useId();
   return (
     <Modal
       open={open}
@@ -1390,21 +1422,22 @@ function EditEnvironmentDialog({
       </>}
     >
         <div className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="environment-rename">Display name</FieldLabel>
-            <Input
-              id="environment-rename"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder={environment.environmentId}
-              maxLength={200}
-              autoFocus
-            />
+          <Field id="environment-rename" label="Display name">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder={environment.environmentId}
+                maxLength={200}
+                autoFocus
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel>Metadata</FieldLabel>
+          <div role="group" aria-labelledby={metadataLabelId} className="grid gap-1.5">
+            <span id={metadataLabelId} className="text-sm font-medium text-fg">Metadata</span>
             <MetadataMapEditor value={metadata} onChange={setMetadata} />
-          </Field>
+          </div>
           {save.error && <p className="text-sm text-destructive">{save.error.message}</p>}
         </div>
     </Modal>
@@ -1491,26 +1524,11 @@ function CreateEnvironmentDialog({
         </>}
       >
           <div className="grid gap-4">
-            <Field>
-              <FieldLabel htmlFor="environment-template">Template</FieldLabel>
-              <Select
-                id="environment-template"
-                className="w-full"
-                value={selectedTemplateKey}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setTemplateKey(value);
-                  resetIdle(templates.find((template) => templateValue(template) === value));
-                }}
-              >
-                {templates.map((template) => (
-                  <option key={templateValue(template)} value={templateValue(template)}>
-                    {template.displayName}
-                  </option>
-                ))}
-              </Select>
-              {selectedTemplate && (
-                <FieldDescription>
+            <Field
+              id="environment-template"
+              label="Template"
+              hint={selectedTemplate ? (
+                <>
                   {humanizeIdentifier(selectedTemplate.providerId)} · idle policy{" "}
                   {describeIdlePolicy(selectedTemplate.idle)}
                   {selectedTemplate.powerStates.length
@@ -1518,37 +1536,54 @@ function CreateEnvironmentDialog({
                     : " · no power control"}
                   . The provider runs the idle policy; a powered-down environment wakes when a
                   tool uses it.
-                </FieldDescription>
+                </>
+              ) : undefined}
+            >
+              {(field) => (
+                <Select
+                  {...field.control}
+                  className="w-full"
+                  value={selectedTemplateKey}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setTemplateKey(value);
+                    resetIdle(templates.find((template) => templateValue(template) === value));
+                  }}
+                >
+                  {templates.map((template) => (
+                    <option key={templateValue(template)} value={templateValue(template)}>
+                      {template.displayName}
+                    </option>
+                  ))}
+                </Select>
               )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor="environment-display-name">Display name</FieldLabel>
-              <input
-                id="environment-display-name"
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder={selectedTemplate?.displayName ?? "Development environment"}
-              />
-              <FieldDescription>
-                {selectedTemplate?.description ??
-                  "Optional name shown throughout Lightspeed."}
-              </FieldDescription>
+            <Field
+              id="environment-display-name"
+              label="Display name"
+              hint={selectedTemplate?.description ??
+                "Optional name shown throughout Lightspeed."}
+            >
+              {(field) => (
+                <input
+                  {...field.control}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder={selectedTemplate?.displayName ?? "Development environment"}
+                />
+              )}
             </Field>
             {selectedTemplate && (
-              <Field orientation="horizontal">
-                <Switch
-                  id="environment-custom-idle"
-                  checked={customIdle}
-                  onChange={(event) => {
-                    setCustomIdle(event.target.checked);
-                    if (event.target.checked) resetIdle(selectedTemplate);
-                  }}
-                />
-                <FieldLabel htmlFor="environment-custom-idle">
-                  Custom idle policy instead of the template's
-                </FieldLabel>
-              </Field>
+              <Switch
+                id="environment-custom-idle"
+                label="Custom idle policy instead of the template's"
+                checked={customIdle}
+                onChange={(event) => {
+                  setCustomIdle(event.target.checked);
+                  if (event.target.checked) resetIdle(selectedTemplate);
+                }}
+              />
             )}
             {selectedTemplate && customIdle && (
               <IdlePolicyFields
@@ -1650,34 +1685,37 @@ function RegisterExternalEnvironmentDialog({
         </>}
       >
           <div className="grid gap-4">
-            <Field>
-              <FieldLabel htmlFor="external-endpoint">Daemon endpoint</FieldLabel>
-              <input
-                id="external-endpoint"
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 font-mono text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-                value={endpoint}
-                onChange={(event) => {
-                  setEndpoint(event.target.value);
-                  setError(null);
-                }}
-                placeholder="ws://127.0.0.1:19091/"
-                spellCheck={false}
-              />
-              <FieldDescription>
-                {isDevSuggestion
-                  ? "The daemon started by ./dev.sh on this machine; its workspace is .lightspeed-dev/envd/workspace."
-                  : "WebSocket URL of the daemon (ws:// or wss://)."}
-              </FieldDescription>
+            <Field
+              id="external-endpoint"
+              label="Daemon endpoint"
+              hint={isDevSuggestion
+                ? "The daemon started by ./dev.sh on this machine; its workspace is .lightspeed-dev/envd/workspace."
+                : "WebSocket URL of the daemon (ws:// or wss://)."}
+            >
+              {(field) => (
+                <input
+                  {...field.control}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 font-mono text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                  value={endpoint}
+                  onChange={(event) => {
+                    setEndpoint(event.target.value);
+                    setError(null);
+                  }}
+                  placeholder="ws://127.0.0.1:19091/"
+                  spellCheck={false}
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor="external-display-name">Display name</FieldLabel>
-              <input
-                id="external-display-name"
-                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder="Local daemon"
-              />
+            <Field id="external-display-name" label="Display name">
+              {(field) => (
+                <input
+                  {...field.control}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder="Local daemon"
+                />
+              )}
             </Field>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>

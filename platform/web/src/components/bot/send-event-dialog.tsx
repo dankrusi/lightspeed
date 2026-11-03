@@ -4,7 +4,7 @@ import { useActionPermissions } from "@/lib/permissions";
 import { api } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 
@@ -73,29 +73,30 @@ export function SendEventDialog({
       }
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel htmlFor="bot-event-kind">Kind</FieldLabel>
-          <Input id="bot-event-kind" value={kind} onChange={(event) => setKind(event.target.value)} />
+        <Field id="bot-event-kind" label="Kind">
+          {(field) => <Input {...field.control} value={kind} onChange={(event) => setKind(event.target.value)} />}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="bot-event-summary">Summary</FieldLabel>
-          <Textarea
-            id="bot-event-summary"
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-            rows={4}
-            data-autofocus
-          />
+        <Field id="bot-event-summary" label="Summary">
+          {(field) => (
+            <Textarea
+              {...field.control}
+              value={summary}
+              onChange={(event) => setSummary(event.target.value)}
+              rows={4}
+              data-autofocus
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="bot-event-data">Data (optional JSON)</FieldLabel>
-          <Textarea
-            id="bot-event-data"
-            value={data}
-            onChange={(event) => setData(event.target.value)}
-            rows={5}
-            className="font-mono text-xs"
-          />
+        <Field id="bot-event-data" label="Data (JSON)" optional>
+          {(field) => (
+            <Textarea
+              {...field.control}
+              value={data}
+              onChange={(event) => setData(event.target.value)}
+              rows={5}
+              className="font-mono text-xs"
+            />
+          )}
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>

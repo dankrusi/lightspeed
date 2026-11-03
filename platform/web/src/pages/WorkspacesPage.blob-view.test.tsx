@@ -218,14 +218,14 @@ it("keeps the selected view when navigating between workspace files", async () =
   stored = "# Other file";
   await act(async () => container.querySelector<HTMLAnchorElement>('a[href$="/files/docs/other.txt"]')!.click());
   await waitForUi(() => expect(container.querySelector("section h1:not(header h1)")?.textContent).toBe("Other file"));
-  expect(button("Preview").getAttribute("aria-selected")).toBe("true");
+  expect(button("Preview").getAttribute("aria-checked")).toBe("true");
   expect(container.querySelector("textarea")).toBeNull();
   expect(button("Saved").disabled).toBe(true);
   await act(async () => button("Source").click());
   stored = "# Notes";
   await act(async () => container.querySelector<HTMLAnchorElement>(`a[href$="/files/docs/${encodeURIComponent(name)}"]`)!.click());
   await waitForUi(() => expect(container.querySelector("textarea")?.value).toBe("# Notes"));
-  expect(button("Source").getAttribute("aria-selected")).toBe("true");
+  expect(button("Source").getAttribute("aria-checked")).toBe("true");
 });
 
 it("keeps the selected view after visiting a non-text file", async () => {
@@ -237,7 +237,7 @@ it("keeps the selected view after visiting a non-text file", async () => {
   expect(container.querySelector('[aria-label="Markdown view"]')).toBeNull();
   await act(async () => container.querySelector<HTMLAnchorElement>('a[href$="/files/docs/other.txt"]')!.click());
   await waitForUi(() => expect(container.querySelector("section h1:not(header h1)")?.textContent).toBe("Notes"));
-  expect(button("Preview").getAttribute("aria-selected")).toBe("true");
+  expect(button("Preview").getAttribute("aria-checked")).toBe("true");
   await act(async () => button("Source").click());
   await waitForUi(() => expect(container.querySelector("textarea")?.value).toBe(stored));
 });

@@ -48,7 +48,7 @@ import { SessionConfigEditor } from "@/components/session/session-config-editor"
 import { SessionSettingsDialog } from "@/components/session/session-settings-sheet";
 import { SessionHistoryLoader } from "@/components/session/history-loader";
 import { SetupEditorSection } from "@/components/session/setup-editor-section";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import {
@@ -1072,36 +1072,38 @@ function NewSessionDialog({
     >
       {step === "basics" ? (
         <form id={formId} onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="new-session-name">Name</FieldLabel>
-            <Input
-              id="new-session-name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Scratch chat"
-              autoFocus
-            />
+          <Field id="new-session-name" label="Name">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Scratch chat"
+                autoFocus
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="new-session-profile">Profile</FieldLabel>
-            <Select
-              id="new-session-profile"
-              value={profileId}
-              onChange={(event) => {
-                setProfileId(event.target.value);
-                setInlineProfile(null);
-                setConfigError(null);
-                setRetentionError(null);
-                setError(null);
-              }}
-            >
-              <option value="">No profile (universe default)</option>
-              {(profiles.data ?? []).map((profile) => (
-                <option key={profile.profileId} value={profile.profileId}>
-                  {profile.displayName ?? profile.profileId}
-                </option>
-              ))}
-            </Select>
+          <Field id="new-session-profile" label="Profile">
+            {(field) => (
+              <Select
+                {...field.control}
+                value={profileId}
+                onChange={(event) => {
+                  setProfileId(event.target.value);
+                  setInlineProfile(null);
+                  setConfigError(null);
+                  setRetentionError(null);
+                  setError(null);
+                }}
+              >
+                <option value="">No profile (universe default)</option>
+                {(profiles.data ?? []).map((profile) => (
+                  <option key={profile.profileId} value={profile.profileId}>
+                    {profile.displayName ?? profile.profileId}
+                  </option>
+                ))}
+              </Select>
+            )}
           </Field>
           {modelSummary}
           {canConfigure && <Button

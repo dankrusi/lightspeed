@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Copy } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 /** Title and description of a create dialog once it shows the new key's secret. */
@@ -17,25 +17,31 @@ export function ApiKeySecret({ secret, keyPrefix }: { secret: string; keyPrefix:
     setCopied(true);
   };
   return (
-    <div className="grid gap-2">
-      <FieldLabel htmlFor="api-key-secret">API key</FieldLabel>
-      <div className="flex gap-2">
-        <Input
-          id="api-key-secret"
-          value={secret}
-          readOnly
-          className="font-mono text-xs"
-          onFocus={(event) => event.currentTarget.select()}
-        />
-        <Button type="button" variant="outline" onClick={() => void copy()}>
-          {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Identifier: <span className="font-mono">{keyPrefix}</span>
-      </p>
-    </div>
+    <Field
+      id="api-key-secret"
+      label="API key"
+      hint={
+        <>
+          Identifier: <span className="font-mono">{keyPrefix}</span>
+        </>
+      }
+    >
+      {(field) => (
+        <div className="flex gap-2">
+          <Input
+            {...field.control}
+            value={secret}
+            readOnly
+            className="font-mono text-xs"
+            onFocus={(event) => event.currentTarget.select()}
+          />
+          <Button type="button" variant="outline" onClick={() => void copy()}>
+            {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
+            {copied ? "Copied" : "Copy"}
+          </Button>
+        </div>
+      )}
+    </Field>
   );
 }
 

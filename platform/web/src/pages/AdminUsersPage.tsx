@@ -8,7 +8,7 @@ import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   Table,
@@ -272,48 +272,52 @@ function EditUserDialog({
     >
       <form id={formId} onSubmit={submit} className="grid gap-5">
         <div className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="edit-user-name">Name</FieldLabel>
-            <Input
-              id="edit-user-name"
-              value={name}
-              disabled={company}
-              onChange={(event) => setName(event.target.value)}
-              required
-              autoFocus
-            />
+          <Field id="edit-user-name" label="Name">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={name}
+                disabled={company}
+                onChange={(event) => setName(event.target.value)}
+                required
+                autoFocus
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="edit-user-email">Email</FieldLabel>
-            <Input
-              id="edit-user-email"
-              type="email"
-              value={email}
-              disabled={company}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-            <FieldDescription>
-              Admin-managed addresses are treated as verified sign-in addresses.
-            </FieldDescription>
+          <Field
+            id="edit-user-email"
+            label="Email"
+            hint="Admin-managed addresses are treated as verified sign-in addresses."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                type="email"
+                value={email}
+                disabled={company}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="edit-user-role">Platform role</FieldLabel>
-            <Select
-              id="edit-user-role"
-              className="w-full"
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-              disabled={isCurrentUser || company || user?.emergencyAdmin === true}
-            >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
-            </Select>
-            {isCurrentUser && (
-              <FieldDescription>
-                Another platform admin must change your role, preventing accidental
-                self-lockout.
-              </FieldDescription>
+          <Field
+            id="edit-user-role"
+            label="Platform role"
+            hint={isCurrentUser
+              ? "Another platform admin must change your role, preventing accidental self-lockout."
+              : undefined}
+          >
+            {(field) => (
+              <Select
+                {...field.control}
+                className="w-full"
+                value={role}
+                onChange={(event) => setRole(event.target.value)}
+                disabled={isCurrentUser || company || user?.emergencyAdmin === true}
+              >
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </Select>
             )}
           </Field>
         </div>
@@ -326,28 +330,30 @@ function EditUserDialog({
               {isCurrentUser ? " You will be signed out if you reset your own password." : ""}
             </p>
           </div>
-          <Field>
-            <FieldLabel htmlFor="edit-user-password">New password</FieldLabel>
-            <Input
-              id="edit-user-password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              minLength={8}
-              autoComplete="new-password"
-            />
+          <Field id="edit-user-password" label="New password">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                minLength={8}
+                autoComplete="new-password"
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="edit-user-confirm">Repeat new password</FieldLabel>
-            <Input
-              id="edit-user-confirm"
-              type="password"
-              value={confirm}
-              onChange={(event) => setConfirm(event.target.value)}
-              minLength={8}
-              autoComplete="new-password"
-              required={Boolean(password)}
-            />
+          <Field id="edit-user-confirm" label="Repeat new password">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={confirm}
+                onChange={(event) => setConfirm(event.target.value)}
+                minLength={8}
+                autoComplete="new-password"
+                required={Boolean(password)}
+              />
+            )}
           </Field>
         </div>}
 
@@ -435,49 +441,53 @@ function CreateUserDialog({
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
         <div className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="user-name">Name</FieldLabel>
-            <Input
-              id="user-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoFocus
-            />
+          <Field id="user-name" label="Name">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                autoFocus
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="user-email">Email</FieldLabel>
-            <Input
-              id="user-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <Field id="user-email" label="Email">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="user-password">Password</FieldLabel>
-            <Input
-              id="user-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={8}
-              required
-            />
+          <Field id="user-password" label="Password">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={8}
+                required
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="user-role">Role</FieldLabel>
-            <Select
-              id="user-role"
-              className="w-full"
-              value={sso ? "admin" : role}
-              disabled={sso}
-              onChange={(event) => setRole(event.target.value)}
-            >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
-            </Select>
+          <Field id="user-role" label="Role">
+            {(field) => (
+              <Select
+                {...field.control}
+                className="w-full"
+                value={sso ? "admin" : role}
+                disabled={sso}
+                onChange={(event) => setRole(event.target.value)}
+              >
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </Select>
+            )}
           </Field>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}

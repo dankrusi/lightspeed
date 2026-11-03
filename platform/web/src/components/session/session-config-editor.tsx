@@ -1,5 +1,5 @@
 import { AGENT_MODEL_API_KINDS } from "@lightspeed-ai/platform-shared";
-import { createContext, useContext, useEffect, useId, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useState, type ComponentProps, type ReactNode } from "react";
 import type { WorkspaceAttachmentDraft } from "@/api";
 import {
   CalendarDots,
@@ -31,9 +31,8 @@ import {
   ComboboxList,
   ComboboxValue,
 } from "@/components/ui/combobox";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Label } from "@/components/ui/label";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
@@ -910,8 +909,17 @@ function ModelFields({ config, models, defaultModelLabel, manualModel, onManualM
   return (
     <div className="grid gap-3">
       <div className="grid gap-3 md:grid-cols-2">
-        <Field>
-        <FieldLabel>Model</FieldLabel>
+        <div className="grid content-start gap-3">
+        <Field
+          id="session-config-model"
+          label="Model"
+          hint={currentModel
+            ? `${currentModel.providerId} · ${currentModel.apiKind}`
+            : models.length
+              ? "Choose a provider-discovered model, or enter a route manually."
+              : "No models were discovered. You can still enter a route manually."}
+        >
+        {(field) => (
         <Combobox disabled={readOnly}
           items={choiceKeys}
           value={selected}
@@ -951,8 +959,7 @@ function ModelFields({ config, models, defaultModelLabel, manualModel, onManualM
             });
           }}
         >
-          <ComboboxInput readOnly={readOnly} showTrigger={!readOnly}
-            id="session-config-model"
+          <ComboboxInput {...field.control} readOnly={readOnly} showTrigger={!readOnly}
             className="w-full"
             placeholder="Search models..."
             aria-label="Search models"
@@ -990,42 +997,41 @@ function ModelFields({ config, models, defaultModelLabel, manualModel, onManualM
             </ComboboxList>
           </ComboboxContent>
         </Combobox>
-        <FieldDescription className="text-xs">
-          {currentModel
-            ? `${currentModel.providerId} · ${currentModel.apiKind}`
-            : models.length
-              ? "Choose a provider-discovered model, or enter a route manually."
-              : "No models were discovered. You can still enter a route manually."}
-        </FieldDescription>
-        {currentModel && <ModelCapabilities option={currentModel} />}
+        )}
         </Field>
-        <Field>
-          <FieldLabel>Reasoning effort</FieldLabel>
-          <Input readOnly={readOnly}
-            value={reasoningEffort}
-            list={reasoningOptions.length ? reasoningOptionsId : undefined}
-            onChange={(e) => updateReasoningEffort(e.target.value || undefined)}
-            placeholder="Provider default"
-          />
-          {reasoningOptions.length > 0 && (
-            <datalist id={reasoningOptionsId}>
-              {reasoningOptions.map((effort) => (
-                <option key={effort} value={effort} />
-              ))}
-            </datalist>
+        {currentModel && <ModelCapabilities option={currentModel} />}
+        </div>
+        <Field
+          className="content-start"
+          label="Reasoning effort"
+          hint={currentModel?.capabilities.reasoningEfforts?.length
+            ? "Choose a known tier or enter any provider-supported value."
+            : "No tiers are known. Enter a provider-supported value, or leave unset for its default."}
+        >
+          {(field) => (
+            <>
+              <Input {...field.control} readOnly={readOnly}
+                value={reasoningEffort}
+                list={reasoningOptions.length ? reasoningOptionsId : undefined}
+                onChange={(e) => updateReasoningEffort(e.target.value || undefined)}
+                placeholder="Provider default"
+              />
+              {reasoningOptions.length > 0 && (
+                <datalist id={reasoningOptionsId}>
+                  {reasoningOptions.map((effort) => (
+                    <option key={effort} value={effort} />
+                  ))}
+                </datalist>
+              )}
+            </>
           )}
-          <FieldDescription className="text-xs">
-            {currentModel?.capabilities.reasoningEfforts?.length
-              ? "Choose a known tier or enter any provider-supported value."
-              : "No tiers are known. Enter a provider-supported value, or leave unset for its default."}
-          </FieldDescription>
         </Field>
       </div>
       {selected === "manual" && (
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field><FieldLabel>Provider id</FieldLabel><Input readOnly={readOnly} value={pinnedProviderId ?? string(model.providerId)} disabled={Boolean(pinnedProviderId)} onChange={(e) => update("providerId", e.target.value)} placeholder="openai" /></Field>
-          <Field><FieldLabel>API kind</FieldLabel><Input readOnly={readOnly} value={pinnedApiKind ?? string(model.apiKind)} disabled={Boolean(pinnedApiKind)} onChange={(e) => update("apiKind", e.target.value)} placeholder="openai:responses" /></Field>
-          <Field><FieldLabel>Model</FieldLabel><Input readOnly={readOnly} value={string(model.model)} onChange={(e) => update("model", e.target.value)} placeholder="gpt-5.5" /></Field>
+          <Field label="Provider id">{(field) => <Input {...field.control} readOnly={readOnly} value={pinnedProviderId ?? string(model.providerId)} disabled={Boolean(pinnedProviderId)} onChange={(e) => update("providerId", e.target.value)} placeholder="openai" />}</Field>
+          <Field label="API kind">{(field) => <Input {...field.control} readOnly={readOnly} value={pinnedApiKind ?? string(model.apiKind)} disabled={Boolean(pinnedApiKind)} onChange={(e) => update("apiKind", e.target.value)} placeholder="openai:responses" />}</Field>
+          <Field label="Model">{(field) => <Input {...field.control} readOnly={readOnly} value={string(model.model)} onChange={(e) => update("model", e.target.value)} placeholder="gpt-5.5" />}</Field>
         </div>
       )}
     </div>
@@ -1176,66 +1182,74 @@ function GenerationFields({ config, change }: { config: RecordValue; change: (fn
   const toolChoiceType = string(toolChoice.type) || "default";
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <Field>
-        <FieldLabel>Max output tokens</FieldLabel>
-        <Input readOnly={readOnly}
-          type="number"
-          min="0"
-          value={numberString(generation.maxOutputTokens)}
-          onChange={(e) => update("maxOutputTokens", parseNumber(e.target.value))}
-          placeholder="Provider default"
-        />
+      <Field label="Max output tokens">
+        {(field) => (
+          <Input {...field.control} readOnly={readOnly}
+            type="number"
+            min="0"
+            value={numberString(generation.maxOutputTokens)}
+            onChange={(e) => update("maxOutputTokens", parseNumber(e.target.value))}
+            placeholder="Provider default"
+          />
+        )}
       </Field>
-      <Field>
-        <FieldLabel>Parallel tool use</FieldLabel>
-        <Select aria-label="Parallel tool use" disabled={readOnly} value={parallel} onChange={(event) => update("parallelToolUse", event.target.value === "default" ? undefined : event.target.value === "true")}>
-          <option value="default">Provider default</option>
-          <option value="true">Allow</option>
-          <option value="false">Disallow</option>
-        </Select>
+      <Field label="Parallel tool use">
+        {(field) => (
+          <Select {...field.control} aria-label="Parallel tool use" disabled={readOnly} value={parallel} onChange={(event) => update("parallelToolUse", event.target.value === "default" ? undefined : event.target.value === "true")}>
+            <option value="default">Provider default</option>
+            <option value="true">Allow</option>
+            <option value="false">Disallow</option>
+          </Select>
+        )}
       </Field>
       {supportsProcessingTier && (
-        <Field>
-          <FieldLabel>Processing tier</FieldLabel>
-          <Select aria-label="Processing tier" disabled={readOnly}
-            value={processingTier}
-            onChange={(event) => update(
-              "processingTier",
-              event.target.value === "providerDefault" ? undefined : event.target.value,
-            )}
-          >
-            <option value="providerDefault">Provider default</option>
-            <option value="standard">Standard</option>
-            <option value="fast">Fast</option>
-            <option value="flex">Flex</option>
-          </Select>
-          <FieldDescription className="text-xs">
-            Applied to every run. Fast prioritizes latency; Flex uses lower-priority processing.
-          </FieldDescription>
+        <Field
+          label="Processing tier"
+          hint="Applied to every run. Fast prioritizes latency; Flex uses lower-priority processing."
+        >
+          {(field) => (
+            <Select {...field.control} aria-label="Processing tier" disabled={readOnly}
+              value={processingTier}
+              onChange={(event) => update(
+                "processingTier",
+                event.target.value === "providerDefault" ? undefined : event.target.value,
+              )}
+            >
+              <option value="providerDefault">Provider default</option>
+              <option value="standard">Standard</option>
+              <option value="fast">Fast</option>
+              <option value="flex">Flex</option>
+            </Select>
+          )}
         </Field>
       )}
-      <Field>
-        <FieldLabel>Tool choice</FieldLabel>
-        <Select aria-label="Tool choice" disabled={readOnly} value={toolChoiceType} onChange={(event) => update("toolChoice", event.target.value === "default" ? undefined : { type: event.target.value })}>
-          <option value="default">Provider default</option>
-          <option value="auto">Auto</option>
-          <option value="none">None</option>
-          <option value="requiredAny">Require a tool</option>
-          <option value="specific">Specific tool</option>
-        </Select>
+      <Field label="Tool choice">
+        {(field) => (
+          <Select {...field.control} aria-label="Tool choice" disabled={readOnly} value={toolChoiceType} onChange={(event) => update("toolChoice", event.target.value === "default" ? undefined : { type: event.target.value })}>
+            <option value="default">Provider default</option>
+            <option value="auto">Auto</option>
+            <option value="none">None</option>
+            <option value="requiredAny">Require a tool</option>
+            <option value="specific">Specific tool</option>
+          </Select>
+        )}
       </Field>
       {toolChoiceType === "specific" && (
-        <Field className="sm:col-span-2">
-          <FieldLabel>Tool ID</FieldLabel>
-          <Input readOnly={readOnly}
-            value={string(toolChoice.toolId)}
-            onChange={(e) => update("toolChoice", { type: "specific", toolId: e.target.value })}
-            placeholder="env.run_process"
-          />
-          <FieldDescription className="text-xs">
+        <Field
+          className="sm:col-span-2"
+          label="Tool ID"
+          hint={<>
             Use the enabled tool's registry ID, such as env.run_process or vfs.read_file.
             Builtin tool names are resolved for the selected model. For custom functions, use the function name.
-          </FieldDescription>
+          </>}
+        >
+          {(field) => (
+            <Input {...field.control} readOnly={readOnly}
+              value={string(toolChoice.toolId)}
+              onChange={(e) => update("toolChoice", { type: "specific", toolId: e.target.value })}
+              placeholder="env.run_process"
+            />
+          )}
         </Field>
       )}
     </div>
@@ -1251,7 +1265,7 @@ function LimitsFields({ config, change }: { config: RecordValue; change: (fn: (n
     if (number === undefined) delete item[key]; else item[key] = number;
     if (Object.keys(item).length) next.limits = item; else delete next.limits;
   });
-  return <div className="grid gap-3 sm:grid-cols-2"><Field><FieldLabel>Max turns</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(limits.maxTurns)} onChange={(e) => update("maxTurns", e.target.value)} /></Field><Field><FieldLabel>Max tool rounds</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(limits.maxToolRounds)} onChange={(e) => update("maxToolRounds", e.target.value)} /></Field></div>;
+  return <div className="grid gap-3 sm:grid-cols-2"><Field label="Max turns">{(field) => <Input {...field.control} readOnly={readOnly} type="number" min="0" value={numberString(limits.maxTurns)} onChange={(e) => update("maxTurns", e.target.value)} />}</Field><Field label="Max tool rounds">{(field) => <Input {...field.control} readOnly={readOnly} type="number" min="0" value={numberString(limits.maxToolRounds)} onChange={(e) => update("maxToolRounds", e.target.value)} />}</Field></div>;
 }
 
 function ContextFields({ config, change }: { config: RecordValue; change: (fn: (next: RecordValue) => void) => void }) {
@@ -1267,7 +1281,7 @@ function ContextFields({ config, change }: { config: RecordValue; change: (fn: (
     if (Object.keys(compact).length) context.compaction = compact; else delete context.compaction;
     if (Object.keys(context).length) next.context = context; else delete next.context;
   });
-  return <div className="grid gap-3 sm:grid-cols-2"><Field><FieldLabel>Mode</FieldLabel><Select aria-label="Mode" disabled={readOnly} value={mode} onChange={(event) => update("mode", event.target.value === "default" ? undefined : event.target.value)}><option value="default">Engine default</option><option value="disabled">Disabled</option><option value="providerTriggered">Provider triggered</option><option value="providerStandalone">Engine managed standalone</option></Select><FieldDescription>Engine default uses standalone compaction. Unknown context limits recover when the provider reports a full context window.</FieldDescription></Field><Field><FieldLabel>Input limit tokens</FieldLabel><Input readOnly={readOnly} type="number" min="1" value={numberString(context.inputLimitTokens)} onChange={(e) => change((next) => { const updated = record(next.context); const value = parseNumber(e.target.value); if (value === undefined) delete updated.inputLimitTokens; else updated.inputLimitTokens = value; if (Object.keys(updated).length) next.context = updated; else delete next.context; })} /><FieldDescription>Override the usable input capacity. Leave blank to use reported capacity or error-driven recovery.</FieldDescription></Field>{mode === "providerTriggered" || mode === "providerStandalone" ? <Field><FieldLabel>Compact threshold tokens</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(compaction.compactThresholdTokens)} onChange={(e) => update("compactThresholdTokens", parseNumber(e.target.value))} /></Field> : null}{mode === "providerStandalone" ? <Field><FieldLabel>Target tokens</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(compaction.targetTokens)} onChange={(e) => update("targetTokens", parseNumber(e.target.value))} /></Field> : null}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2"><Field label="Mode" hint="Engine default uses standalone compaction. Unknown context limits recover when the provider reports a full context window.">{(field) => <Select {...field.control} aria-label="Mode" disabled={readOnly} value={mode} onChange={(event) => update("mode", event.target.value === "default" ? undefined : event.target.value)}><option value="default">Engine default</option><option value="disabled">Disabled</option><option value="providerTriggered">Provider triggered</option><option value="providerStandalone">Engine managed standalone</option></Select>}</Field><Field label="Input limit tokens" hint="Override the usable input capacity. Leave blank to use reported capacity or error-driven recovery.">{(field) => <Input {...field.control} readOnly={readOnly} type="number" min="1" value={numberString(context.inputLimitTokens)} onChange={(e) => change((next) => { const updated = record(next.context); const value = parseNumber(e.target.value); if (value === undefined) delete updated.inputLimitTokens; else updated.inputLimitTokens = value; if (Object.keys(updated).length) next.context = updated; else delete next.context; })} />}</Field>{mode === "providerTriggered" || mode === "providerStandalone" ? <Field label="Compact threshold tokens">{(field) => <Input {...field.control} readOnly={readOnly} type="number" min="0" value={numberString(compaction.compactThresholdTokens)} onChange={(e) => update("compactThresholdTokens", parseNumber(e.target.value))} />}</Field> : null}{mode === "providerStandalone" ? <Field label="Target tokens">{(field) => <Input {...field.control} readOnly={readOnly} type="number" min="0" value={numberString(compaction.targetTokens)} onChange={(e) => update("targetTokens", parseNumber(e.target.value))} />}</Field> : null}</div>;
 }
 
 function FeaturePanel({
@@ -1422,21 +1436,22 @@ function VfsFields({
             >
               <div className="grid gap-3 sm:grid-cols-3">
                 {snapshot ? (
-                  <Field>
-                    <FieldLabel>Snapshot ref</FieldLabel>
-                    <Input readOnly={readOnly}
-                      className="font-mono"
-                      value={string(attachment.snapshotRef)}
-                      onChange={(event) => updateAttachment(index, (next) => {
-                        next.snapshotRef = event.target.value;
-                      })}
-                    />
+                  <Field label="Snapshot ref">
+                    {(field) => (
+                      <Input {...field.control} readOnly={readOnly}
+                        className="font-mono"
+                        value={string(attachment.snapshotRef)}
+                        onChange={(event) => updateAttachment(index, (next) => {
+                          next.snapshotRef = event.target.value;
+                        })}
+                      />
+                    )}
                   </Field>
                 ) : (
-                  <Field>
-                    <FieldLabel>Workspace</FieldLabel>
-                    {options.length || workspacesLoading ? (
+                  <Field label="Workspace">
+                    {(field) => options.length || workspacesLoading ? (
                       <Select
+                        {...field.control}
                         aria-label="Workspace"
                         value={string(attachment.workspaceId)}
                         disabled={readOnly || workspacesLoading}
@@ -1462,7 +1477,7 @@ function VfsFields({
                         ))}
                       </Select>
                     ) : (
-                      <Input readOnly={readOnly}
+                      <Input {...field.control} readOnly={readOnly}
                         className="font-mono"
                         value={string(attachment.workspaceId)}
                         onChange={(event) => updateAttachment(index, (next) => {
@@ -1473,32 +1488,35 @@ function VfsFields({
                     )}
                   </Field>
                 )}
-                <Field>
-                  <FieldLabel>Session path</FieldLabel>
-                  <Input readOnly={readOnly}
-                    className="font-mono"
-                    value={string(attachment.path)}
-                    onChange={(event) => updateAttachment(index, (next) => {
-                      next.path = event.target.value;
-                    })}
-                  />
+                <Field label="Session path">
+                  {(field) => (
+                    <Input {...field.control} readOnly={readOnly}
+                      className="font-mono"
+                      value={string(attachment.path)}
+                      onChange={(event) => updateAttachment(index, (next) => {
+                        next.path = event.target.value;
+                      })}
+                    />
+                  )}
                 </Field>
-                <Field>
-                  <FieldLabel>Access</FieldLabel>
-                  <Select
-                    aria-label="Access"
-                    value={string(attachment.access) || "edit"}
-                    disabled={readOnly || snapshot}
-                    onChange={(event) => {
-                      const access = event.target.value;
-                      updateAttachment(index, (next) => {
-                        next.access = access;
-                      });
-                    }}
-                  >
-                    <option value="edit">Read and write</option>
-                    <option value="read">Read only</option>
-                  </Select>
+                <Field label="Access">
+                  {(field) => (
+                    <Select
+                      {...field.control}
+                      aria-label="Access"
+                      value={string(attachment.access) || "edit"}
+                      disabled={readOnly || snapshot}
+                      onChange={(event) => {
+                        const access = event.target.value;
+                        updateAttachment(index, (next) => {
+                          next.access = access;
+                        });
+                      }}
+                    >
+                      <option value="edit">Read and write</option>
+                      <option value="read">Read only</option>
+                    </Select>
+                  )}
                 </Field>
               </div>
               <IconButton disabled={readOnly}
@@ -1560,8 +1578,8 @@ function WebFields({
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap gap-x-6 gap-y-3">
-        <Label className="gap-2 font-normal"><Checkbox disabled={readOnly} checked={fetchEnabled} onChange={(event) => setSubfeature("fetch", event.target.checked)} />Fetch pages</Label>
-        <Label className="gap-2 font-normal"><Checkbox disabled={readOnly} checked={searchEnabled} onChange={(event) => setSubfeature("search", event.target.checked)} />Search the web</Label>
+        <Checkbox label="Fetch pages" disabled={readOnly} checked={fetchEnabled} onChange={(event) => setSubfeature("fetch", event.target.checked)} />
+        <Checkbox label="Search the web" disabled={readOnly} checked={searchEnabled} onChange={(event) => setSubfeature("search", event.target.checked)} />
       </div>
       {searchEnabled && (
         <SettingsDisclosure
@@ -1574,45 +1592,43 @@ function WebFields({
           contentClassName="gap-3"
         >
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor={`${id}-allowed`}>Allowed domains</FieldLabel>
-              <Input readOnly={readOnly}
-                id={`${id}-allowed`}
-                value={commaList(search.allowedDomains)}
-                onChange={(e) => patch((next) => {
-                  const domains = listFromInput(e.target.value);
-                  const item = record(next.search);
-                  if (domains.length) item.allowedDomains = domains;
-                  else delete item.allowedDomains;
-                  if (exclusiveDomainFilters && domains.length) delete item.blockedDomains;
-                  next.search = item;
-                })}
-                placeholder="All domains"
-              />
-              <FieldDescription className="text-xs">Comma-separated domains. Empty allows all.</FieldDescription>
+            <Field id={`${id}-allowed`} label="Allowed domains" hint="Comma-separated domains. Empty allows all.">
+              {(field) => (
+                <Input {...field.control} readOnly={readOnly}
+                  value={commaList(search.allowedDomains)}
+                  onChange={(e) => patch((next) => {
+                    const domains = listFromInput(e.target.value);
+                    const item = record(next.search);
+                    if (domains.length) item.allowedDomains = domains;
+                    else delete item.allowedDomains;
+                    if (exclusiveDomainFilters && domains.length) delete item.blockedDomains;
+                    next.search = item;
+                  })}
+                  placeholder="All domains"
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor={`${id}-blocked`}>Blocked domains</FieldLabel>
-              <Input readOnly={readOnly}
-                id={`${id}-blocked`}
-                value={commaList(search.blockedDomains)}
-                onChange={(e) => patch((next) => {
-                  const domains = listFromInput(e.target.value);
-                  const item = record(next.search);
-                  if (domains.length) item.blockedDomains = domains;
-                  else delete item.blockedDomains;
-                  if (exclusiveDomainFilters && domains.length) delete item.allowedDomains;
-                  next.search = item;
-                })}
-                placeholder="None"
-              />
-              <FieldDescription className="text-xs">Comma-separated domains. Empty blocks none.</FieldDescription>
+            <Field id={`${id}-blocked`} label="Blocked domains" hint="Comma-separated domains. Empty blocks none.">
+              {(field) => (
+                <Input {...field.control} readOnly={readOnly}
+                  value={commaList(search.blockedDomains)}
+                  onChange={(e) => patch((next) => {
+                    const domains = listFromInput(e.target.value);
+                    const item = record(next.search);
+                    if (domains.length) item.blockedDomains = domains;
+                    else delete item.blockedDomains;
+                    if (exclusiveDomainFilters && domains.length) delete item.allowedDomains;
+                    next.search = item;
+                  })}
+                  placeholder="None"
+                />
+              )}
             </Field>
           </div>
           {exclusiveDomainFilters && (
-            <FieldDescription className="text-xs">
+            <p className="text-xs text-fg-muted">
               Anthropic accepts either an allowed-domain list or a blocked-domain list, not both.
-            </FieldDescription>
+            </p>
           )}
         </SettingsDisclosure>
       )}
@@ -1639,23 +1655,23 @@ function CodeModeFields({
       forceOpen={Boolean(codeModeError(feature))}
     >
       {codeModeLimits.map((limit) => (
-        <Field key={limit.key}>
-          <FieldLabel htmlFor={`${id}-${limit.key}`}>{limit.label}</FieldLabel>
-          <Input
-            readOnly={readOnly}
-            id={`${id}-${limit.key}`}
-            type="number"
-            min="1"
-            max={limit.max}
-            step="1"
-            placeholder={String(limit.defaultValue)}
-            value={numberString(feature[limit.key])}
-            onChange={(e) => patch((next) => {
-              if (e.target.value === "") delete next[limit.key];
-              else next[limit.key] = Number(e.target.value);
-            })}
-          />
-          <FieldDescription className="text-xs">{limit.hint} Leave blank for the default.</FieldDescription>
+        <Field key={limit.key} id={`${id}-${limit.key}`} label={limit.label} hint={`${limit.hint} Leave blank for the default.`}>
+          {(field) => (
+            <Input
+              {...field.control}
+              readOnly={readOnly}
+              type="number"
+              min="1"
+              max={limit.max}
+              step="1"
+              placeholder={String(limit.defaultValue)}
+              value={numberString(feature[limit.key])}
+              onChange={(e) => patch((next) => {
+                if (e.target.value === "") delete next[limit.key];
+                else next[limit.key] = Number(e.target.value);
+              })}
+            />
+          )}
         </Field>
       ))}
     </SettingsDisclosure>
@@ -1683,19 +1699,22 @@ function SubagentFields({
   const customLimits = limits.filter((limit) => feature[limit.key] != null).length;
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <Field className="sm:col-span-2">
-        <FieldLabel>Agents</FieldLabel>
-        <ProfileMultiSelect
-          value={agents}
-          profiles={profiles}
-          onChange={(values) => patch((next) => {
-            next.agents = values;
-          })}
-          placeholder="Pick the profiles the agent may run"
-        />
-        <FieldDescription className="text-xs">
-          The agent menu. Every listed profile must exist; the model sees ids and descriptions in its sub-agent catalog.
-        </FieldDescription>
+      <Field
+        className="sm:col-span-2"
+        label="Agents"
+        hint="The agent menu. Every listed profile must exist; the model sees ids and descriptions in its sub-agent catalog."
+      >
+        {(field) => (
+          <ProfileMultiSelect
+            inputProps={field.control}
+            value={agents}
+            profiles={profiles}
+            onChange={(values) => patch((next) => {
+              next.agents = values;
+            })}
+            placeholder="Pick the profiles the agent may run"
+          />
+        )}
       </Field>
       <SettingsDisclosure
         className="sm:col-span-2"
@@ -1705,21 +1724,20 @@ function SubagentFields({
         label="Customize sub-agent limits"
       >
         {limits.map((limit) => (
-          <Field key={limit.key}>
-            <FieldLabel htmlFor={`${id}-${limit.key}`}>{limit.label}</FieldLabel>
-            <Input readOnly={readOnly}
-              id={`${id}-${limit.key}`}
-              type="number"
-              min="1"
-              placeholder={limit.placeholder}
-              value={numberString(feature[limit.key])}
-              onChange={(e) => patch((next) => {
-                const value = parseNumber(e.target.value);
-                if (value === undefined) delete next[limit.key];
-                else next[limit.key] = value;
-              })}
-            />
-            <FieldDescription className="text-xs">{limit.hint}</FieldDescription>
+          <Field key={limit.key} id={`${id}-${limit.key}`} label={limit.label} hint={limit.hint}>
+            {(field) => (
+              <Input {...field.control} readOnly={readOnly}
+                type="number"
+                min="1"
+                placeholder={limit.placeholder}
+                value={numberString(feature[limit.key])}
+                onChange={(e) => patch((next) => {
+                  const value = parseNumber(e.target.value);
+                  if (value === undefined) delete next[limit.key];
+                  else next[limit.key] = value;
+                })}
+              />
+            )}
           </Field>
         ))}
       </SettingsDisclosure>
@@ -1732,11 +1750,14 @@ function ProfileMultiSelect({
   profiles,
   onChange,
   placeholder,
+  inputProps,
 }: {
   value: string[];
   profiles: ProfileOption[];
   onChange: (value: string[]) => void;
   placeholder: string;
+  /** Label and description wiring from the surrounding field, for the search input. */
+  inputProps?: ComponentProps<"input">;
 }) {
   const readOnly = useContext(ConfigReadOnlyContext);
   const profileMap = new Map(profiles.map((profile) => [profile.profileId, profile]));
@@ -1762,7 +1783,7 @@ function ProfileMultiSelect({
             <ComboboxChip key={profileId} value={profileId}>{profileLabel(profileMap.get(profileId), profileId)}</ComboboxChip>
           ))}
         </ComboboxValue>
-        <ComboboxChipsInput disabled={readOnly} placeholder={value.length ? "Add profile" : placeholder} />
+        <ComboboxChipsInput {...inputProps} disabled={readOnly} placeholder={value.length ? "Add profile" : placeholder} />
       </ComboboxChips>
       <ComboboxContent>
         <ComboboxEmpty>No matching profiles.</ComboboxEmpty>
@@ -1796,17 +1817,21 @@ function WorkingDirectoryField({ environment, feature, patch }: {
   const id = useId();
   const directory = string(feature.workingDirectory);
   const field = (
-    <Field>
-      <FieldLabel htmlFor={id}>Working directory</FieldLabel>
-      <Input readOnly={readOnly} id={id} aria-label={`${environment ? "Environment" : "VFS"} working directory`}
-        className="font-mono" value={directory} placeholder={environment ? "Environment default" : "/"}
-        onChange={(event) => patch((next) => {
-          if (event.target.value) next.workingDirectory = event.target.value;
-          else delete next.workingDirectory;
-        })} />
-      <FieldDescription className="text-xs">{environment
+    <Field
+      id={id}
+      label="Working directory"
+      hint={environment
         ? "Absolute machine directory for file tools, commands, jobs, and discovery. Empty uses the environment default."
-        : "Absolute attached VFS directory for relative file paths. Empty uses /. Source discovery still searches every workspace attachment."}</FieldDescription>
+        : "Absolute attached VFS directory for relative file paths. Empty uses /. Source discovery still searches every workspace attachment."}
+    >
+      {({ control }) => (
+        <Input {...control} readOnly={readOnly} aria-label={`${environment ? "Environment" : "VFS"} working directory`}
+          className="font-mono" value={directory} placeholder={environment ? "Environment default" : "/"}
+          onChange={(event) => patch((next) => {
+            if (event.target.value) next.workingDirectory = event.target.value;
+            else delete next.workingDirectory;
+          })} />
+      )}
     </Field>
   );
   if (!environment) return <div className="grid min-w-0 gap-3">{field}</div>;
@@ -1849,21 +1874,15 @@ function SourceDiscoveryFields({ source, feature, patch }: {
   });
   return (
     <div className="grid min-w-0 max-w-full gap-3 rounded-lg border p-3">
-      <div className="flex items-start justify-between gap-4">
-        <div className="grid min-w-0 gap-1">
-          <Label htmlFor={id}>{prompts ? "Prompt loading" : "Skill discovery"}</Label>
-          <p className="text-xs text-muted-foreground">
-            {prompts ? "Load .md and .txt files as instructions." : "Let the agent discover and read available skills."}
-          </p>
-        </div>
-        <Switch disabled={readOnly} id={id} aria-label={switchLabel}
-          checked={enabled}
-          onChange={(event) => patch((next) => {
-            if (event.target.checked) next[configKey] = {};
-            else delete next[configKey];
-          })}
-        />
-      </div>
+      <Switch disabled={readOnly} aria-label={switchLabel}
+        label={prompts ? "Prompt loading" : "Skill discovery"}
+        description={prompts ? "Load .md and .txt files as instructions." : "Let the agent discover and read available skills."}
+        checked={enabled}
+        onChange={(event) => patch((next) => {
+          if (event.target.checked) next[configKey] = {};
+          else delete next[configKey];
+        })}
+      />
       {enabled && (
         <SettingsDisclosure
           summary={roots.length > 0 ? `${roots.length} custom ${roots.length === 1 ? "root" : "roots"}` : "Default roots"}
@@ -1875,20 +1894,24 @@ function SourceDiscoveryFields({ source, feature, patch }: {
           <p className="text-xs text-muted-foreground">
             {prompts ? `Load direct .md and .txt files from ${domain} prompt roots in alphabetical order. Number prefixes are optional; subfolders are ignored.` : `Advertise ${domain} skills for the agent to read when relevant.`}
           </p>
-          <Field>
-            <FieldLabel htmlFor={`${id}-roots`}>{domain} {prompts ? "prompt" : "skill"} roots</FieldLabel>
-            <Input readOnly={readOnly} id={`${id}-roots`} className="font-mono" value={commaList(settings.roots)}
-              placeholder="Default directories"
-              onChange={(e) => {
-                const roots = listFromInput(e.target.value);
-                update("roots", roots.length ? roots : undefined);
-              }} />
-            <FieldDescription className="text-xs">
+          <Field
+            id={`${id}-roots`}
+            label={`${domain} ${prompts ? "prompt" : "skill"} roots`}
+            hint={<>
               {`Empty searches .agents/${configKey} and .lightspeed/${configKey} ${environment ? "under the working directory and execution user’s home" : "beneath each workspace attachment"}. `}
               {environment
                 ? "Comma-separated overrides replace all defaults, including home. Paths may be absolute or relative to the working directory."
                 : "Comma-separated overrides replace all defaults and must be absolute paths inside workspace attachments."}
-            </FieldDescription>
+            </>}
+          >
+            {(field) => (
+              <Input {...field.control} readOnly={readOnly} className="font-mono" value={commaList(settings.roots)}
+                placeholder="Default directories"
+                onChange={(e) => {
+                  const roots = listFromInput(e.target.value);
+                  update("roots", roots.length ? roots : undefined);
+                }} />
+            )}
           </Field>
         </SettingsDisclosure>
       )}
@@ -1908,7 +1931,6 @@ function EnvironmentFields({
   patch: (fn: (feature: RecordValue) => void) => void;
 }) {
   const readOnly = useContext(ConfigReadOnlyContext);
-  const selectionId = useId();
   const attachments = Array.isArray(feature.environments) ? feature.environments.map(record) : [];
   const update = (index: number, mutate: (attachment: RecordValue) => void) =>
     patch((next) => {
@@ -1969,9 +1991,12 @@ function EnvironmentFields({
         return (
           <div key={index} className="grid gap-3 border-t pt-3">
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-              <Field>
-                <FieldLabel>Environment</FieldLabel>
-                <Select disabled={readOnly}
+              <Field
+                label="Environment"
+                hint={inherited ? "Uses the parent’s active environment captured when the sub-agent starts." : undefined}
+              >
+                {(field) => (
+                <Select {...field.control} disabled={readOnly}
                   aria-label={`Environment ${index + 1}`}
                   value={inherited ? "__inherit__" : id}
                   onChange={(event) => {
@@ -2009,15 +2034,11 @@ function EnvironmentFields({
                     </option>
                   ))}
                 </Select>
-                {inherited && (
-                  <FieldDescription className="text-xs">
-                    Uses the parent’s active environment captured when the sub-agent starts.
-                  </FieldDescription>
                 )}
               </Field>
-              <Field>
-                <FieldLabel>Access</FieldLabel>
-                <Select disabled={readOnly}
+              <Field label="Access" hint={environmentAccessDescriptions[string(attachment.access)]}>
+                {(field) => (
+                <Select {...field.control} disabled={readOnly}
                   aria-label={`Environment ${index + 1} access`}
                   value={string(attachment.access)}
                   onChange={(event) => {
@@ -2032,9 +2053,7 @@ function EnvironmentFields({
                   <option value="exec">Run commands</option>
                   <option value="jobs">Run durable jobs</option>
                 </Select>
-                <FieldDescription className="text-xs">
-                  {environmentAccessDescriptions[string(attachment.access)]}
-                </FieldDescription>
+                )}
               </Field>
               <IconButton disabled={readOnly}
                 size="sm"
@@ -2082,24 +2101,18 @@ function EnvironmentFields({
       })}
       <SourceDiscoveryFields source="environment-prompts" feature={feature} patch={patch} />
       <SourceDiscoveryFields source="environment" feature={feature} patch={patch} />
-      <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
-        <div className="grid gap-1">
-          <Label htmlFor={selectionId}>Environment selection tools</Label>
-          <p className="text-xs text-muted-foreground">
-            Let the agent list, activate, and deactivate attached environments.
-          </p>
-        </div>
-        <Switch disabled={readOnly}
-          id={selectionId}
-          checked={feature.selection === true}
-          onChange={(event) =>
-            patch((next) => {
-              if (event.target.checked) next.selection = true;
-              else delete next.selection;
-            })
-          }
-        />
-      </div>
+      <Switch disabled={readOnly}
+        className="rounded-lg border p-3"
+        label="Environment selection tools"
+        description="Let the agent list, activate, and deactivate attached environments."
+        checked={feature.selection === true}
+        onChange={(event) =>
+          patch((next) => {
+            if (event.target.checked) next.selection = true;
+            else delete next.selection;
+          })
+        }
+      />
     </div>
   );
 }
@@ -2161,10 +2174,9 @@ function McpFields({
           className="grid gap-3 border-t pt-3 sm:grid-cols-[minmax(0,1fr)_auto]"
         >
           <div>
-            <Field>
-              <FieldLabel>Server</FieldLabel>
-              {serverOptions.length ? (
-                <Select disabled={readOnly}
+            <Field label="Server">
+              {(field) => serverOptions.length ? (
+                <Select {...field.control} disabled={readOnly}
                   aria-label="Server"
                   value={string(attachment.serverId)}
                   onChange={(event) => {
@@ -2183,7 +2195,7 @@ function McpFields({
                   ))}
                 </Select>
               ) : (
-                <Input readOnly={readOnly}
+                <Input {...field.control} readOnly={readOnly}
                   className="font-mono"
                   value={string(attachment.serverId)}
                   onChange={(e) => updateAttachment(index, (next) => { next.serverId = e.target.value; delete next.tools; })}

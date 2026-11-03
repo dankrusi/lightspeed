@@ -19,7 +19,7 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
@@ -508,51 +508,51 @@ function PasteCredentialDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel>Secret type</FieldLabel>
-          <Select
-            className="w-full"
-            aria-label="Secret type"
-            value={kind}
-            onChange={(event) => changeKind(event.target.value as SecretKind)}
-          >
-            <option value="environment">Environment secret</option>
-            <option value="bearer">Bearer token</option>
-          </Select>
-          <FieldDescription>
-            {kind === "environment"
+        <Field
+          label="Secret type"
+          hint={
+            kind === "environment"
               ? "Stores an opaque value for injection into an environment variable. Multiline values such as SSH private keys are preserved."
-              : "Creates a revocable access credential that MCP servers or environments can reference."}
-          </FieldDescription>
+              : "Creates a revocable access credential that MCP servers or environments can reference."
+          }
+        >
+          {(field) => (
+            <Select
+              {...field.control}
+              className="w-full"
+              value={kind}
+              onChange={(event) => changeKind(event.target.value as SecretKind)}
+            >
+              <option value="environment">Environment secret</option>
+              <option value="bearer">Bearer token</option>
+            </Select>
+          )}
         </Field>
         {kind === "bearer" && (
-          <Field className="rounded-lg border bg-muted/15 p-3">
-            <label className="flex items-start gap-3">
-              <Checkbox
-                checked={retrievable}
-                onChange={(event) => setRetrievable(event.target.checked)}
-                aria-label="Allow trusted services to retrieve this credential"
-              />
-              <span className="grid gap-1">
-                <span className="text-sm font-medium">Retrievable by trusted services</span>
-                <span className="text-xs text-muted-foreground">
-                  Required for Bot webhook signatures and authenticated HTTP polls. Trusted
-                  service workers can lease the plaintext into memory; every lease is audited.
-                  This choice cannot be changed later.
-                </span>
-              </span>
-            </label>
-          </Field>
-        )}
-        <Field>
-          <FieldLabel htmlFor="secret-name">Display name</FieldLabel>
-          <Input
-            id="secret-name"
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            placeholder={kind === "environment" ? "px-dev SSH private key" : "GitHub deploy token"}
-            autoFocus
+          <Checkbox
+            className="rounded-lg border bg-muted/15 p-3"
+            checked={retrievable}
+            onChange={(event) => setRetrievable(event.target.checked)}
+            label={<span className="text-sm font-medium">Retrievable by trusted services</span>}
+            description={
+              <>
+                Required for Bot webhook signatures and authenticated HTTP polls. Trusted
+                service workers can lease the plaintext into memory; every lease is audited.
+                This choice cannot be changed later.
+              </>
+            }
           />
+        )}
+        <Field id="secret-name" label="Display name">
+          {(field) => (
+            <Input
+              {...field.control}
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              placeholder={kind === "environment" ? "px-dev SSH private key" : "GitHub deploy token"}
+              autoFocus
+            />
+          )}
         </Field>
         {/* Keyed by type: changing the type clears the ID and closes its field. */}
         <SettingsDisclosure
@@ -562,52 +562,57 @@ function PasteCredentialDialog({
           label="Change credential ID"
           forceOpen={Boolean(error) && idConflict !== undefined}
         >
-          <Field>
-            <FieldLabel htmlFor="secret-grant-id">Custom credential ID</FieldLabel>
-            <Input
-              id="secret-grant-id"
-              value={grantId}
-              onChange={(event) => {
-                setGrantId(event.target.value);
-                setError(null);
-              }}
-              placeholder="Generated automatically when blank"
-              className="font-mono"
-            />
-            <FieldDescription>
-              Useful for automation and stable references. It must be unique and cannot be
-              changed or reused after this credential is revoked.
-            </FieldDescription>
+          <Field
+            id="secret-grant-id"
+            label="Custom credential ID"
+            hint="Useful for automation and stable references. It must be unique and cannot be changed or reused after this credential is revoked."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={grantId}
+                onChange={(event) => {
+                  setGrantId(event.target.value);
+                  setError(null);
+                }}
+                placeholder="Generated automatically when blank"
+                className="font-mono"
+              />
+            )}
           </Field>
         </SettingsDisclosure>
-        <Field>
-          <FieldLabel htmlFor="secret-value">Secret value</FieldLabel>
-          {kind === "environment" ? (
-            <Textarea
-              id="secret-value"
-              value={secret}
-              onChange={(event) => setSecret(event.target.value)}
-              autoComplete="off"
-              spellCheck={false}
-              className="min-h-36 resize-y font-mono"
-              placeholder="Paste the value exactly, including any line breaks"
-            />
-          ) : (
-            <Input
-              id="secret-value"
-              type="password"
-              value={secret}
-              onChange={(event) => setSecret(event.target.value)}
-              autoComplete="new-password"
-              spellCheck={false}
-              className="font-mono"
-            />
-          )}
-          <FieldDescription>
-            {kind === "environment"
+        <Field
+          id="secret-value"
+          label="Secret value"
+          hint={
+            kind === "environment"
               ? "Line breaks and surrounding whitespace are preserved exactly. The value is cleared from this form after creation."
-              : "Whitespace is preserved. Paste the value exactly as issued."}
-          </FieldDescription>
+              : "Whitespace is preserved. Paste the value exactly as issued."
+          }
+        >
+          {(field) =>
+            kind === "environment" ? (
+              <Textarea
+                {...field.control}
+                value={secret}
+                onChange={(event) => setSecret(event.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+                className="min-h-36 resize-y font-mono"
+                placeholder="Paste the value exactly, including any line breaks"
+              />
+            ) : (
+              <Input
+                {...field.control}
+                type="password"
+                value={secret}
+                onChange={(event) => setSecret(event.target.value)}
+                autoComplete="new-password"
+                spellCheck={false}
+                className="font-mono"
+              />
+            )
+          }
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>

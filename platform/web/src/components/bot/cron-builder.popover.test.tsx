@@ -30,8 +30,12 @@ it("opens from the current expression and closes once a schedule is applied", as
 
   await act(async () => trigger.click());
   expect(trigger.getAttribute("aria-expanded")).toBe("true");
-  expect(container.querySelector<HTMLSelectElement>("#cron-builder-frequency")!.value).toBe("weekdays");
-  expect(container.querySelector<HTMLInputElement>("#cron-builder-time")!.value).toBe("08:30");
+  const frequency = container.querySelector<HTMLSelectElement>("#cron-builder-frequency")!;
+  const time = container.querySelector<HTMLInputElement>("#cron-builder-time")!;
+  expect(frequency.value).toBe("weekdays");
+  expect(time.value).toBe("08:30");
+  expect([...frequency.labels!].map((label) => label.textContent)).toEqual(["Repeat"]);
+  expect([...time.labels!].map((label) => label.textContent)).toEqual(["Time"]);
 
   await act(async () => button("Use schedule").click());
   expect(onChange).toHaveBeenCalledWith("30 8 * * 1-5");

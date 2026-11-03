@@ -16,17 +16,25 @@ These came from replacing the local adapters in `src/components/ui/` with Whispe
 - **Icon buttons show a tooltip.** Icon-only buttons are now Whisperink `IconButton`s, which are square and show their label as a tooltip on hover and focus. A few also keep a longer native `title` (dictate, attach, stop, send, cancel queued message, select sessions, rotate pairing code), so they show both tooltips. Fold each pair into one.
 - **Card headers have a bottom border.** Cards that moved to Whisperink `CardHeader` (Account, General settings, Channels, Admin channels, the appearance card, Login) get its divider and an `h3` title. The Setups card header kept its own markup because it has an icon-and-status row.
 
+- **Form fields use Whisperink `Field`.** Labels are linked to their control, and hints and errors are announced through `aria-describedby`. Hints now sit below the control in smaller text. "(optional)" in a label is now Whisperink's separate "Optional" tag. Switch and checkbox rows use the control's own `label` and `description`, with `text-base` labels, and the switch sits on the right.
+- **View toggles are segmented controls.** The Form/JSON toggle on Profiles, the Markdown view toggle, and the tool-call detail toggle use Whisperink `Segmented`, which is a radio group rather than a tab list.
 ## Visual checks
 
-- **Double padding:** `BotCreatePage` (`px-5 py-6 md:px-6`) and `BotSetup` now sit inside `Modal`'s own `px-6`.
 - **Wide dialogs:** Whisperink tops out at `xl` (`max-w-5xl`). The bot editor (`max-w-6xl`/`max-w-4xl`) and the new-session setup step (`max-w-4xl`) are now `xl`. The MCP server dialog (`max-w-xl`) is now the default `md` (`max-w-lg`).
 - **Session settings dialog:** a body wrapper with a fixed grid height keeps the Apply footer pinned.
 - **Multi-line menu item:** "Steer the current run" in the composer overrides `MenuItem`'s `h-8`.
 
 ## Next steps
 
-- **Swap the hand-rolled `tabs` and `field`** for Whisperink's `Tabs` and `Field`.
 - **Move the app components out of `src/components/ui/`.** These are `combobox`, `message-scroller`, `message`, `bubble`, `marker`, `settings-disclosure`, `progress-steps`, and whatever remains of `field`. They don't wrap Whisperink, so `ui/` shouldn't imply they're the design system.
+
+## Changes to the vendored kit
+
+Send these upstream to Whisperink, or the next vendor update will undo them:
+
+- `components/Field/Field.tsx`: `min-w-0 content-start` on the root, so a taller neighbour in a row of fields doesn't push the label away from its control, and long values truncate instead of widening the form.
+- `components/Tabs/roving.ts`: `// @ts-nocheck`, like the other kit files that don't pass the app's `noUncheckedIndexedAccess`.
+- `components/Modal/Modal.tsx`: changed before this migration started; check what it was for.
 
 ## Untracked files
 

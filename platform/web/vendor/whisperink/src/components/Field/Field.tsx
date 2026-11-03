@@ -53,8 +53,11 @@ export function Field({ uiId, uiDescription, uiComponentId, uiComponentDescripti
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [errorId, hintId].filter(Boolean).join(" ") || undefined;
+  // Packed to the top so a taller neighbour in a row of fields does not
+  // stretch the label away from its control; min-w-0 lets long values
+  // truncate inside a grid or flex track instead of widening the form.
   return (
-    <div className={cn("grid gap-1.5", className)} {..._ui.attributes}>
+    <div className={cn("grid min-w-0 content-start gap-1.5", className)} {..._ui.attributes}>
       <div className="flex items-center gap-1.5">
         <label htmlFor={id} className="text-sm font-medium text-fg">
           {label}

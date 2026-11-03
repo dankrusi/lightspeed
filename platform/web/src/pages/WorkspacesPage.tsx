@@ -24,7 +24,7 @@ import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { DetailPrompt, LoadingNote, UniverseNotFound } from "@/components/page";
@@ -643,47 +643,53 @@ function NewWorkspaceDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel htmlFor="new-workspace-name">Display name</FieldLabel>
-          <Input
-            id="new-workspace-name"
-            value={displayName}
-            onChange={(e) => {
-              setDisplayName(e.target.value);
-              if (!idTouched) {
-                setWorkspaceId(e.target.value ? slugify(e.target.value) : "");
-              }
-            }}
-            placeholder="Notes"
-            autoFocus
-          />
-          {/* The id follows the name until it is edited; it opens on its own
-              when it is missing, invalid or already taken. */}
-          <SettingsDisclosure
-            summary={workspaceId
-              ? <>Id: <code className="font-mono">{workspaceId}</code></>
-              : "Id derived from the display name"}
-            action="Change"
-            label="Change workspace id"
-            forceOpen={Boolean(error) && (!workspaceId || /workspaceId|already exists/.test(error ?? ""))}
-          >
-            <Field>
-              <FieldLabel htmlFor="new-workspace-id">Workspace id</FieldLabel>
+        <Field id="new-workspace-name" label="Display name">
+          {(field) => (
+            <>
               <Input
-                id="new-workspace-id"
-                value={workspaceId}
+                {...field.control}
+                value={displayName}
                 onChange={(e) => {
-                  setWorkspaceId(e.target.value);
-                  setIdTouched(e.target.value.length > 0);
+                  setDisplayName(e.target.value);
+                  if (!idTouched) {
+                    setWorkspaceId(e.target.value ? slugify(e.target.value) : "");
+                  }
                 }}
-                placeholder="notes"
-                className="font-mono"
+                placeholder="Notes"
+                autoFocus
               />
-              <FieldDescription>
-                What profile workspace attachments reference — cannot be changed later.
-              </FieldDescription>
-            </Field>
-          </SettingsDisclosure>
+              {/* The id follows the name until it is edited; it opens on its own
+                  when it is missing, invalid or already taken. */}
+              <SettingsDisclosure
+                className="mt-1.5"
+                summary={workspaceId
+                  ? <>Id: <code className="font-mono">{workspaceId}</code></>
+                  : "Id derived from the display name"}
+                action="Change"
+                label="Change workspace id"
+                forceOpen={Boolean(error) && (!workspaceId || /workspaceId|already exists/.test(error ?? ""))}
+              >
+                <Field
+                  id="new-workspace-id"
+                  label="Workspace id"
+                  hint="What profile workspace attachments reference — cannot be changed later."
+                >
+                  {(idField) => (
+                    <Input
+                      {...idField.control}
+                      value={workspaceId}
+                      onChange={(e) => {
+                        setWorkspaceId(e.target.value);
+                        setIdTouched(e.target.value.length > 0);
+                      }}
+                      placeholder="notes"
+                      className="font-mono"
+                    />
+                  )}
+                </Field>
+              </SettingsDisclosure>
+            </>
+          )}
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>
@@ -768,18 +774,19 @@ function NewFileDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel htmlFor="new-file-path">Path</FieldLabel>
-          <Input
-            id="new-file-path"
-            value={path}
-            disabled={create.isPending}
-            onChange={(e) => { setPath(e.target.value); setError(null); }}
-            placeholder="notes/todo.md"
-            className="font-mono"
-            autoFocus
-            required
-          />
+        <Field id="new-file-path" label="Path">
+          {(field) => (
+            <Input
+              {...field.control}
+              value={path}
+              disabled={create.isPending}
+              onChange={(e) => { setPath(e.target.value); setError(null); }}
+              placeholder="notes/todo.md"
+              className="font-mono"
+              autoFocus
+              required
+            />
+          )}
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>

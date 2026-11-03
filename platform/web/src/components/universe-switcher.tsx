@@ -11,7 +11,7 @@ import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { memberships, universeHome, useUniverses } from "@/lib/universes";
 
@@ -138,22 +138,23 @@ export function NewUniverseDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel htmlFor="new-universe-name">Name</FieldLabel>
-          <Input
-            id="new-universe-name"
-            value={name}
-            onChange={(e) => { setName(e.target.value); if (!slugEdited) setSlug(slugify(e.target.value)); }}
-            placeholder="My Universe"
-            autoFocus
-            required
-          />
+        <Field id="new-universe-name" label="Name">
+          {(field) => (
+            <Input
+              {...field.control}
+              value={name}
+              onChange={(e) => { setName(e.target.value); if (!slugEdited) setSlug(slugify(e.target.value)); }}
+              placeholder="My Universe"
+              autoFocus
+              required
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="new-universe-slug">Slug</FieldLabel>
-          <Input id="new-universe-slug" value={slug} required maxLength={128}
-            onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }} placeholder="my-universe" />
-          <p className="text-sm text-muted-foreground">Unique in runtime and used in Platform URLs.</p>
+        <Field id="new-universe-slug" label="Slug" hint="Unique in runtime and used in Platform URLs.">
+          {(field) => (
+            <Input {...field.control} value={slug} required maxLength={128}
+              onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }} placeholder="my-universe" />
+          )}
         </Field>
         {create.error && (
           <p className="text-sm text-destructive">{create.error.message}</p>

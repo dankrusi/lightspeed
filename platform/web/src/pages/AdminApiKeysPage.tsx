@@ -12,9 +12,8 @@ import { ReadError } from "@/components/read-error";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import {
   Table,
@@ -258,48 +257,49 @@ function CreateKeyDialog({
         <ApiKeySecret secret={created.secret} keyPrefix={created.apiKey.keyPrefix} />
       ) : (
         <form id={formId} onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="admin-key-name">Name</FieldLabel>
-            <Input
-              id="admin-key-name"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="Telegram connector"
-              maxLength={120}
-              autoFocus
-              required
-            />
+          <Field id="admin-key-name" label="Name">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder="Telegram connector"
+                maxLength={120}
+                autoFocus
+                required
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="admin-key-scope">Reaches</FieldLabel>
-            <Select
-              id="admin-key-scope"
-              className="w-full"
-              value={scope}
-              onChange={(event) => { setScope(event.target.value); setGroups(null); }}
-            >
-              <option value={DEPLOYMENT}>The deployment</option>
-              {universes.map((universe) => (
-                <option key={universe.id} value={universe.id}>{universe.name}</option>
-              ))}
-            </Select>
-            <FieldDescription>
-              {kind === "deployment"
-                ? "A deployment key names the universe of each call and may hold deployment groups."
-                : "A universe key reaches only this universe."}
-            </FieldDescription>
+          <Field
+            id="admin-key-scope"
+            label="Reaches"
+            hint={kind === "deployment"
+              ? "A deployment key names the universe of each call and may hold deployment groups."
+              : "A universe key reaches only this universe."}
+          >
+            {(field) => (
+              <Select
+                {...field.control}
+                className="w-full"
+                value={scope}
+                onChange={(event) => { setScope(event.target.value); setGroups(null); }}
+              >
+                <option value={DEPLOYMENT}>The deployment</option>
+                {universes.map((universe) => (
+                  <option key={universe.id} value={universe.id}>{universe.name}</option>
+                ))}
+              </Select>
+            )}
           </Field>
           <MethodGroupPicker idPrefix="admin-key" allowed={allowed} chosen={chosen} onChange={setGroups} />
-          <div className="flex items-center justify-between gap-3 rounded-md border p-3">
-            <Label htmlFor="admin-key-assert-actor" className="min-w-0 text-sm">
-              Speaks for people
-              <span className="block text-xs font-normal text-muted-foreground">
-                May name the person a call is for. Give it only to a gate that signs people in,
-                like this Platform.
-              </span>
-            </Label>
-            <Switch id="admin-key-assert-actor" checked={assertActor} onChange={(event) => setAssertActor(event.target.checked)} />
-          </div>
+          <Switch
+            id="admin-key-assert-actor"
+            className="rounded-md border p-3"
+            label="Speaks for people"
+            description="May name the person a call is for. Give it only to a gate that signs people in, like this Platform."
+            checked={assertActor}
+            onChange={(event) => setAssertActor(event.target.checked)}
+          />
           {create.error && <p className="text-sm text-destructive">{create.error.message}</p>}
         </form>
       )}

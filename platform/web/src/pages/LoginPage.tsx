@@ -4,7 +4,7 @@ import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { beginAutomaticSignIn } from "@/lib/automatic-sign-in";
 
@@ -74,27 +74,29 @@ export function LoginPage() {
           </div>}
           {config.data && config.data.password !== "off" && (!config.data.sso || emergency) && <>
           <form onSubmit={submit} className="grid gap-4">
-            <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="username"
-                required
-              />
+            <Field id="email" label="Email">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
+                  required
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
+            <Field id="password" label="Password">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              )}
             </Field>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={busy}>

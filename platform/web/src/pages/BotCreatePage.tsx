@@ -38,9 +38,8 @@ import { ProfileRetentionEditor } from "@/components/session/profile-retention-e
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Label } from "@/components/ui/label";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
@@ -447,7 +446,7 @@ function Wizard({
           label="Bot creation progress"
         />
         <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
-          <div className="grid w-full min-w-0 content-start gap-6 px-5 py-6 md:px-6">
+          <div className="grid w-full min-w-0 content-start gap-6 py-6">
             {step === "job" && (
               <section className="grid min-w-0 gap-5">
                 <header className="grid gap-1">
@@ -466,59 +465,63 @@ function Wizard({
                     />
                   ))}
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel htmlFor="new-bot-name">Name</FieldLabel>
-                    <Input
-                      id="new-bot-name"
-                      value={displayName}
-                      onChange={(event) => {
-                        setDisplayName(event.target.value);
-                        if (!idTouched) setBotId(event.target.value ? botIdFrom(event.target.value) : "");
-                      }}
-                      placeholder="Triage"
-                      autoFocus
-                    />
+                <div className="grid items-start gap-4 sm:grid-cols-2">
+                  <Field id="new-bot-name" label="Name">
+                    {(field) => (
+                      <Input
+                        {...field.control}
+                        value={displayName}
+                        onChange={(event) => {
+                          setDisplayName(event.target.value);
+                          if (!idTouched) setBotId(event.target.value ? botIdFrom(event.target.value) : "");
+                        }}
+                        placeholder="Triage"
+                        autoFocus
+                      />
+                    )}
                   </Field>
-                  <Field>
-                    <FieldLabel htmlFor="new-bot-id">Id</FieldLabel>
-                    <Input
-                      id="new-bot-id"
-                      value={botId}
-                      onChange={(event) => {
-                        setBotId(event.target.value);
-                        setIdTouched(event.target.value.length > 0);
-                      }}
-                      placeholder="triage"
-                      className="font-mono"
-                      aria-invalid={idInvalid || idTaken || undefined}
-                    />
-                    <FieldDescription>
-                      {idTaken
-                        ? "Taken by another bot."
-                        : "What other bots, briefs, and URLs use — it cannot change later."}
-                    </FieldDescription>
+                  <Field
+                    id="new-bot-id"
+                    label="Id"
+                    error={idTaken ? "Taken by another bot." : undefined}
+                    hint={idTaken ? undefined : "What other bots, briefs, and URLs use — it cannot change later."}
+                  >
+                    {(field) => (
+                      <Input
+                        {...field.control}
+                        value={botId}
+                        onChange={(event) => {
+                          setBotId(event.target.value);
+                          setIdTouched(event.target.value.length > 0);
+                        }}
+                        placeholder="triage"
+                        className="font-mono"
+                        aria-invalid={idInvalid || idTaken || undefined}
+                      />
+                    )}
                   </Field>
                 </div>
-                <Field>
-                  <FieldLabel htmlFor="new-bot-brief">Brief</FieldLabel>
-                  <Textarea
-                    id="new-bot-brief"
-                    value={brief}
-                    onChange={(event) => setBrief(event.target.value)}
-                    rows={9}
-                    placeholder="What this bot is for, how it should behave, what good work looks like. It reads this with every event."
-                    className="leading-relaxed"
-                  />
+                <Field id="new-bot-brief" label="Brief">
+                  {(field) => (
+                    <Textarea
+                      {...field.control}
+                      value={brief}
+                      onChange={(event) => setBrief(event.target.value)}
+                      rows={9}
+                      placeholder="What this bot is for, how it should behave, what good work looks like. It reads this with every event."
+                      className="leading-relaxed"
+                    />
+                  )}
                 </Field>
-                <Field>
-                  <FieldLabel htmlFor="new-bot-description">Description for other bots (optional)</FieldLabel>
-                  <Input
-                    id="new-bot-description"
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="One line other bots read when deciding whether to message this bot."
-                  />
+                <Field id="new-bot-description" label="Description for other bots" optional>
+                  {(field) => (
+                    <Input
+                      {...field.control}
+                      value={description}
+                      onChange={(event) => setDescription(event.target.value)}
+                      placeholder="One line other bots read when deciding whether to message this bot."
+                    />
+                  )}
                 </Field>
               </section>
             )}
@@ -594,32 +597,31 @@ function Wizard({
                   </p>
                 </header>
                 <div className="grid gap-2">
-                  <div className="flex min-w-0 max-w-full items-center justify-between gap-3 rounded-md border p-3">
-                    <Label htmlFor="new-bot-emit" className="min-w-0 text-sm">
-                      Can message other bots
-                      <span className="block text-xs font-normal text-muted-foreground">
+                  <Switch
+                    id="new-bot-emit"
+                    label="Can message other bots"
+                    description={
+                      <>
                         Sees which bots accept it and addresses them by id; rate-capped. Turning this on also opens the
                         inbox — sending without listening is the rare case.
-                      </span>
-                    </Label>
-                    <Switch
-                      id="new-bot-emit"
-                      checked={emit}
-                      onChange={(event) => {
-                        const checked = event.target.checked;
-                        setEmit(checked);
-                        if (checked && inboxMode === "off") setInbox("any");
-                      }}
-                    />
-                  </div>
+                      </>
+                    }
+                    className="min-w-0 max-w-full rounded-md border p-3"
+                    checked={emit}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setEmit(checked);
+                      if (checked && inboxMode === "off") setInbox("any");
+                    }}
+                  />
                   <div className="grid min-w-0 max-w-full gap-2 rounded-md border p-3">
                     <div className="flex min-w-0 items-center justify-between gap-3">
-                      <Label htmlFor="new-bot-inbox" className="min-w-0 text-sm">
+                      <label htmlFor="new-bot-inbox" className="min-w-0 text-sm font-medium text-fg">
                         Accepts messages from
                         <span className="block text-xs font-normal text-muted-foreground">
                           Which bots may address this one. Routing and batching remain editable in Bot settings.
                         </span>
-                      </Label>
+                      </label>
                       <Select
                         id="new-bot-inbox"
                         size="sm"
@@ -672,36 +674,39 @@ function Wizard({
                   />
                 </div>
                 {setupMode === "shared" ? (
-                  <Field>
-                    <FieldLabel htmlFor="new-bot-shared-profile">Profile</FieldLabel>
-                    <Select
-                      id="new-bot-shared-profile"
-                      className="w-full sm:w-80"
-                      value={sharedProfileId}
-                      onChange={(event) => setSharedProfileId(event.target.value)}
-                    >
-                      <option value="" disabled>Select a profile</option>
-                      {profiles.data?.map((profile) => (
-                        <option key={profile.profileId} value={profile.profileId}>
-                          {profile.displayName ?? profile.profileId}
-                        </option>
-                      ))}
-                    </Select>
-                    {profiles.data?.length === 0 && (
-                      <FieldDescription>No profiles yet — give the bot its own setup instead.</FieldDescription>
+                  <Field
+                    id="new-bot-shared-profile"
+                    label="Profile"
+                    hint={profiles.data?.length === 0 ? "No profiles yet — give the bot its own setup instead." : undefined}
+                  >
+                    {(field) => (
+                      <Select
+                        {...field.control}
+                        className="w-full sm:w-80"
+                        value={sharedProfileId}
+                        onChange={(event) => setSharedProfileId(event.target.value)}
+                      >
+                        <option value="" disabled>Select a profile</option>
+                        {profiles.data?.map((profile) => (
+                          <option key={profile.profileId} value={profile.profileId}>
+                            {profile.displayName ?? profile.profileId}
+                          </option>
+                        ))}
+                      </Select>
                     )}
                   </Field>
                 ) : (
                   <>
-                    <Field>
-                      <FieldLabel htmlFor="new-bot-base-instructions">Base instructions</FieldLabel>
-                      <Textarea
-                        id="new-bot-base-instructions"
-                        value={baseInstructions}
-                        onChange={(event) => setBaseInstructions(event.target.value)}
-                        rows={4}
-                        placeholder="Usually empty: the brief already describes the bot's job. Use this for a system prompt its session profile should carry."
-                      />
+                    <Field id="new-bot-base-instructions" label="Base instructions">
+                      {(field) => (
+                        <Textarea
+                          {...field.control}
+                          value={baseInstructions}
+                          onChange={(event) => setBaseInstructions(event.target.value)}
+                          rows={4}
+                          placeholder="Usually empty: the brief already describes the bot's job. Use this for a system prompt its session profile should carry."
+                        />
+                      )}
                     </Field>
                     <SessionConfigEditor
                       value={config}
@@ -739,30 +744,32 @@ function Wizard({
                     Sensible defaults; all of it remains editable under Bot settings.
                   </p>
                 </header>
-                <Field className="sm:w-64">
-                  <FieldLabel htmlFor="new-bot-runs">Daily run limit</FieldLabel>
-                  <Input
-                    id="new-bot-runs"
-                    type="number"
-                    min={1}
-                    value={runsPerDay}
-                    onChange={(event) => setRunsPerDay(event.target.value)}
-                    placeholder="No limit"
-                  />
-                  <FieldDescription>
-                    Runs and sub-agents count; events beyond it wait for the next UTC day.
-                  </FieldDescription>
+                <Field
+                  id="new-bot-runs"
+                  label="Daily run limit"
+                  hint="Runs and sub-agents count; events beyond it wait for the next UTC day."
+                  className="sm:w-64"
+                >
+                  {(field) => (
+                    <Input
+                      {...field.control}
+                      type="number"
+                      min={1}
+                      value={runsPerDay}
+                      onChange={(event) => setRunsPerDay(event.target.value)}
+                      placeholder="No limit"
+                    />
+                  )}
                 </Field>
                 <div className="grid gap-2">
-                  <div className="flex min-w-0 max-w-full items-center justify-between gap-3 rounded-md border p-3">
-                    <Label htmlFor="new-bot-self-config" className="min-w-0 text-sm">
-                      Can change its own brief and triggers
-                      <span className="block text-xs font-normal text-muted-foreground">
-                        Ask it in Chat to add a schedule or rewrite its job. Off: it can only look.
-                      </span>
-                    </Label>
-                    <Switch id="new-bot-self-config" checked={selfConfig} onChange={(event) => setSelfConfig(event.target.checked)} />
-                  </div>
+                  <Switch
+                    id="new-bot-self-config"
+                    label="Can change its own brief and triggers"
+                    description="Ask it in Chat to add a schedule or rewrite its job. Off: it can only look."
+                    className="min-w-0 max-w-full rounded-md border p-3"
+                    checked={selfConfig}
+                    onChange={(event) => setSelfConfig(event.target.checked)}
+                  />
                 </div>
               </section>
             )}

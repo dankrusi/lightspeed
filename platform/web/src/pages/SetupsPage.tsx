@@ -13,7 +13,7 @@ import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { CardFooter } from "@versavolta/whisperink/components/Card/CardFooter.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";
 import { groupSummary, groupsFor, UNIVERSE_KEY_PRESETS } from "@/lib/method-groups";
@@ -310,42 +310,46 @@ function ConfiguratorKeyDialog({
         )}
         {kind === "existing" && (
           <>
-            <Field>
-              <FieldLabel htmlFor="configurator-existing-key">Key</FieldLabel>
-              <Select
-                id="configurator-existing-key"
-                className="w-full"
-                value={keyPrefix}
-                onChange={(event) => setKeyPrefix(event.target.value)}
-              >
-                <option value="" disabled>{keys.isLoading ? "Loading keys…" : "Choose a key"}</option>
-                {activeKeys.map((key) => (
-                  <option key={key.keyPrefix} value={key.keyPrefix}>
-                    {`${key.displayName ?? "Unnamed key"} · ${key.keyPrefix}`}
-                  </option>
-                ))}
-              </Select>
-              <FieldDescription>
-                {chosen
+            <Field
+              id="configurator-existing-key"
+              label="Key"
+              hint={
+                chosen
                   ? `May call: ${groupSummary("universe", chosen.groups)}`
-                  : "Only this universe's active keys."}
-              </FieldDescription>
+                  : "Only this universe's active keys."
+              }
+            >
+              {(field) => (
+                <Select
+                  {...field.control}
+                  className="w-full"
+                  value={keyPrefix}
+                  onChange={(event) => setKeyPrefix(event.target.value)}
+                >
+                  <option value="" disabled>{keys.isLoading ? "Loading keys…" : "Choose a key"}</option>
+                  {activeKeys.map((key) => (
+                    <option key={key.keyPrefix} value={key.keyPrefix}>
+                      {`${key.displayName ?? "Unnamed key"} · ${key.keyPrefix}`}
+                    </option>
+                  ))}
+                </Select>
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor="configurator-existing-secret">Secret</FieldLabel>
-              <Input
-                id="configurator-existing-secret"
-                type="password"
-                autoComplete="off"
-                value={secret}
-                onChange={(event) => setSecret(event.target.value)}
-                placeholder="lsk_…"
-              />
-              <FieldDescription>
-                Lightspeed keeps only a hash of each key, so paste the secret shown when the key was
-                created. It is checked against the chosen key and stored encrypted. Replacing this key
-                later never revokes it.
-              </FieldDescription>
+            <Field
+              id="configurator-existing-secret"
+              label="Secret"
+              hint="Lightspeed keeps only a hash of each key, so paste the secret shown when the key was created. It is checked against the chosen key and stored encrypted. Replacing this key later never revokes it."
+            >
+              {(field) => (
+                <Input
+                  {...field.control}
+                  type="password"
+                  autoComplete="off"
+                  value={secret}
+                  onChange={(event) => setSecret(event.target.value)}
+                  placeholder="lsk_…"
+                />
+              )}
             </Field>
           </>
         )}

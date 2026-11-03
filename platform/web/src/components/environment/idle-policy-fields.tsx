@@ -1,5 +1,5 @@
+import { useId } from "react";
 import type { EnvironmentIdlePolicyView, EnvironmentPowerStateView } from "@lightspeed-ai/sdk";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 type IdlePolicy = EnvironmentIdlePolicyView;
@@ -58,9 +58,11 @@ export function IdlePolicyFields({
     onChange(Object.keys(next).length ? next : undefined);
   };
   const problem = idlePolicyProblem(value);
+  const labelId = useId();
+  const descriptionId = useId();
   return (
-    <Field>
-      <FieldLabel>Idle policy (minutes)</FieldLabel>
+    <div role="group" aria-labelledby={labelId} aria-describedby={descriptionId} className="grid gap-1.5">
+      <span id={labelId} className="text-sm font-medium text-fg">Idle policy (minutes)</span>
       <div className="grid gap-2 sm:grid-cols-2">
         {idleStagesFor(powerStates).map((stage) => (
           <label key={stage.key} className="flex flex-col gap-1 text-xs">
@@ -78,10 +80,10 @@ export function IdlePolicyFields({
           </label>
         ))}
       </div>
-      <FieldDescription className={problem ? "text-xs text-destructive" : "text-xs"}>
+      <p id={descriptionId} className={problem ? "text-xs text-destructive" : "text-xs text-fg-muted"}>
         {problem ??
           "Measured by the environment's own idle clock. The provider applies it; it cannot be changed after the environment is created."}
-      </FieldDescription>
-    </Field>
+      </p>
+    </div>
   );
 }

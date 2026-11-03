@@ -15,7 +15,7 @@ import {
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   IdText,
@@ -410,25 +410,28 @@ export function AdoptDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel htmlFor="adopt-name">Name</FieldLabel>
-          <Input
-            id="adopt-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Adopted universe"
-            autoFocus
-          />
+        <Field id="adopt-name" label="Name">
+          {(field) => (
+            <Input
+              {...field.control}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Adopted universe"
+              autoFocus
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="adopt-slug">Slug</FieldLabel>
-          <Input id="adopt-slug" value={orphan?.slug ?? slug}
-            onChange={(e) => setSlug(e.target.value)} readOnly={!!orphan?.slug}
-            required maxLength={128} placeholder="my-universe" />
-          <p className="text-sm text-muted-foreground">
-            {orphan?.slug ? "Uses the existing runtime slug. Rename it separately in runtime if needed."
-              : "Required for Platform URLs. This assigns the slug to the runtime universe."}
-          </p>
+        <Field
+          id="adopt-slug"
+          label="Slug"
+          hint={orphan?.slug ? "Uses the existing runtime slug. Rename it separately in runtime if needed."
+            : "Required for Platform URLs. This assigns the slug to the runtime universe."}
+        >
+          {(field) => (
+            <Input {...field.control} value={orphan?.slug ?? slug}
+              onChange={(e) => setSlug(e.target.value)} readOnly={!!orphan?.slug}
+              required maxLength={128} placeholder="my-universe" />
+          )}
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </form>

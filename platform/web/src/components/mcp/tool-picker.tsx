@@ -5,7 +5,6 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Label } from "@/components/ui/label";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import {
@@ -228,7 +227,7 @@ function ToolPicker({
   return (
     <div className="grid min-w-0 gap-3">
       <div className="grid min-w-0 gap-1">
-        <Label htmlFor={open ? `${id}-mode` : undefined}>{title}</Label>
+        <label htmlFor={open ? `${id}-mode` : undefined} className="text-sm font-medium text-fg">{title}</label>
         <p className="text-xs text-muted-foreground">
           {scope === "server"
             ? "Sets the tools available to every profile and session using this server."
@@ -284,12 +283,12 @@ function ToolRow({
         </span>
       )}
       <div className="grid min-w-0 flex-1 gap-1">
-        <Label
+        <label
           htmlFor={selected !== undefined ? id : undefined}
-          className="break-all text-sm"
+          className="break-all text-sm font-medium text-fg"
         >
           {tool?.title ?? name}
-        </Label>
+        </label>
         {tool?.title && tool.title !== name && (
           <span className="break-all font-mono text-xs text-muted-foreground">
             {name}

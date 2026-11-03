@@ -6,7 +6,7 @@ import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
 import { CardHeader } from "@versavolta/whisperink/components/Card/CardHeader.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { PageHeader } from "@/components/page";
 import { useTheme, type Theme } from "@/lib/theme";
@@ -47,22 +47,23 @@ function ProfileCard({ user }: { user: SessionUser }) {
       <CardHeader title="Profile" />
       <CardContent>
         <form onSubmit={submit} className="grid max-w-md gap-4">
-          <Field>
-            <FieldLabel htmlFor="account-email">Email</FieldLabel>
-            <Input id="account-email" value={user.email} disabled />
-            <FieldDescription>
-              {user.identitySource === "company" ? "Managed by your company." : "A platform admin can change your verified sign-in address."}
-            </FieldDescription>
+          <Field
+            id="account-email"
+            label="Email"
+            hint={user.identitySource === "company" ? "Managed by your company." : "A platform admin can change your verified sign-in address."}
+          >
+            {(field) => <Input {...field.control} value={user.email} disabled />}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="account-name">Name</FieldLabel>
-            <Input
-              id="account-name"
-              value={name}
-              disabled={user.identitySource === "company"}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+          <Field id="account-name" label="Name">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={name}
+                disabled={user.identitySource === "company"}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            )}
           </Field>
           {save.error && <p className="text-sm text-destructive">{save.error.message}</p>}
           {save.isSuccess && <p className="text-sm text-muted-foreground">Saved.</p>}
@@ -121,40 +122,42 @@ function PasswordCard() {
       <CardHeader title="Password" description="Other sessions are signed out after a change." />
       <CardContent>
         <form onSubmit={submit} className="grid max-w-md gap-4">
-          <Field>
-            <FieldLabel htmlFor="current-password">Current password</FieldLabel>
-            <Input
-              id="current-password"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
+          <Field id="current-password" label="Current password">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="new-password">New password</FieldLabel>
-            <Input
-              id="new-password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              autoComplete="new-password"
-              minLength={8}
-              required
-            />
-            <FieldDescription>At least 8 characters.</FieldDescription>
+          <Field id="new-password" label="New password" hint="At least 8 characters.">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="confirm-password">Repeat new password</FieldLabel>
-            <Input
-              id="confirm-password"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
+          <Field id="confirm-password" label="Repeat new password">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            )}
           </Field>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {change.isSuccess && !error && (

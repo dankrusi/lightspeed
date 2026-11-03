@@ -26,7 +26,7 @@ import {
 } from "@phosphor-icons/react";
 import { BotIcon } from "@/components/icons/bot";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Segmented } from "@versavolta/whisperink/components/Tabs/Segmented.js";
 import { MarkdownContent } from "@/components/session/markdown-content";
 import {
   ExpandableContent,
@@ -417,7 +417,7 @@ function ToolCallDetail({
   const input = call.argumentsJson ? prettyJson(call.argumentsJson) : null;
   const output = call.error || call.output || null;
   const effects = call.effects?.length ? JSON.stringify(call.effects, null, 2) : null;
-  const defaultTab = output ? "output" : input ? "input" : "effects";
+  const [view, setView] = useState<string>(output ? "output" : input ? "input" : "effects");
   const failed = isFailedToolCall(call);
   const highlightFailure = isEmphasizedToolFailure(call);
 
@@ -429,19 +429,26 @@ function ToolCallDetail({
       })}</div>}
       {call.media?.length ? <MediaStrip items={call.media} className="pt-1" /> : null}
       {input || output || effects ? (
-        <Tabs defaultValue={defaultTab} className="min-w-0 max-w-full gap-1.5">
-          <TabsList variant="line" className="h-6 text-xs">
-            {input && <TabsTrigger value="input" className="text-xs">Arguments</TabsTrigger>}
-            {output && <TabsTrigger value="output" className="text-xs">{failed ? "Error" : "Result"}</TabsTrigger>}
-            {effects && <TabsTrigger value="effects" className="text-xs">Effects</TabsTrigger>}
-          </TabsList>
-          {input && (
-            <TabsContent value="input" className="min-w-0 max-w-full">
+        <div className="flex min-w-0 max-w-full flex-col gap-1.5">
+          <Segmented
+            label="Tool call detail"
+            size="sm"
+            className="self-start [&>button]:h-6 [&>button]:text-xs"
+            items={[
+              ...(input ? [{ value: "input", label: "Arguments" }] : []),
+              ...(output ? [{ value: "output", label: failed ? "Error" : "Result" }] : []),
+              ...(effects ? [{ value: "effects", label: "Effects" }] : []),
+            ]}
+            value={view}
+            onChange={setView}
+          />
+          {input && view === "input" && (
+            <div className="min-w-0 max-w-full">
               <DetailBlock value={input} />
-            </TabsContent>
+            </div>
           )}
-          {output && (
-            <TabsContent value="output" className="min-w-0 max-w-full">
+          {output && view === "output" && (
+            <div className="min-w-0 max-w-full">
               <ExpandableContent
                 text={output}
                 truncated={call.outputTruncated}
@@ -450,14 +457,14 @@ function ToolCallDetail({
               >
                 {(text) => <DetailBlock value={text} tone={highlightFailure ? "warning" : "default"} />}
               </ExpandableContent>
-            </TabsContent>
+            </div>
           )}
-          {effects && (
-            <TabsContent value="effects" className="min-w-0 max-w-full">
+          {effects && view === "effects" && (
+            <div className="min-w-0 max-w-full">
               <DetailBlock value={effects} />
-            </TabsContent>
+            </div>
           )}
-        </Tabs>
+        </div>
       ) : (
         <p className="text-xs text-muted-foreground">Waiting for tool details…</p>
       )}

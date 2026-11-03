@@ -21,9 +21,8 @@ import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
@@ -107,7 +106,7 @@ export function BotSetup({
 
   return (
     <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-      <div className="grid w-full min-w-0 gap-3 px-4 py-5 text-sm md:px-6">
+      <div className="grid w-full min-w-0 gap-3 py-5 text-sm">
         <IdentitySection universeId={universeId} bot={bot} manage={manage} />
         <BriefSection universeId={universeId} bot={bot} manage={manage} />
         <SetupSection
@@ -267,32 +266,32 @@ function IdentitySection({ universeId, bot, manage }: { universeId: string; bot:
       <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)]">
         <BotAvatar botId={bot.botId} size={56} className="rounded-xl" />
         <div className="grid gap-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="bot-display-name">Name</FieldLabel>
-              <Input
-                id="bot-display-name"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder={bot.botId}
-                disabled={!manage}
-              />
+          <div className="grid items-start gap-4 sm:grid-cols-2">
+            <Field id="bot-display-name" label="Name">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder={bot.botId}
+                  disabled={!manage}
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel>Id</FieldLabel>
-              <Input value={bot.botId} readOnly className="font-mono" />
-              <FieldDescription>What other bots, briefs, and URLs use. It cannot change.</FieldDescription>
+            <Field label="Id" hint="What other bots, briefs, and URLs use. It cannot change.">
+              {(field) => <Input {...field.control} value={bot.botId} readOnly className="font-mono" />}
             </Field>
           </div>
-          <Field>
-            <FieldLabel htmlFor="bot-description">Description</FieldLabel>
-            <Input
-              id="bot-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="One line other bots read when deciding whether to message this bot."
-              disabled={!manage}
-            />
+          <Field id="bot-description" label="Description">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="One line other bots read when deciding whether to message this bot."
+                disabled={!manage}
+              />
+            )}
           </Field>
           {manage && (
             <SaveRow
@@ -469,17 +468,21 @@ function SessionProfileSection({
       )}
       {profile && (
         <>
-            <Field>
-              <FieldLabel htmlFor="bot-base-instructions">Base instructions</FieldLabel>
-              <Textarea
-                id="bot-base-instructions"
-                value={instructionsDraft}
-                onChange={(event) => setInstructionsDraft(event.target.value)}
-                rows={4}
-                placeholder="Usually empty for a bot: the brief above is its job. Use this for a system prompt the profile should carry on its own."
-                disabled={readOnly || textRef}
-              />
-              {textRef && <FieldDescription>Stored as a blob reference; edit it on the Profiles page.</FieldDescription>}
+            <Field
+              id="bot-base-instructions"
+              label="Base instructions"
+              hint={textRef ? "Stored as a blob reference; edit it on the Profiles page." : undefined}
+            >
+              {(field) => (
+                <Textarea
+                  {...field.control}
+                  value={instructionsDraft}
+                  onChange={(event) => setInstructionsDraft(event.target.value)}
+                  rows={4}
+                  placeholder="Usually empty for a bot: the brief above is its job. Use this for a system prompt the profile should carry on its own."
+                  disabled={readOnly || textRef}
+                />
+              )}
             </Field>
             {!readOnly ? <SessionConfigEditor
               value={configDraft}
@@ -569,53 +572,56 @@ function ProfileSwitcher({
   const patch = useBotPut(universeId, bot);
   const known = profiles.data?.some((profile) => profile.profileId === bot.profileId) ?? true;
   return (
-    <Field>
-      <FieldLabel htmlFor="bot-profile">Profile</FieldLabel>
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
-          id="bot-profile"
-          className="w-64"
-          value={selected}
-          onChange={(event) => setSelected(event.target.value)}
-          disabled={!manage}
-        >
-          {!known && <option value={bot.profileId}>{bot.profileId}</option>}
-          {profiles.data?.map((profile) => (
-            <option key={profile.profileId} value={profile.profileId}>
-              {`${profile.displayName ?? profile.profileId}${profile.displayName && profile.displayName !== profile.profileId ? ` · ${profile.profileId}` : ""}`}
-            </option>
-          ))}
-        </Select>
-        {manage && selected !== bot.profileId ? (
-          <>
-            <Button size="sm" disabled={patch.isPending} onClick={() => patch.mutate({ profileId: selected })}>
-              {patch.isPending ? "Switching…" : "Use this profile"}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setSelected(bot.profileId)}>
-              Cancel
-            </Button>
-          </>
-        ) : (
-          <Link
-            className={buttonClasses("ghost", "sm")}
-            to={`/u/${slug}/profiles/${encodeURIComponent(bot.profileId)}`}
-          >
-            Open on the Profiles page <ArrowUpRight data-icon="inline-end" />
-          </Link>
-        )}
-      </div>
-      <FieldDescription>
-        {patch.error ? (
-          <span className="text-destructive">{patch.error.message}</span>
-        ) : sharedWith.length > 0 ? (
+    <Field
+      id="bot-profile"
+      label="Profile"
+      error={patch.error?.message}
+      hint={
+        patch.error ? undefined : sharedWith.length > 0 ? (
           <>
             Shared: {sharedWith.map(botLabel).join(", ")} use{sharedWith.length === 1 ? "s" : ""} this profile too, so
             changes below reach {sharedWith.length === 1 ? "it" : "them"} as well.
           </>
         ) : (
           "Everything below belongs to this profile; switching profiles swaps its instructions, model, tools, environment, metadata, and retention at the bot's next idle moment."
-        )}
-      </FieldDescription>
+        )
+      }
+    >
+      {(field) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            {...field.control}
+            className="w-64"
+            value={selected}
+            onChange={(event) => setSelected(event.target.value)}
+            disabled={!manage}
+          >
+            {!known && <option value={bot.profileId}>{bot.profileId}</option>}
+            {profiles.data?.map((profile) => (
+              <option key={profile.profileId} value={profile.profileId}>
+                {`${profile.displayName ?? profile.profileId}${profile.displayName && profile.displayName !== profile.profileId ? ` · ${profile.profileId}` : ""}`}
+              </option>
+            ))}
+          </Select>
+          {manage && selected !== bot.profileId ? (
+            <>
+              <Button size="sm" disabled={patch.isPending} onClick={() => patch.mutate({ profileId: selected })}>
+                {patch.isPending ? "Switching…" : "Use this profile"}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setSelected(bot.profileId)}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Link
+              className={buttonClasses("ghost", "sm")}
+              to={`/u/${slug}/profiles/${encodeURIComponent(bot.profileId)}`}
+            >
+              Open on the Profiles page <ArrowUpRight data-icon="inline-end" />
+            </Link>
+          )}
+        </div>
+      )}
     </Field>
   );
 }
@@ -675,63 +681,72 @@ function GuardrailsSection({
       description="Limits and permissions."
       summary={guardrailsSummary(bot)}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor="bot-runs-per-day">Daily run limit</FieldLabel>
-          <Input
-            id="bot-runs-per-day"
-            type="number"
-            min={1}
-            value={runsPerDay}
-            onChange={(event) => setRunsPerDay(event.target.value)}
-            placeholder="No limit"
-            disabled={readOnly}
-          />
-          <FieldDescription>
-            {controller ? `${usedToday} used today. ` : ""}Runs and sub-agents count; events beyond the limit wait for the
-            next UTC day.
-          </FieldDescription>
+      <div className="grid items-start gap-4 sm:grid-cols-2">
+        <Field
+          id="bot-runs-per-day"
+          label="Daily run limit"
+          hint={
+            <>
+              {controller ? `${usedToday} used today. ` : ""}Runs and sub-agents count; events beyond the limit wait for the
+              next UTC day.
+            </>
+          }
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={1}
+              value={runsPerDay}
+              onChange={(event) => setRunsPerDay(event.target.value)}
+              placeholder="No limit"
+              disabled={readOnly}
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="bot-close-days">Close inactive threads after (days)</FieldLabel>
-          <Input
-            id="bot-close-days"
-            type="number"
-            min={1}
-            value={closeAfterDays}
-            onChange={(event) => setCloseAfterDays(event.target.value)}
-            placeholder="Keep forever"
-            disabled={readOnly}
-          />
-          <FieldDescription>
-            Threads idle this long are closed; a later event for the same key opens a fresh one. Triggers can
-            override it.
-          </FieldDescription>
+        <Field
+          id="bot-close-days"
+          label="Close inactive threads after (days)"
+          hint="Threads idle this long are closed; a later event for the same key opens a fresh one. Triggers can override it."
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={1}
+              value={closeAfterDays}
+              onChange={(event) => setCloseAfterDays(event.target.value)}
+              placeholder="Keep forever"
+              disabled={readOnly}
+            />
+          )}
         </Field>
         <div className="grid gap-3 sm:col-span-2 sm:grid-cols-[1fr_1fr]">
-          <Field>
-            <FieldLabel htmlFor="bot-breaker-fires">Flood protection: events</FieldLabel>
-            <Input
-              id="bot-breaker-fires"
-              type="number"
-              min={1}
-              value={breakerFires}
-              onChange={(event) => setBreakerFires(event.target.value)}
-              placeholder="Off"
-              disabled={readOnly}
-            />
+          <Field id="bot-breaker-fires" label="Flood protection: events">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="number"
+                min={1}
+                value={breakerFires}
+                onChange={(event) => setBreakerFires(event.target.value)}
+                placeholder="Off"
+                disabled={readOnly}
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="bot-breaker-window">per window (minutes)</FieldLabel>
-            <Input
-              id="bot-breaker-window"
-              type="number"
-              min={1}
-              value={breakerWindow}
-              onChange={(event) => setBreakerWindow(event.target.value)}
-              placeholder="10"
-              disabled={readOnly}
-            />
+          <Field id="bot-breaker-window" label="per window (minutes)">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="number"
+                min={1}
+                value={breakerWindow}
+                onChange={(event) => setBreakerWindow(event.target.value)}
+                placeholder="10"
+                disabled={readOnly}
+              />
+            )}
           </Field>
           <p className="-mt-1 text-xs text-muted-foreground sm:col-span-2">
             A trigger exceeding this rate pauses itself until someone resumes it.
@@ -873,14 +888,14 @@ function OtherBotsSection({
       />
       <div className="grid min-w-0 max-w-full gap-2 rounded-md border p-3">
         <div className="flex min-w-0 items-center justify-between gap-3">
-          <Label htmlFor="bot-inbox-mode" className="min-w-0 text-sm">
+          <label htmlFor="bot-inbox-mode" className="min-w-0 text-sm font-medium text-fg">
             Accepts messages from
             <span className="block text-xs font-normal text-muted-foreground">
               {others.length === 0
                 ? "There are no other bots in this universe yet."
                 : "Which bots may address this one. Messages from them arrive like any other event."}
             </span>
-          </Label>
+          </label>
           <Select
             id="bot-inbox-mode"
             size="sm"
@@ -967,13 +982,15 @@ function ToggleRow({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex min-w-0 max-w-full items-center justify-between gap-3 rounded-md border p-3">
-      <Label htmlFor={id} className="min-w-0 text-sm">
-        {label}
-        <span className="block text-xs font-normal text-muted-foreground">{hint}</span>
-      </Label>
-      <Switch id={id} checked={checked} onChange={(event) => onCheckedChange(event.target.checked)} disabled={disabled} />
-    </div>
+    <Switch
+      id={id}
+      label={label}
+      description={hint}
+      className="min-w-0 max-w-full rounded-md border p-3"
+      checked={checked}
+      onChange={(event) => onCheckedChange(event.target.checked)}
+      disabled={disabled}
+    />
   );
 }
 

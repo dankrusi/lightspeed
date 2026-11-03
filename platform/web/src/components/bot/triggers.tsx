@@ -35,9 +35,8 @@ import {
   ComboboxList,
   ComboboxValue,
 } from "@/components/ui/combobox";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
-import { Label } from "@/components/ui/label";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
@@ -214,73 +213,74 @@ export function ScheduleFields({
           Fires once at {new Date(lockedAtMs).toLocaleString()}; only the task is editable.
         </p>
       ) : (
-        <Field>
-          <FieldLabel htmlFor="schedule-when">When</FieldLabel>
-          <Select
-            id="schedule-when"
-            value={form.once ? "once" : "cron"}
-            onChange={(event) => setForm({ ...form, once: event.target.value === "once" })}
-          >
-            <option value="cron">On a recurring schedule</option>
-            <option value="once">Once, at a specific time</option>
-          </Select>
+        <Field id="schedule-when" label="When">
+          {(field) => (
+            <Select
+              {...field.control}
+              value={form.once ? "once" : "cron"}
+              onChange={(event) => setForm({ ...form, once: event.target.value === "once" })}
+            >
+              <option value="cron">On a recurring schedule</option>
+              <option value="once">Once, at a specific time</option>
+            </Select>
+          )}
         </Field>
       )}
       {lockedAtMs == null && form.once && (
-        <Field>
-          <FieldLabel htmlFor={`${idPrefix}-at`}>Fire at</FieldLabel>
-          <Input
-            id={`${idPrefix}-at`}
-            type="datetime-local"
-            value={form.at}
-            onChange={(event) => setForm({ ...form, at: event.target.value })}
-          />
-          <FieldDescription>Local time; the trigger pauses itself after firing once.</FieldDescription>
+        <Field id={`${idPrefix}-at`} label="Fire at" hint="Local time; the trigger pauses itself after firing once.">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="datetime-local"
+              value={form.at}
+              onChange={(event) => setForm({ ...form, at: event.target.value })}
+            />
+          )}
         </Field>
       )}
       {lockedAtMs == null && !form.once && (
         <>
           <CronBuilder value={form.cron} onChange={(cron) => setForm({ ...form, cron })} />
-          <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
-            <Field>
-              <FieldLabel htmlFor={`${idPrefix}-cron`}>Cron</FieldLabel>
-              <Input
-                id={`${idPrefix}-cron`}
-                value={form.cron}
-                onChange={(event) => setForm({ ...form, cron: event.target.value })}
-                placeholder="0 9 * * 1-5"
-                className="font-mono"
-                aria-invalid={cronIssue !== null || undefined}
-              />
+          <div className="grid items-start gap-3 sm:grid-cols-[1fr_10rem]">
+            <Field
+              id={`${idPrefix}-cron`}
+              label="Cron"
+              error={cronIssue ?? undefined}
+              hint={cronIssue ? undefined : "5 fields: minute, hour, day, month, weekday — or a macro like @daily."}
+            >
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={form.cron}
+                  onChange={(event) => setForm({ ...form, cron: event.target.value })}
+                  placeholder="0 9 * * 1-5"
+                  className="font-mono"
+                />
+              )}
             </Field>
-            <Field>
-              <FieldLabel htmlFor={`${idPrefix}-timezone`}>Timezone</FieldLabel>
-              <Input
-                id={`${idPrefix}-timezone`}
-                value={form.timezone}
-                onChange={(event) => setForm({ ...form, timezone: event.target.value })}
-                placeholder="UTC"
-              />
+            <Field id={`${idPrefix}-timezone`} label="Timezone">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={form.timezone}
+                  onChange={(event) => setForm({ ...form, timezone: event.target.value })}
+                  placeholder="UTC"
+                />
+              )}
             </Field>
           </div>
-          {cronIssue ? (
-            <p className="-mt-2 text-xs text-destructive">{cronIssue}</p>
-          ) : (
-            <p className="-mt-2 text-xs text-muted-foreground">
-              5 fields: minute, hour, day, month, weekday — or a macro like @daily.
-            </p>
-          )}
         </>
       )}
-      <Field>
-        <FieldLabel htmlFor={`${idPrefix}-summary`}>Task</FieldLabel>
-        <Textarea
-          id={`${idPrefix}-summary`}
-          value={form.summary}
-          onChange={(event) => setForm({ ...form, summary: event.target.value })}
-          rows={4}
-          placeholder="What should the bot do each time this fires?"
-        />
+      <Field id={`${idPrefix}-summary`} label="Task">
+        {(field) => (
+          <Textarea
+            {...field.control}
+            value={form.summary}
+            onChange={(event) => setForm({ ...form, summary: event.target.value })}
+            rows={4}
+            placeholder="What should the bot do each time this fires?"
+          />
+        )}
       </Field>
     </>
   );
@@ -406,14 +406,15 @@ export function TriggerFormCard({
       {open && (
         <div className="grid min-w-0 gap-4 border-t p-3">
           {nameEditable && (
-            <Field>
-              <FieldLabel htmlFor={`${idPrefix}-name`}>Name</FieldLabel>
-              <Input
-                id={`${idPrefix}-name`}
-                value={name}
-                onChange={(event) => onNameChange?.(event.target.value)}
-                className="font-mono"
-              />
+            <Field id={`${idPrefix}-name`} label="Name">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={name}
+                  onChange={(event) => onNameChange?.(event.target.value)}
+                  className="font-mono"
+                />
+              )}
             </Field>
           )}
           {fields ?? (kind === "schedule" && lockedScheduleAtMs != null ? (
@@ -1046,11 +1047,14 @@ export function BotMultiSelect({
   bots,
   value,
   onChange,
+  control,
 }: {
   currentBotId: string;
   bots: BotListItem[];
   value: string[];
   onChange: (value: string[]) => void;
+  /** Label and description wiring from an enclosing field, applied to the search input. */
+  control?: { id: string; "aria-describedby"?: string; "aria-invalid"?: true; "aria-required"?: true };
 }) {
   const botMap = new Map(bots.map((bot) => [bot.botId, bot]));
   const label = (botId: string) => botLabel(botMap.get(botId) ?? { botId, displayName: null });
@@ -1077,7 +1081,7 @@ export function BotMultiSelect({
             <ComboboxChip key={botId} value={botId}>{label(botId)}</ComboboxChip>
           ))}
         </ComboboxValue>
-        <ComboboxChipsInput id="inbox-from" placeholder={value.length ? "Add bot" : "Select bots"} />
+        <ComboboxChipsInput id="inbox-from" {...control} placeholder={value.length ? "Add bot" : "Select bots"} />
       </ComboboxChips>
       <ComboboxContent>
         <ComboboxEmpty>No matching bots.</ComboboxEmpty>
@@ -1116,35 +1120,39 @@ export function InboxFields({
 }) {
   return (
     <>
-      <Field>
-        <FieldLabel htmlFor="inbox-from-mode">Allowed senders</FieldLabel>
-        <Select
-          id="inbox-from-mode"
-          value={form.fromMode}
-          onChange={(event) =>
-            setForm({ ...form, fromMode: event.target.value as InboxFormState["fromMode"] })
-          }
-        >
-          <option value="any">Any bot in this universe</option>
-          <option value="selected">Selected bots</option>
-        </Select>
-        <FieldDescription>
-          These bots can address this inbox with bot_emit. Narrow further with the filter (CEL sees
-          event.sender).
-        </FieldDescription>
+      <Field
+        id="inbox-from-mode"
+        label="Allowed senders"
+        hint="These bots can address this inbox with bot_emit. Narrow further with the filter (CEL sees event.sender)."
+      >
+        {(field) => (
+          <Select
+            {...field.control}
+            value={form.fromMode}
+            onChange={(event) =>
+              setForm({ ...form, fromMode: event.target.value as InboxFormState["fromMode"] })
+            }
+          >
+            <option value="any">Any bot in this universe</option>
+            <option value="selected">Selected bots</option>
+          </Select>
+        )}
       </Field>
       {form.fromMode === "selected" && (
-        <Field>
-          <FieldLabel htmlFor="inbox-from">Bots</FieldLabel>
-          <BotMultiSelect
-            currentBotId={currentBotId}
-            bots={bots}
-            value={form.fromBotIds}
-            onChange={(fromBotIds) => setForm({ ...form, fromBotIds })}
-          />
-          <FieldDescription>
-            Search by display name or immutable bot id. Only the selected ids are authorized.
-          </FieldDescription>
+        <Field
+          id="inbox-from"
+          label="Bots"
+          hint="Search by display name or immutable bot id. Only the selected ids are authorized."
+        >
+          {(field) => (
+            <BotMultiSelect
+              currentBotId={currentBotId}
+              bots={bots}
+              value={form.fromBotIds}
+              onChange={(fromBotIds) => setForm({ ...form, fromBotIds })}
+              control={field.control}
+            />
+          )}
         </Field>
       )}
       <DeliveryFields form={form} setForm={setForm} />
@@ -1455,147 +1463,160 @@ export function ChatFields({
   };
   return (
     <>
-      <Field>
-        <FieldLabel htmlFor="chat-account">Messaging account</FieldLabel>
-        <Select
-          id="chat-account"
-          className="w-full"
-          value={form.channelAccountId}
-          onChange={(event) => setForm({ ...form, channelAccountId: event.target.value })}
-        >
-          <option value="" disabled>Select an account</option>
-          {form.channelAccountId && !accountList.some((account) => account.accountId === form.channelAccountId) && (
-            <option value={form.channelAccountId}>{accountLabel(form.channelAccountId)}</option>
-          )}
-          {accountList.map((account) => (
-            <option key={account.accountId} value={account.accountId} disabled={account.enabled === false}>
-              {`${account.provider} · ${account.displayName}${account.enabled === false ? " (disabled)" : ""}`}
-            </option>
-          ))}
-        </Select>
-        <FieldDescription>
-          {accounts.error
-            ? accounts.error.message
+      <Field
+        id="chat-account"
+        label="Messaging account"
+        error={accounts.error?.message}
+        hint={
+          accounts.error
+            ? undefined
             : accounts.data && accountList.length === 0
               ? "No messaging accounts are connected in this universe; an owner adds them under Channels."
-              : "A Telegram or WhatsApp account registered in this universe."}
-        </FieldDescription>
+              : "A Telegram or WhatsApp account registered in this universe."
+        }
+      >
+        {(field) => (
+          <Select
+            {...field.control}
+            className="w-full"
+            value={form.channelAccountId}
+            onChange={(event) => setForm({ ...form, channelAccountId: event.target.value })}
+          >
+            <option value="" disabled>Select an account</option>
+            {form.channelAccountId && !accountList.some((account) => account.accountId === form.channelAccountId) && (
+              <option value={form.channelAccountId}>{accountLabel(form.channelAccountId)}</option>
+            )}
+            {accountList.map((account) => (
+              <option key={account.accountId} value={account.accountId} disabled={account.enabled === false}>
+                {`${account.provider} · ${account.displayName}${account.enabled === false ? " (disabled)" : ""}`}
+              </option>
+            ))}
+          </Select>
+        )}
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <FieldLabel htmlFor="chat-scope">Conversations</FieldLabel>
-          <Select
-            id="chat-scope"
-            value={form.scope}
-            onChange={(event) => setForm({ ...form, scope: event.target.value as ChatFormState["scope"] })}
-          >
-            <option value="any">Direct chats and groups</option>
-            <option value="direct">Direct chats only</option>
-            <option value="group">Groups only</option>
-          </Select>
+        <Field id="chat-scope" label="Conversations">
+          {(field) => (
+            <Select
+              {...field.control}
+              value={form.scope}
+              onChange={(event) => setForm({ ...form, scope: event.target.value as ChatFormState["scope"] })}
+            >
+              <option value="any">Direct chats and groups</option>
+              <option value="direct">Direct chats only</option>
+              <option value="group">Groups only</option>
+            </Select>
+          )}
         </Field>
         {form.scope !== "direct" && (
-          <Field>
-            <FieldLabel htmlFor="chat-group-activation">In groups, respond</FieldLabel>
-            <Select
-              id="chat-group-activation"
-              value={form.groupActivation}
-              onChange={(event) =>
-                setForm({ ...form, groupActivation: event.target.value as ChatFormState["groupActivation"] })
-              }
-            >
-              <option value="mention">When mentioned or prefixed</option>
-              <option value="always">To every message</option>
-            </Select>
+          <Field id="chat-group-activation" label="In groups, respond">
+            {(field) => (
+              <Select
+                {...field.control}
+                value={form.groupActivation}
+                onChange={(event) =>
+                  setForm({ ...form, groupActivation: event.target.value as ChatFormState["groupActivation"] })
+                }
+              >
+                <option value="mention">When mentioned or prefixed</option>
+                <option value="always">To every message</option>
+              </Select>
+            )}
           </Field>
         )}
       </div>
       {form.scope !== "direct" && (
-        <div className="grid grid-cols-2 gap-3">
-          <Field>
-            <FieldLabel htmlFor="chat-prefixes">Trigger prefixes</FieldLabel>
-            <Input
-              id="chat-prefixes"
-              value={form.prefixesText}
-              onChange={(event) => setForm({ ...form, prefixesText: event.target.value })}
-              placeholder="/ask, /lightspeed"
-              className="font-mono"
-            />
-            <FieldDescription>Comma-separated; a message starting with one always activates the bot.</FieldDescription>
+        <div className="grid grid-cols-2 items-start gap-3">
+          <Field
+            id="chat-prefixes"
+            label="Trigger prefixes"
+            hint="Comma-separated; a message starting with one always activates the bot."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={form.prefixesText}
+                onChange={(event) => setForm({ ...form, prefixesText: event.target.value })}
+                placeholder="/ask, /lightspeed"
+                className="font-mono"
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="chat-mention-names">Mention names</FieldLabel>
-            <Input
-              id="chat-mention-names"
-              value={form.mentionNamesText}
-              onChange={(event) => setForm({ ...form, mentionNamesText: event.target.value })}
-              placeholder="@mybot"
-            />
-            <FieldDescription>Extra names stripped from a mention before the text reaches the bot.</FieldDescription>
+          <Field
+            id="chat-mention-names"
+            label="Mention names"
+            hint="Extra names stripped from a mention before the text reaches the bot."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={form.mentionNamesText}
+                onChange={(event) => setForm({ ...form, mentionNamesText: event.target.value })}
+                placeholder="@mybot"
+              />
+            )}
           </Field>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <FieldLabel htmlFor="chat-access-turn">Who may talk to the bot</FieldLabel>
-          <Select
-            id="chat-access-turn"
-            value={form.accessTurn}
-            onChange={(event) => setForm({ ...form, accessTurn: event.target.value as ChatFormState["accessTurn"] })}
-          >
-            <option value="anyone">Anyone in a paired conversation</option>
-            <option value="listed">Listed handles only</option>
-          </Select>
+      <div className="grid grid-cols-2 items-start gap-3">
+        <Field id="chat-access-turn" label="Who may talk to the bot">
+          {(field) => (
+            <Select
+              {...field.control}
+              value={form.accessTurn}
+              onChange={(event) => setForm({ ...form, accessTurn: event.target.value as ChatFormState["accessTurn"] })}
+            >
+              <option value="anyone">Anyone in a paired conversation</option>
+              <option value="listed">Listed handles only</option>
+            </Select>
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="chat-controllers">Control commands</FieldLabel>
-          <Input
-            id="chat-controllers"
-            value={form.controllersText}
-            onChange={(event) => setForm({ ...form, controllersText: event.target.value })}
-            placeholder="@lukas"
-          />
-          <FieldDescription>Handles allowed to issue /activation and /status; blank denies everyone.</FieldDescription>
+        <Field
+          id="chat-controllers"
+          label="Control commands"
+          hint="Handles allowed to issue /activation and /status; blank denies everyone."
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.controllersText}
+              onChange={(event) => setForm({ ...form, controllersText: event.target.value })}
+              placeholder="@lukas"
+            />
+          )}
         </Field>
       </div>
       {form.accessTurn === "listed" && (
-        <Field>
-          <FieldLabel htmlFor="chat-allowed">Allowed handles</FieldLabel>
-          <Input
-            id="chat-allowed"
-            value={form.allowedText}
-            onChange={(event) => setForm({ ...form, allowedText: event.target.value })}
-            placeholder="@lukas, @teammate"
-          />
-          <FieldDescription>Comma-separated; only these handles may take a turn.</FieldDescription>
+        <Field id="chat-allowed" label="Allowed handles" hint="Comma-separated; only these handles may take a turn.">
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.allowedText}
+              onChange={(event) => setForm({ ...form, allowedText: event.target.value })}
+              placeholder="@lukas, @teammate"
+            />
+          )}
         </Field>
       )}
-      <div className="grid grid-cols-[1fr_8rem] gap-3">
-        <Label className="gap-2 font-normal">
-          <Checkbox
-            checked={form.requirePairing}
-            onChange={(event) => setForm({ ...form, requirePairing: event.target.checked })}
-          />
-          <span>
-            Require a pairing code
-            <span className="block text-xs text-muted-foreground">
-              A conversation connects once someone sends the code; the code is shown on the trigger
-              to people who manage this bot. Off: any conversation on the account connects.
-            </span>
-          </span>
-        </Label>
-        <Field>
-          <FieldLabel htmlFor="chat-priority">Priority</FieldLabel>
-          <Input
-            id="chat-priority"
-            type="number"
-            min={0}
-            max={1000}
-            value={form.priority}
-            onChange={(event) => setForm({ ...form, priority: event.target.value })}
-            placeholder="100"
-          />
-          <FieldDescription>Lower wins when several chat triggers match.</FieldDescription>
+      <div className="grid grid-cols-[1fr_8rem] items-start gap-3">
+        <Checkbox
+          label="Require a pairing code"
+          description="A conversation connects once someone sends the code; the code is shown on the trigger to people who manage this bot. Off: any conversation on the account connects."
+          checked={form.requirePairing}
+          onChange={(event) => setForm({ ...form, requirePairing: event.target.checked })}
+        />
+        <Field id="chat-priority" label="Priority" hint="Lower wins when several chat triggers match.">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={0}
+              max={1000}
+              value={form.priority}
+              onChange={(event) => setForm({ ...form, priority: event.target.value })}
+              placeholder="100"
+            />
+          )}
         </Field>
       </div>
       <DeliveryFields form={form} setForm={setForm} chat />
@@ -1880,60 +1901,64 @@ export function WebhookFields({
 }) {
   return (
     <>
-      <Field>
-        <FieldLabel htmlFor="webhook-verification">Verification</FieldLabel>
-        <Select
-          id="webhook-verification"
-          value={form.preset ? "github" : form.scheme}
-          onChange={(event) => {
-            const value = event.target.value;
-            if (value === "github") {
-              setForm({
-                ...form,
-                preset: true,
-                scheme: "hmac-sha256",
-                header: "x-hub-signature-256",
-                prefix: "sha256=",
-              });
-            } else {
-              setForm({ ...form, preset: false, scheme: value as "token" | "hmac-sha256" });
-            }
-          }}
-        >
-          <option value="token">URL token only</option>
-          <option value="hmac-sha256">HMAC-SHA256 signature</option>
-          <option value="github">GitHub (signed)</option>
-        </Select>
-        <FieldDescription>
-          The ingest URL always carries a secret token; a signature additionally authenticates the
-          payload.
-        </FieldDescription>
+      <Field
+        id="webhook-verification"
+        label="Verification"
+        hint="The ingest URL always carries a secret token; a signature additionally authenticates the payload."
+      >
+        {(field) => (
+          <Select
+            {...field.control}
+            value={form.preset ? "github" : form.scheme}
+            onChange={(event) => {
+              const value = event.target.value;
+              if (value === "github") {
+                setForm({
+                  ...form,
+                  preset: true,
+                  scheme: "hmac-sha256",
+                  header: "x-hub-signature-256",
+                  prefix: "sha256=",
+                });
+              } else {
+                setForm({ ...form, preset: false, scheme: value as "token" | "hmac-sha256" });
+              }
+            }}
+          >
+            <option value="token">URL token only</option>
+            <option value="hmac-sha256">HMAC-SHA256 signature</option>
+            <option value="github">GitHub (signed)</option>
+          </Select>
+        )}
       </Field>
       {form.scheme === "hmac-sha256" && (
-        <div className="grid grid-cols-2 gap-3">
-          <Field>
-            <FieldLabel htmlFor="webhook-grant">Credential grant ID</FieldLabel>
-            <Input
-              id="webhook-grant"
-              value={form.grantId}
-              onChange={(event) => setForm({ ...form, grantId: event.target.value })}
-              placeholder="grant_…"
-              className="font-mono"
-              autoComplete="off"
-            />
-            <FieldDescription>
-              Active retrievable credential from Credentials; the signing value is leased only during verification.
-            </FieldDescription>
+        <div className="grid grid-cols-2 items-start gap-3">
+          <Field
+            id="webhook-grant"
+            label="Credential grant ID"
+            hint="Active retrievable credential from Credentials; the signing value is leased only during verification."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={form.grantId}
+                onChange={(event) => setForm({ ...form, grantId: event.target.value })}
+                placeholder="grant_…"
+                className="font-mono"
+                autoComplete="off"
+              />
+            )}
           </Field>
           {!form.preset && (
-            <Field>
-              <FieldLabel htmlFor="webhook-header">Signature header</FieldLabel>
-              <Input
-                id="webhook-header"
-                value={form.header}
-                onChange={(event) => setForm({ ...form, header: event.target.value })}
-                placeholder="x-signature-256"
-              />
+            <Field id="webhook-header" label="Signature header">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={form.header}
+                  onChange={(event) => setForm({ ...form, header: event.target.value })}
+                  placeholder="x-signature-256"
+                />
+              )}
             </Field>
           )}
         </div>
@@ -1981,143 +2006,158 @@ function DeliveryFieldsBody<T extends DeliveryFormState>({
 
   return (
     <>
-      <Field>
-        <FieldLabel htmlFor="trigger-route-policy">Sessions</FieldLabel>
-        <Select
-          id="trigger-route-policy"
-          value={form.routePolicy}
-          onChange={(event) => setForm({ ...form, routePolicy: event.target.value as DeliveryFormState["routePolicy"] })}
-        >
-          {chat ? (
-            <>
-              <option value="perKey">One session per conversation</option>
-              <option value="perEvent">One session per message</option>
-            </>
-          ) : (
-            <>
-              <option value="bot">Deliver to the main session</option>
-              <option value="perKey">One session per key</option>
-              <option value="perEvent">One session per event</option>
-            </>
-          )}
-        </Select>
+      <Field id="trigger-route-policy" label="Sessions">
+        {(field) => (
+          <Select
+            {...field.control}
+            value={form.routePolicy}
+            onChange={(event) => setForm({ ...form, routePolicy: event.target.value as DeliveryFormState["routePolicy"] })}
+          >
+            {chat ? (
+              <>
+                <option value="perKey">One session per conversation</option>
+                <option value="perEvent">One session per message</option>
+              </>
+            ) : (
+              <>
+                <option value="bot">Deliver to the main session</option>
+                <option value="perKey">One session per key</option>
+                <option value="perEvent">One session per event</option>
+              </>
+            )}
+          </Select>
+        )}
       </Field>
       {form.routePolicy === "perKey" && (
-        <Field>
-          <FieldLabel htmlFor="webhook-route-key">Key expression (optional)</FieldLabel>
-          <Input
-            id="webhook-route-key"
-            value={form.routeKey}
-            onChange={(event) => setForm({ ...form, routeKey: event.target.value })}
-            placeholder={chat ? "data.conversation.key" : "data.issue.number"}
-            className="font-mono"
-          />
-          <FieldDescription>
-            {chat
+        <Field
+          id="webhook-route-key"
+          label="Key expression"
+          optional
+          hint={
+            chat
               ? "CEL over event, data, and headers. Defaults to the conversation (account, chat, and thread)."
-              : "CEL over event, data, and headers. GitHub triggers default to the PR or issue number."}
-          </FieldDescription>
+              : "CEL over event, data, and headers. GitHub triggers default to the PR or issue number."
+          }
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.routeKey}
+              onChange={(event) => setForm({ ...form, routeKey: event.target.value })}
+              placeholder={chat ? "data.conversation.key" : "data.issue.number"}
+              className="font-mono"
+            />
+          )}
         </Field>
       )}
       {form.routePolicy !== "bot" && (
         <div className="grid grid-cols-2 gap-3">
-          <Field>
-            <FieldLabel htmlFor="trigger-close-mode">Idle close</FieldLabel>
-            <Select
-              id="trigger-close-mode"
-              value={form.closeMode}
-              onChange={(event) =>
-                setForm({ ...form, closeMode: event.target.value as DeliveryFormState["closeMode"] })
-              }
-            >
-              <option value="inherit">Inherit the bot's setting</option>
-              <option value="forever">Keep sessions forever</option>
-              <option value="hours">Close idle sessions after…</option>
-            </Select>
+          <Field id="trigger-close-mode" label="Idle close">
+            {(field) => (
+              <Select
+                {...field.control}
+                value={form.closeMode}
+                onChange={(event) =>
+                  setForm({ ...form, closeMode: event.target.value as DeliveryFormState["closeMode"] })
+                }
+              >
+                <option value="inherit">Inherit the bot's setting</option>
+                <option value="forever">Keep sessions forever</option>
+                <option value="hours">Close idle sessions after…</option>
+              </Select>
+            )}
           </Field>
           {form.closeMode === "hours" && (
-            <Field>
-              <FieldLabel htmlFor="trigger-close-hours">Idle hours</FieldLabel>
-              <Input
-                id="trigger-close-hours"
-                type="number"
-                min={1}
-                value={form.closeHours}
-                onChange={(event) => setForm({ ...form, closeHours: event.target.value })}
-                placeholder="24"
-              />
+            <Field id="trigger-close-hours" label="Idle hours">
+              {(field) => (
+                <Input
+                  {...field.control}
+                  type="number"
+                  min={1}
+                  value={form.closeHours}
+                  onChange={(event) => setForm({ ...form, closeHours: event.target.value })}
+                  placeholder="24"
+                />
+              )}
             </Field>
           )}
         </div>
       )}
-      <Field>
-        <FieldLabel htmlFor="webhook-filter">Filter (optional)</FieldLabel>
-        <Input
-          id="webhook-filter"
-          value={form.filter}
-          onChange={(event) => setForm({ ...form, filter: event.target.value })}
-          placeholder='event.kind == "issues.opened"'
-          className="font-mono"
-        />
-        <FieldDescription>
-          CEL predicate; non-matching events are refused without waking the bot.
-        </FieldDescription>
+      <Field
+        id="webhook-filter"
+        label="Filter"
+        optional
+        hint="CEL predicate; non-matching events are refused without waking the bot."
+      >
+        {(field) => (
+          <Input
+            {...field.control}
+            value={form.filter}
+            onChange={(event) => setForm({ ...form, filter: event.target.value })}
+            placeholder='event.kind == "issues.opened"'
+            className="font-mono"
+          />
+        )}
       </Field>
       <div className="grid grid-cols-3 gap-3">
-        <Field>
-          <FieldLabel htmlFor="webhook-debounce">Debounce (s)</FieldLabel>
-          <Input
-            id="webhook-debounce"
-            type="number"
-            min={0.1}
-            step={0.1}
-            value={form.debounceSeconds}
-            onChange={(event) => setForm({ ...form, debounceSeconds: event.target.value })}
-            placeholder="Off"
-          />
+        <Field id="webhook-debounce" label="Debounce (s)">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={0.1}
+              step={0.1}
+              value={form.debounceSeconds}
+              onChange={(event) => setForm({ ...form, debounceSeconds: event.target.value })}
+              placeholder="Off"
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="webhook-maxwait">Max wait (s)</FieldLabel>
-          <Input
-            id="webhook-maxwait"
-            type="number"
-            min={0.1}
-            step={0.1}
-            value={form.maxWaitSeconds}
-            onChange={(event) => setForm({ ...form, maxWaitSeconds: event.target.value })}
-            placeholder="= debounce"
-          />
+        <Field id="webhook-maxwait" label="Max wait (s)">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={0.1}
+              step={0.1}
+              value={form.maxWaitSeconds}
+              onChange={(event) => setForm({ ...form, maxWaitSeconds: event.target.value })}
+              placeholder="= debounce"
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="webhook-maxcount">Max batch</FieldLabel>
-          <Input
-            id="webhook-maxcount"
-            type="number"
-            min={2}
-            max={100}
-            value={form.maxCount}
-            onChange={(event) => setForm({ ...form, maxCount: event.target.value })}
-            placeholder="50"
-          />
+        <Field id="webhook-maxcount" label="Max batch">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={2}
+              max={100}
+              value={form.maxCount}
+              onChange={(event) => setForm({ ...form, maxCount: event.target.value })}
+              placeholder="50"
+            />
+          )}
         </Field>
       </div>
       <p className="-mt-2 text-xs text-muted-foreground">
         Coalescing: related events settle for the debounce window (bounded by max wait) and arrive
         as one batch. Leave debounce empty to deliver each event individually.
       </p>
-      <Field>
-        <FieldLabel htmlFor="trigger-when-busy">While the session is busy</FieldLabel>
-        <Select
-          id="trigger-when-busy"
-          value={form.whenBusy}
-          onChange={(event) =>
-            setForm({ ...form, whenBusy: event.target.value as DeliveryFormState["whenBusy"] })
-          }
-        >
-          <option value="queue">Queue a run for when it finishes</option>
-          <option value="steer">Steer the active run</option>
-          <option value="append">Append as context only (never runs)</option>
-        </Select>
+      <Field id="trigger-when-busy" label="While the session is busy">
+        {(field) => (
+          <Select
+            {...field.control}
+            value={form.whenBusy}
+            onChange={(event) =>
+              setForm({ ...form, whenBusy: event.target.value as DeliveryFormState["whenBusy"] })
+            }
+          >
+            <option value="queue">Queue a run for when it finishes</option>
+            <option value="steer">Steer the active run</option>
+            <option value="append">Append as context only (never runs)</option>
+          </Select>
+        )}
       </Field>
     </>
   );
@@ -2134,154 +2174,163 @@ export function PollFields({
     <>
       {form.sourceKind === "http" ? (
         <>
-          <Field>
-            <FieldLabel htmlFor="poll-url">URL</FieldLabel>
-            <Input
-              id="poll-url"
-              value={form.url}
-              onChange={(event) => setForm({ ...form, url: event.target.value })}
-              placeholder="https://api.example.com/issues?state=open"
-              className="font-mono"
-            />
-            <FieldDescription>
-              Fetched on the interval; the JSON response is diffed and only new items wake the bot.
-              The first fire baselines without delivering.
-            </FieldDescription>
+          <Field
+            id="poll-url"
+            label="URL"
+            hint="Fetched on the interval; the JSON response is diffed and only new items wake the bot. The first fire baselines without delivering."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={form.url}
+                onChange={(event) => setForm({ ...form, url: event.target.value })}
+                placeholder="https://api.example.com/issues?state=open"
+                className="font-mono"
+              />
+            )}
           </Field>
-          <Field>
-            <FieldLabel htmlFor="poll-grant">Credential grant ID (optional)</FieldLabel>
-            <Input
-              id="poll-grant"
-              value={form.grantId}
-              onChange={(event) => setForm({ ...form, grantId: event.target.value })}
-              placeholder="grant_…"
-              className="font-mono"
-              autoComplete="off"
-            />
-            <FieldDescription>
-              Active retrievable credential from Credentials. It is leased into worker memory only when the poll fires.
-            </FieldDescription>
+          <Field
+            id="poll-grant"
+            label="Credential grant ID"
+            optional
+            hint="Active retrievable credential from Credentials. It is leased into worker memory only when the poll fires."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={form.grantId}
+                onChange={(event) => setForm({ ...form, grantId: event.target.value })}
+                placeholder="grant_…"
+                className="font-mono"
+                autoComplete="off"
+              />
+            )}
           </Field>
           {form.grantId.trim() && (
             <div className="grid grid-cols-2 gap-3">
-              <Field>
-                <FieldLabel htmlFor="poll-auth-header">Credential header</FieldLabel>
-                <Input
-                  id="poll-auth-header"
-                  value={form.authHeader}
-                  onChange={(event) => setForm({ ...form, authHeader: event.target.value })}
-                  placeholder="authorization"
-                  className="font-mono"
-                />
+              <Field id="poll-auth-header" label="Credential header">
+                {(field) => (
+                  <Input
+                    {...field.control}
+                    value={form.authHeader}
+                    onChange={(event) => setForm({ ...form, authHeader: event.target.value })}
+                    placeholder="authorization"
+                    className="font-mono"
+                  />
+                )}
               </Field>
-              <Field>
-                <FieldLabel htmlFor="poll-auth-scheme">Scheme</FieldLabel>
-                <Input
-                  id="poll-auth-scheme"
-                  value={form.authScheme}
-                  onChange={(event) => setForm({ ...form, authScheme: event.target.value })}
-                  placeholder="Bearer (blank sends raw token)"
-                  className="font-mono"
-                />
+              <Field id="poll-auth-scheme" label="Scheme">
+                {(field) => (
+                  <Input
+                    {...field.control}
+                    value={form.authScheme}
+                    onChange={(event) => setForm({ ...form, authScheme: event.target.value })}
+                    placeholder="Bearer (blank sends raw token)"
+                    className="font-mono"
+                  />
+                )}
               </Field>
             </div>
           )}
         </>
       ) : (
         <>
-          <Field>
-            <FieldLabel htmlFor="poll-environment">Environment</FieldLabel>
-            <Input
-              id="poll-environment"
-              value={form.environmentId}
-              onChange={(event) => setForm({ ...form, environmentId: event.target.value })}
-              placeholder="Blank: the bot's own environment"
-              className="font-mono"
-            />
-            <FieldDescription>
-              The command runs as a one-shot job here with the environment's credentials; a
-              sleeping environment wakes for the poll and idles back down after. Leave it blank
-              to run in the environment the bot's profile activates.
-            </FieldDescription>
-          </Field>
-          <div className="grid grid-cols-[2fr_1fr] gap-3">
-            <Field>
-              <FieldLabel htmlFor="poll-argv">Command</FieldLabel>
-              <Textarea
-                id="poll-argv"
-                value={form.argvText}
-                onChange={(event) => setForm({ ...form, argvText: event.target.value })}
-                rows={3}
-                placeholder={"./poll-orders.sh\n--json"}
-                className="font-mono"
-              />
-              <FieldDescription>One argv entry per line; stdout must be JSON.</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="poll-cwd">Working dir (optional)</FieldLabel>
+          <Field
+            id="poll-environment"
+            label="Environment"
+            hint="The command runs as a one-shot job here with the environment's credentials; a sleeping environment wakes for the poll and idles back down after. Leave it blank to run in the environment the bot's profile activates."
+          >
+            {(field) => (
               <Input
-                id="poll-cwd"
-                value={form.cwd}
-                onChange={(event) => setForm({ ...form, cwd: event.target.value })}
-                placeholder="/srv/app"
+                {...field.control}
+                value={form.environmentId}
+                onChange={(event) => setForm({ ...form, environmentId: event.target.value })}
+                placeholder="Blank: the bot's own environment"
                 className="font-mono"
               />
+            )}
+          </Field>
+          <div className="grid grid-cols-[2fr_1fr] items-start gap-3">
+            <Field id="poll-argv" label="Command" hint="One argv entry per line; stdout must be JSON.">
+              {(field) => (
+                <Textarea
+                  {...field.control}
+                  value={form.argvText}
+                  onChange={(event) => setForm({ ...form, argvText: event.target.value })}
+                  rows={3}
+                  placeholder={"./poll-orders.sh\n--json"}
+                  className="font-mono"
+                />
+              )}
+            </Field>
+            <Field id="poll-cwd" label="Working dir" optional>
+              {(field) => (
+                <Input
+                  {...field.control}
+                  value={form.cwd}
+                  onChange={(event) => setForm({ ...form, cwd: event.target.value })}
+                  placeholder="/srv/app"
+                  className="font-mono"
+                />
+              )}
             </Field>
           </div>
         </>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <FieldLabel htmlFor="poll-interval">Every (minutes)</FieldLabel>
-          <Input
-            id="poll-interval"
-            type="number"
-            min={1}
-            value={form.intervalMinutes}
-            onChange={(event) => setForm({ ...form, intervalMinutes: event.target.value })}
-          />
+        <Field id="poll-interval" label="Every (minutes)">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={1}
+              value={form.intervalMinutes}
+              onChange={(event) => setForm({ ...form, intervalMinutes: event.target.value })}
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="poll-items">Items path (optional)</FieldLabel>
-          <Input
-            id="poll-items"
-            value={form.items}
-            onChange={(event) => setForm({ ...form, items: event.target.value })}
-            placeholder="data.issues"
-            className="font-mono"
-          />
+        <Field id="poll-items" label="Items path" optional>
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.items}
+              onChange={(event) => setForm({ ...form, items: event.target.value })}
+              placeholder="data.issues"
+              className="font-mono"
+            />
+          )}
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <FieldLabel htmlFor="poll-dedupe">New-item detection</FieldLabel>
-          <Select
-            id="poll-dedupe"
-            value={form.dedupe}
-            onChange={(event) => {
-              const value = event.target.value;
-              setForm({
-                ...form,
-                dedupe: value as PollFormState["dedupe"],
-                dedupeField: form.dedupeField || (value === "idSet" ? "id" : "updated_at"),
-              });
-            }}
-          >
-            <option value="idSet">Unseen id</option>
-            <option value="watermark">Increasing field</option>
-          </Select>
+        <Field id="poll-dedupe" label="New-item detection">
+          {(field) => (
+            <Select
+              {...field.control}
+              value={form.dedupe}
+              onChange={(event) => {
+                const value = event.target.value;
+                setForm({
+                  ...form,
+                  dedupe: value as PollFormState["dedupe"],
+                  dedupeField: form.dedupeField || (value === "idSet" ? "id" : "updated_at"),
+                });
+              }}
+            >
+              <option value="idSet">Unseen id</option>
+              <option value="watermark">Increasing field</option>
+            </Select>
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="poll-dedupe-field">
-            {form.dedupe === "idSet" ? "Id field" : "Watermark field"}
-          </FieldLabel>
-          <Input
-            id="poll-dedupe-field"
-            value={form.dedupeField}
-            onChange={(event) => setForm({ ...form, dedupeField: event.target.value })}
-            placeholder={form.dedupe === "idSet" ? "id" : "updated_at"}
-            className="font-mono"
-          />
+        <Field id="poll-dedupe-field" label={form.dedupe === "idSet" ? "Id field" : "Watermark field"}>
+          {(field) => (
+            <Input
+              {...field.control}
+              value={form.dedupeField}
+              onChange={(event) => setForm({ ...form, dedupeField: event.target.value })}
+              placeholder={form.dedupe === "idSet" ? "id" : "updated_at"}
+              className="font-mono"
+            />
+          )}
         </Field>
       </div>
       <DeliveryFields form={form} setForm={setForm} />

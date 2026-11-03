@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Copy } from "@phosphor-icons/react";
 import { api, type SecretGrant, type SubscriptionImportResult } from "@/api";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
 import {
@@ -98,31 +98,33 @@ export function SubscriptionForm({
           <li key={step}>{step}</li>
         ))}
       </ol>
-      <Field>
-        <FieldLabel htmlFor={`sub-name-${provider}`}>Display name</FieldLabel>
-        <Input
-          id={`sub-name-${provider}`}
-          value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
-          placeholder={copy.namePlaceholder}
-        />
+      <Field id={`sub-name-${provider}`} label="Display name">
+        {(field) => (
+          <Input
+            {...field.control}
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder={copy.namePlaceholder}
+          />
+        )}
       </Field>
-      <Field>
-        <FieldLabel htmlFor={`sub-cred-${provider}`}>Credential</FieldLabel>
-        <Textarea
-          id={`sub-cred-${provider}`}
-          value={credential}
-          onChange={(event) => {
-            setCredential(event.target.value);
-            setError(null);
-          }}
-          autoComplete="off"
-          spellCheck={false}
-          rows={copy.rows}
-          className="max-h-40 resize-y overflow-y-auto font-mono text-xs"
-          placeholder={copy.placeholder}
-          autoFocus
-        />
+      <Field id={`sub-cred-${provider}`} label="Credential">
+        {(field) => (
+          <Textarea
+            {...field.control}
+            value={credential}
+            onChange={(event) => {
+              setCredential(event.target.value);
+              setError(null);
+            }}
+            autoComplete="off"
+            spellCheck={false}
+            rows={copy.rows}
+            className="max-h-40 resize-y overflow-y-auto font-mono text-xs"
+            placeholder={copy.placeholder}
+            autoFocus
+          />
+        )}
       </Field>
       <p className="text-xs text-muted-foreground">{copy.apiKeyNote}</p>
       {error && <p className="text-sm text-destructive">{error}</p>}

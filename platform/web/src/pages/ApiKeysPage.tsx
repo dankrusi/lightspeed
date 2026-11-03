@@ -11,7 +11,7 @@ import { api } from "@/api";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import {
   Table,
@@ -278,18 +278,18 @@ function CreateApiKeyDialog({
         <ApiKeySecret secret={created.secret} keyPrefix={created.apiKey.keyPrefix} />
       ) : (
         <form id={formId} onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="api-key-name">Name</FieldLabel>
-            <Input
-              id="api-key-name"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="Production coding agent"
-              maxLength={120}
-              autoFocus
-              required
-            />
-            <FieldDescription>Shown in this list; it is not part of the secret.</FieldDescription>
+          <Field id="api-key-name" label="Name" hint="Shown in this list; it is not part of the secret.">
+            {(field) => (
+              <Input
+                {...field.control}
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+                placeholder="Production coding agent"
+                maxLength={120}
+                autoFocus
+                required
+              />
+            )}
           </Field>
           <KeyPresetField groups={groups} onChange={setGroups} />
           <MethodGroupPicker idPrefix="api-key" allowed={allowed} chosen={groups} onChange={setGroups} />

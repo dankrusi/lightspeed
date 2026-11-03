@@ -1,8 +1,7 @@
+import { useId } from "react";
 import type { MethodGroup } from "@lightspeed-ai/sdk";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Label } from "@/components/ui/label";
 import { METHOD_GROUPS, presetFor, UNIVERSE_KEY_PRESETS } from "@/lib/method-groups";
 
 /** Preset starting points for a universe key's groups; ticking a box makes it custom. */
@@ -14,9 +13,10 @@ export function KeyPresetField({
   onChange: (next: Set<MethodGroup>) => void;
 }) {
   const preset = presetFor(groups);
+  const id = useId();
   return (
-    <Field>
-      <FieldLabel>Start from</FieldLabel>
+    <div role="group" aria-labelledby={`${id}-label`} aria-describedby={`${id}-hint`} className="grid gap-1.5">
+      <span id={`${id}-label`} className="text-sm font-medium text-fg">Start from</span>
       <div className="flex flex-wrap gap-2">
         {UNIVERSE_KEY_PRESETS.map((candidate) => (
           <Button
@@ -31,10 +31,10 @@ export function KeyPresetField({
           </Button>
         ))}
       </div>
-      <FieldDescription>
+      <p id={`${id}-hint`} className="text-xs text-fg-muted">
         {preset?.description ?? "Custom: only the groups ticked below."}
-      </FieldDescription>
-    </Field>
+      </p>
+    </div>
   );
 }
 
@@ -62,16 +62,13 @@ export function MethodGroupPicker({
       <legend className="mb-1 text-sm font-medium">May call</legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {allowed.map((group) => (
-          <div key={group} className="flex items-center gap-2">
-            <Checkbox
-              id={`${idPrefix}-group-${group}`}
-              checked={chosen.has(group)}
-              onChange={(event) => toggle(group, event.target.checked)}
-            />
-            <Label htmlFor={`${idPrefix}-group-${group}`} className="text-sm font-normal">
-              {METHOD_GROUPS[group].label}
-            </Label>
-          </div>
+          <Checkbox
+            key={group}
+            id={`${idPrefix}-group-${group}`}
+            label={<span className="text-sm">{METHOD_GROUPS[group].label}</span>}
+            checked={chosen.has(group)}
+            onChange={(event) => toggle(group, event.target.checked)}
+          />
         ))}
       </div>
       {cautions.length > 0 && (

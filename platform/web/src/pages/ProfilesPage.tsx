@@ -11,6 +11,7 @@ import {
 } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
+import { Segmented } from "@versavolta/whisperink/components/Tabs/Segmented.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import {
@@ -18,10 +19,9 @@ import {
 } from "@/components/session/metadata-editor";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailPrompt, ListNote, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";
 import { useSessionConfigEditorOptions } from "@/lib/sessions/editor-options";
@@ -334,12 +334,13 @@ function ProfileEditor({
           r{(draft.revision as number) ?? "?"}
         </span>
         <div className="ml-auto flex shrink-0 items-center gap-1 md:gap-2">
-          <Tabs value={tab} onValueChange={(v) => switchTab(v as "form" | "json")}>
-            <TabsList className="group-data-horizontal/tabs:h-8 md:group-data-horizontal/tabs:h-9">
-              <TabsTrigger value="form" className="px-1.5 text-xs md:px-2 md:text-sm">Form</TabsTrigger>
-              <TabsTrigger value="json" className="px-1.5 text-xs md:px-2 md:text-sm">JSON</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <Segmented
+            label="Editor view"
+            size="sm"
+            items={EDITOR_VIEWS}
+            value={tab}
+            onChange={(v) => switchTab(v as "form" | "json")}
+          />
           {manage && (
             <Button size="sm" className="px-2 text-xs md:px-2.5 md:text-sm" disabled={!dirty || save.isPending} onClick={submit}>
               {save.isPending ? "Saving…" : dirty ? "Save" : "Saved"}
@@ -440,45 +441,52 @@ function Section({
   );
 }
 
+const EDITOR_VIEWS = [
+  { value: "form", label: "Form" },
+  { value: "json", label: "JSON" },
+] as const;
+
 type Mutate = (fn: (d: ProfileDocument) => void) => void;
 
 function GeneralSection({ draft, mutate, readOnly }: { draft: ProfileDocument; mutate: Mutate; readOnly: boolean }) {
   return (
     <Section title="General">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor="profile-display-name">Display name</FieldLabel>
-          <Input
-            id="profile-display-name"
-            readOnly={readOnly}
-            value={(draft.displayName as string) ?? ""}
-            onChange={(e) =>
-              mutate((d) => {
-                if (e.target.value) {
-                  d.displayName = e.target.value;
-                } else {
-                  delete d.displayName;
-                }
-              })
-            }
-          />
+        <Field id="profile-display-name" label="Display name" className="min-w-0">
+          {(field) => (
+            <Input
+              {...field.control}
+              readOnly={readOnly}
+              value={(draft.displayName as string) ?? ""}
+              onChange={(e) =>
+                mutate((d) => {
+                  if (e.target.value) {
+                    d.displayName = e.target.value;
+                  } else {
+                    delete d.displayName;
+                  }
+                })
+              }
+            />
+          )}
         </Field>
-        <Field>
-          <FieldLabel htmlFor="profile-description">Description</FieldLabel>
-          <Input
-            id="profile-description"
-            readOnly={readOnly}
-            value={(draft.description as string) ?? ""}
-            onChange={(e) =>
-              mutate((d) => {
-                if (e.target.value) {
-                  d.description = e.target.value;
-                } else {
-                  delete d.description;
-                }
-              })
-            }
-          />
+        <Field id="profile-description" label="Description" className="min-w-0">
+          {(field) => (
+            <Input
+              {...field.control}
+              readOnly={readOnly}
+              value={(draft.description as string) ?? ""}
+              onChange={(e) =>
+                mutate((d) => {
+                  if (e.target.value) {
+                    d.description = e.target.value;
+                  } else {
+                    delete d.description;
+                  }
+                })
+              }
+            />
+          )}
         </Field>
       </div>
     </Section>
@@ -684,72 +692,82 @@ function NewProfileDialog({
       </>}
     >
       <form id={formId} onSubmit={submit} className="grid gap-4">
-        <Field>
-          <FieldLabel htmlFor="new-profile-name">Display name</FieldLabel>
-          <Input
-            id="new-profile-name"
-            value={displayName}
-            onChange={(e) => {
-              setDisplayName(e.target.value);
-              if (!idTouched) {
-                setProfileId(e.target.value ? slugify(e.target.value) : "");
-              }
-            }}
-            placeholder="Owner"
-            autoFocus
-          />
-          {/* The id follows the name until it is edited; it opens on its own when missing. */}
-          <SettingsDisclosure
-            summary={profileId
-              ? <>Id: <code className="font-mono">{profileId}</code></>
-              : "Id derived from the display name"}
-            action="Change"
-            label="Change profile id"
-            forceOpen={Boolean(error) && !profileId}
-          >
-            <Field>
-              <FieldLabel htmlFor="new-profile-id">Profile id</FieldLabel>
+        <Field id="new-profile-name" label="Display name">
+          {(field) => (
+            <>
               <Input
-                id="new-profile-id"
-                value={profileId}
+                {...field.control}
+                value={displayName}
                 onChange={(e) => {
-                  setProfileId(e.target.value);
-                  setIdTouched(e.target.value.length > 0);
+                  setDisplayName(e.target.value);
+                  if (!idTouched) {
+                    setProfileId(e.target.value ? slugify(e.target.value) : "");
+                  }
                 }}
-                placeholder="owner"
-                className="font-mono"
+                placeholder="Owner"
+                autoFocus
               />
-              <FieldDescription>
-                What bots and tooling reference — cannot be changed later.
-              </FieldDescription>
-            </Field>
-          </SettingsDisclosure>
+              {/* The id follows the name until it is edited; it opens on its own when missing. */}
+              <SettingsDisclosure
+                className="mt-1.5"
+                summary={profileId
+                  ? <>Id: <code className="font-mono">{profileId}</code></>
+                  : "Id derived from the display name"}
+                action="Change"
+                label="Change profile id"
+                forceOpen={Boolean(error) && !profileId}
+              >
+                <Field
+                  id="new-profile-id"
+                  label="Profile id"
+                  hint="What bots and tooling reference — cannot be changed later."
+                >
+                  {(idField) => (
+                    <Input
+                      {...idField.control}
+                      value={profileId}
+                      onChange={(e) => {
+                        setProfileId(e.target.value);
+                        setIdTouched(e.target.value.length > 0);
+                      }}
+                      placeholder="owner"
+                      className="font-mono"
+                    />
+                  )}
+                </Field>
+              </SettingsDisclosure>
+            </>
+          )}
         </Field>
         <SettingsDisclosure
           summary={sourceProfileId ? `Copies ${sourceName}` : "Starts empty"}
           action="Change"
           label="Change starting point"
         >
-          <Field>
-            <FieldLabel htmlFor="new-profile-source">Start from</FieldLabel>
-            <Select
-              id="new-profile-source"
-              className="w-full"
-              value={sourceProfileId}
-              onChange={(event) => setSourceProfileId(event.target.value)}
-            >
-              <option value="">Empty profile</option>
-              {profiles.map((profile) => (
-                <option key={profile.profileId} value={profile.profileId}>
-                  {profile.displayName ?? profile.profileId}
-                </option>
-              ))}
-            </Select>
-            <FieldDescription>
-              {sourceProfileId
+          <Field
+            id="new-profile-source"
+            label="Start from"
+            hint={
+              sourceProfileId
                 ? "Copies the profile’s current setup once. Later changes to it are not inherited."
-                : "Starts with no profile configuration."}
-            </FieldDescription>
+                : "Starts with no profile configuration."
+            }
+          >
+            {(field) => (
+              <Select
+                {...field.control}
+                className="w-full"
+                value={sourceProfileId}
+                onChange={(event) => setSourceProfileId(event.target.value)}
+              >
+                <option value="">Empty profile</option>
+                {profiles.map((profile) => (
+                  <option key={profile.profileId} value={profile.profileId}>
+                    {profile.displayName ?? profile.profileId}
+                  </option>
+                ))}
+              </Select>
+            )}
           </Field>
         </SettingsDisclosure>
         {error && <p className="text-sm text-destructive">{error}</p>}

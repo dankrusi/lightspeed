@@ -1,5 +1,5 @@
-import { useEffect, useId, useState } from "react";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { useEffect, useState } from "react";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 
 const DAY_MS = 86_400_000;
@@ -32,7 +32,6 @@ export function ProfileRetentionEditor({
   onChange: (deleteAfterCloseMs: number | undefined) => void;
   onValidityChange?: (message: string | null) => void;
 }) {
-  const inputId = useId();
   const valueSource = value === undefined ? "" : String(value / DAY_MS);
   const [days, setDays] = useState(valueSource);
   const [syncedSource, setSyncedSource] = useState(valueSource);
@@ -50,28 +49,30 @@ export function ProfileRetentionEditor({
   }, [onValidityChange, parsed.error]);
 
   return (
-    <Field className="max-w-full sm:max-w-sm">
-      <FieldLabel htmlFor={inputId}>Delete after close (days)</FieldLabel>
-      <Input
-        id={inputId}
-        type="number"
-        min={1 / DAY_MS}
-        max={100 * 365}
-        step="any"
-        value={days}
-        disabled={disabled}
-        placeholder="Keep until manually deleted"
-        onChange={(event) => {
-          const next = event.target.value;
-          const result = retentionDaysValue(next);
-          setDays(next);
-          if (!result.error) onChange(result.deleteAfterCloseMs);
-        }}
-      />
-      <FieldDescription>
-        Starts when the root session closes and deletes its retained forks and sub-agents too. Leave blank to keep them.
-      </FieldDescription>
-      {parsed.error && <p className="text-xs text-destructive">{parsed.error}</p>}
+    <Field
+      className="max-w-full sm:max-w-sm"
+      label="Delete after close (days)"
+      hint="Starts when the root session closes and deletes its retained forks and sub-agents too. Leave blank to keep them."
+      error={parsed.error ?? undefined}
+    >
+      {(field) => (
+        <Input
+          {...field.control}
+          type="number"
+          min={1 / DAY_MS}
+          max={100 * 365}
+          step="any"
+          value={days}
+          disabled={disabled}
+          placeholder="Keep until manually deleted"
+          onChange={(event) => {
+            const next = event.target.value;
+            const result = retentionDaysValue(next);
+            setDays(next);
+            if (!result.error) onChange(result.deleteAfterCloseMs);
+          }}
+        />
+      )}
     </Field>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
@@ -176,46 +176,49 @@ function CronBuilderPanel({
         <h3 className="text-sm font-semibold">Visual schedule</h3>
         <p className="text-xs text-muted-foreground">Choose a common pattern, then apply it to the cron field.</p>
       </div>
-      <Field>
-        <FieldLabel htmlFor="cron-builder-frequency">Repeat</FieldLabel>
-        <Select
-          id="cron-builder-frequency"
-          value={draft.frequency}
-          onChange={(event) => setDraft({ ...draft, frequency: event.target.value as CronFrequency })}
-        >
-          <option value="minutes">Every few minutes</option>
-          <option value="hourly">Every hour</option>
-          <option value="daily">Every day</option>
-          <option value="weekdays">Weekdays</option>
-          <option value="weekly">Every week</option>
-          <option value="monthly">Every month</option>
-        </Select>
+      <Field id="cron-builder-frequency" label="Repeat">
+        {(field) => (
+          <Select
+            {...field.control}
+            value={draft.frequency}
+            onChange={(event) => setDraft({ ...draft, frequency: event.target.value as CronFrequency })}
+          >
+            <option value="minutes">Every few minutes</option>
+            <option value="hourly">Every hour</option>
+            <option value="daily">Every day</option>
+            <option value="weekdays">Weekdays</option>
+            <option value="weekly">Every week</option>
+            <option value="monthly">Every month</option>
+          </Select>
+        )}
       </Field>
 
       {draft.frequency === "minutes" && (
-        <Field>
-          <FieldLabel htmlFor="cron-builder-interval">Interval in minutes</FieldLabel>
-          <Input
-            id="cron-builder-interval"
-            type="number"
-            min={1}
-            max={59}
-            value={draft.interval}
-            onChange={(event) => setDraft({ ...draft, interval: Number(event.target.value) })}
-          />
+        <Field id="cron-builder-interval" label="Interval in minutes">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={1}
+              max={59}
+              value={draft.interval}
+              onChange={(event) => setDraft({ ...draft, interval: Number(event.target.value) })}
+            />
+          )}
         </Field>
       )}
       {draft.frequency === "hourly" && (
-        <Field>
-          <FieldLabel htmlFor="cron-builder-minute">Minute past the hour</FieldLabel>
-          <Input
-            id="cron-builder-minute"
-            type="number"
-            min={0}
-            max={59}
-            value={draft.minute}
-            onChange={(event) => setDraft({ ...draft, minute: Number(event.target.value) })}
-          />
+        <Field id="cron-builder-minute" label="Minute past the hour">
+          {(field) => (
+            <Input
+              {...field.control}
+              type="number"
+              min={0}
+              max={59}
+              value={draft.minute}
+              onChange={(event) => setDraft({ ...draft, minute: Number(event.target.value) })}
+            />
+          )}
         </Field>
       )}
       {(draft.frequency === "daily" || draft.frequency === "weekdays") && (
@@ -223,31 +226,33 @@ function CronBuilderPanel({
       )}
       {draft.frequency === "weekly" && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="cron-builder-weekday">Day</FieldLabel>
-            <Select
-              id="cron-builder-weekday"
-              value={String(draft.weekday)}
-              onChange={(event) => setDraft({ ...draft, weekday: Number(event.target.value) })}
-            >
-              {WEEKDAYS.map(([value, label]) => <option key={value} value={String(value)}>{label}</option>)}
-            </Select>
+          <Field id="cron-builder-weekday" label="Day">
+            {(field) => (
+              <Select
+                {...field.control}
+                value={String(draft.weekday)}
+                onChange={(event) => setDraft({ ...draft, weekday: Number(event.target.value) })}
+              >
+                {WEEKDAYS.map(([value, label]) => <option key={value} value={String(value)}>{label}</option>)}
+              </Select>
+            )}
           </Field>
           <TimeInput draft={draft} setDraft={setDraft} />
         </div>
       )}
       {draft.frequency === "monthly" && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="cron-builder-monthday">Day of month</FieldLabel>
-            <Input
-              id="cron-builder-monthday"
-              type="number"
-              min={1}
-              max={31}
-              value={draft.monthday}
-              onChange={(event) => setDraft({ ...draft, monthday: Number(event.target.value) })}
-            />
+          <Field id="cron-builder-monthday" label="Day of month">
+            {(field) => (
+              <Input
+                {...field.control}
+                type="number"
+                min={1}
+                max={31}
+                value={draft.monthday}
+                onChange={(event) => setDraft({ ...draft, monthday: Number(event.target.value) })}
+              />
+            )}
           </Field>
           <TimeInput draft={draft} setDraft={setDraft} />
         </div>
@@ -272,14 +277,15 @@ function TimeInput({
   setDraft: (draft: CronBuilderState) => void;
 }) {
   return (
-    <Field>
-      <FieldLabel htmlFor="cron-builder-time">Time</FieldLabel>
-      <Input
-        id="cron-builder-time"
-        type="time"
-        value={draft.time}
-        onChange={(event) => setDraft({ ...draft, time: event.target.value })}
-      />
+    <Field id="cron-builder-time" label="Time">
+      {(field) => (
+        <Input
+          {...field.control}
+          type="time"
+          value={draft.time}
+          onChange={(event) => setDraft({ ...draft, time: event.target.value })}
+        />
+      )}
     </Field>
   );
 }

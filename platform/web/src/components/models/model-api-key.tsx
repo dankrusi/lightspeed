@@ -13,7 +13,7 @@ import {
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Textarea } from "@versavolta/whisperink/components/Textarea/Textarea.js";
@@ -141,71 +141,74 @@ export function ModelApiKeyForm({
         {replace && " Saving replaces the current key."} The key is sent once to
         Lightspeed, encrypted, and never returned by an API.
       </p>
-      <Field>
-        <FieldLabel htmlFor={`model-key-name-${provider}`}>
-          Display name
-        </FieldLabel>
-        <Input
-          id={`model-key-name-${provider}`}
-          value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
-          placeholder={`${copy.name} production`}
-        />
+      <Field id={`model-key-name-${provider}`} label="Display name">
+        {(field) => (
+          <Input
+            {...field.control}
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder={`${copy.name} production`}
+          />
+        )}
       </Field>
       {provider === "openai" && (
         <>
-          <Field>
-            <FieldLabel htmlFor="model-key-base-url">
-              Compatible endpoint override
-            </FieldLabel>
-            <Input
-              id="model-key-base-url"
-              value={baseUrl}
-              onChange={(event) => setBaseUrl(event.target.value)}
-              placeholder="https://openrouter.ai/api/v1"
-            />
-            <FieldDescription>
-              Optional. HTTPS is required except for localhost/loopback HTTP.
-            </FieldDescription>
+          <Field
+            id="model-key-base-url"
+            label="Compatible endpoint override"
+            hint="Optional. HTTPS is required except for localhost/loopback HTTP."
+          >
+            {(field) => (
+              <Input
+                {...field.control}
+                value={baseUrl}
+                onChange={(event) => setBaseUrl(event.target.value)}
+                placeholder="https://openrouter.ai/api/v1"
+              />
+            )}
           </Field>
           {baseUrl.trim() && (
-            <Field>
-              <FieldLabel htmlFor="model-key-headers">Extra headers</FieldLabel>
-              <Textarea
-                id="model-key-headers"
-                value={headers}
-                onChange={(event) => setHeaders(event.target.value)}
-                placeholder={
-                  "HTTP-Referer: https://example.com\nX-Title: Lightspeed"
-                }
-                className="font-mono"
-              />
-              <FieldDescription>
-                One non-secret header per line. Authorization is reserved.
-              </FieldDescription>
+            <Field
+              id="model-key-headers"
+              label="Extra headers"
+              hint="One non-secret header per line. Authorization is reserved."
+            >
+              {(field) => (
+                <Textarea
+                  {...field.control}
+                  value={headers}
+                  onChange={(event) => setHeaders(event.target.value)}
+                  placeholder={
+                    "HTTP-Referer: https://example.com\nX-Title: Lightspeed"
+                  }
+                  className="font-mono"
+                />
+              )}
             </Field>
           )}
         </>
       )}
-      <Field>
-        <FieldLabel htmlFor={`model-key-${provider}`}>API key</FieldLabel>
-        <Input
-          id={`model-key-${provider}`}
-          type="password"
-          value={key}
-          onChange={(event) => {
-            setKey(event.target.value);
-            setError(null);
-          }}
-          autoComplete="new-password"
-          spellCheck={false}
-          className="font-mono"
-          placeholder={copy.placeholder}
-          autoFocus
-        />
-        <FieldDescription>
-          Create one at {copy.where}. Whitespace is preserved.
-        </FieldDescription>
+      <Field
+        id={`model-key-${provider}`}
+        label="API key"
+        hint={<>Create one at {copy.where}. Whitespace is preserved.</>}
+      >
+        {(field) => (
+          <Input
+            {...field.control}
+            type="password"
+            value={key}
+            onChange={(event) => {
+              setKey(event.target.value);
+              setError(null);
+            }}
+            autoComplete="new-password"
+            spellCheck={false}
+            className="font-mono"
+            placeholder={copy.placeholder}
+            autoFocus
+          />
+        )}
       </Field>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -419,76 +422,85 @@ export function OpenAiCompatibleForm({
         Add an OpenAI-compatible Responses or Chat Completions endpoint. API
         keys are optional for local credentialless servers.
       </p>
-      <Field>
-        <FieldLabel htmlFor="compatible-provider">Provider</FieldLabel>
-        <Select
-          id="compatible-provider"
-          value={providerChoice}
-          onChange={(event) =>
-            changeProvider(event.target.value as CompatibleProviderChoice)
-          }
-          disabled={replace}
-        >
-          {COMPATIBLE_PROVIDER_PRESETS.map((preset) => (
-            <option key={preset.id} value={preset.id}>
-              {preset.label}
-            </option>
-          ))}
-          <option value="custom">Custom provider</option>
-        </Select>
-        <FieldDescription>
-          {providerChoice === "custom"
+      <Field
+        id="compatible-provider"
+        label="Provider"
+        hint={
+          providerChoice === "custom"
             ? "Custom IDs use the generic OpenAI-compatible dialect."
             : providerChoice === "deepseek" || providerChoice === "openrouter"
               ? `Uses the canonical provider ID “${providerId}” so provider-specific compatibility rules apply.`
-              : `Uses the conventional provider ID “${providerId}” with the generic OpenAI-compatible dialect.`}
-        </FieldDescription>
+              : `Uses the conventional provider ID “${providerId}” with the generic OpenAI-compatible dialect.`
+        }
+      >
+        {(field) => (
+          <Select
+            {...field.control}
+            value={providerChoice}
+            onChange={(event) =>
+              changeProvider(event.target.value as CompatibleProviderChoice)
+            }
+            disabled={replace}
+          >
+            {COMPATIBLE_PROVIDER_PRESETS.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.label}
+              </option>
+            ))}
+            <option value="custom">Custom provider</option>
+          </Select>
+        )}
       </Field>
       {providerChoice === "custom" && (
-        <Field>
-          <FieldLabel htmlFor="compatible-provider-id">
-            Custom provider ID
-          </FieldLabel>
-          <Input
-            id="compatible-provider-id"
-            value={providerId}
-            disabled={replace}
-            onChange={(event) => setProviderId(event.target.value)}
-            placeholder="my-provider"
-          />
-          <FieldDescription>
-            Lowercase letters, numbers, dots, underscores, and hyphens are
-            supported.
-          </FieldDescription>
+        <Field
+          id="compatible-provider-id"
+          label="Custom provider ID"
+          hint="Lowercase letters, numbers, dots, underscores, and hyphens are supported."
+        >
+          {(field) => (
+            <Input
+              {...field.control}
+              value={providerId}
+              disabled={replace}
+              onChange={(event) => setProviderId(event.target.value)}
+              placeholder="my-provider"
+            />
+          )}
         </Field>
       )}
-      <Field>
-        <FieldLabel>Display name</FieldLabel>
-        <Input
-          value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
-          placeholder="OpenRouter production"
-        />
+      <Field label="Display name">
+        {(field) => (
+          <Input
+            {...field.control}
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder="OpenRouter production"
+          />
+        )}
       </Field>
-      <Field>
-        <FieldLabel>Base URL</FieldLabel>
-        <Input
-          value={baseUrl}
-          onChange={(event) => setBaseUrl(event.target.value)}
-          placeholder="https://openrouter.ai/api/v1"
-        />
+      <Field label="Base URL">
+        {(field) => (
+          <Input
+            {...field.control}
+            value={baseUrl}
+            onChange={(event) => setBaseUrl(event.target.value)}
+            placeholder="https://openrouter.ai/api/v1"
+          />
+        )}
       </Field>
-      <Field>
-        <FieldLabel>API key (optional)</FieldLabel>
-        <Input
-          type="password"
-          value={key}
-          onChange={(event) => setKey(event.target.value)}
-          autoComplete="new-password"
-        />
+      <Field label="API key" optional>
+        {(field) => (
+          <Input
+            {...field.control}
+            type="password"
+            value={key}
+            onChange={(event) => setKey(event.target.value)}
+            autoComplete="new-password"
+          />
+        )}
       </Field>
-      <Field>
-        <FieldLabel>API kinds</FieldLabel>
+      <fieldset className="grid gap-1.5">
+        <legend className="mb-1.5 text-sm font-medium text-fg">API kinds</legend>
         <label className="flex gap-2 text-sm">
           <input
             type="checkbox"
@@ -509,19 +521,20 @@ export function OpenAiCompatibleForm({
           <input type="checkbox" checked={transcriptions} onChange={(event) => setTranscriptions(event.target.checked)} />
           Audio Transcriptions
         </label>
-      </Field>
-      <Field>
-        <FieldLabel>Extra headers</FieldLabel>
-        <Textarea
-          value={headers}
-          onChange={(event) => setHeaders(event.target.value)}
-          placeholder={"HTTP-Referer: https://example.com\nX-Title: Lightspeed"}
-          className="font-mono"
-        />
-        <FieldDescription>
-          Non-secret headers only; Authorization, Host, and Content-Type are
-          reserved.
-        </FieldDescription>
+      </fieldset>
+      <Field
+        label="Extra headers"
+        hint="Non-secret headers only; Authorization, Host, and Content-Type are reserved."
+      >
+        {(field) => (
+          <Textarea
+            {...field.control}
+            value={headers}
+            onChange={(event) => setHeaders(event.target.value)}
+            placeholder={"HTTP-Referer: https://example.com\nX-Title: Lightspeed"}
+            className="font-mono"
+          />
+        )}
       </Field>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
