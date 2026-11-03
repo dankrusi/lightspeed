@@ -127,6 +127,7 @@ export function Modal({ uiId, uiDescription, uiComponentId, uiComponentDescripti
     };
   }, [live]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!open) return null;
+  const hasBody = children !== undefined && children !== null && children !== false && children !== "";
   const width = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-5xl" }[size];
 
   const moveTo = (x: number, y: number) => {
@@ -195,7 +196,8 @@ export function Modal({ uiId, uiDescription, uiComponentId, uiComponentDescripti
           </div>
           {dismissible && <IconButton label={text.actions.close} size="sm" onClick={onClose} className="-mr-2 -mt-1"><X /></IconButton>}
         </div>
-        <div ref={body} className="scrollbar-thin min-h-0 overflow-y-auto px-6 pb-6">{children}</div>
+        {/* A question that the title and description already ask has no body, and no empty band before the footer. */}
+        {hasBody && <div ref={body} className="scrollbar-thin min-h-0 overflow-y-auto px-6 pb-6">{children}</div>}
         {footer && <div ref={foot} className="flex flex-wrap items-center justify-end gap-2 border-t border-border bg-subtle/60 px-6 py-4">{footer}</div>}
       </div>
     </div>
