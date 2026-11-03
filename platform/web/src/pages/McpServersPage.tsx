@@ -177,11 +177,10 @@ function ServerDetails({ universeId, server, authGrants, authGrantsLoading, onCh
           </ul>
         </details>
       )}
-      {remove.error && <p role="alert" className="text-sm text-destructive">{remove.error.message}</p>}
       {writable && <ResourceActions>
         <ConfirmDangerButton label="Delete server" title={`Delete ${serverName(server)}?`}
           description={<>Profiles referencing <code>{server.serverId}</code> will lose access to this server in new sessions.</>}
-          pending={remove.isPending} onConfirm={() => remove.mutate()} />
+          pending={remove.isPending} onConfirm={() => remove.mutateAsync()} />
         <div className="ml-auto flex flex-wrap gap-2">
           {isOAuthPolicy(server.authPolicy.type) && <Button variant="outline" size="sm" onClick={() => setOAuthOpen(true)}>
             <SignIn data-icon="inline-start" />{server.credential ? "Reconnect" : "Connect"}

@@ -14,9 +14,8 @@ import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
-import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { SessionActionsMenu } from "@/components/session/session-actions-menu";
-import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { activityTone, foldActivity } from "@/components/activity-dot";
 import type { SessionActivity } from "@lightspeed-ai/sdk";
 import { cn } from "@/lib/utils";
@@ -405,10 +404,7 @@ function ConversationMenu({
         "POST",
         `/api/v1/universes/${universeId}/bots/${bot.botId}/sessions/${encodeURIComponent(sessionId)}/rotate`,
       ),
-    onSuccess: () => {
-      setResetOpen(false);
-      return queryClient.invalidateQueries({ queryKey: ["bot-state", universeId, bot.botId] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["bot-state", universeId, bot.botId] }),
   });
   const label = tab?.kind === "main" ? "Main" : (tab?.label ?? "this conversation");
   return (
@@ -428,35 +424,22 @@ function ConversationMenu({
           <MenuItem
             icon={<ArrowCounterClockwise />}
             disabled={reset.isPending}
-            onClick={() => {
-              reset.reset();
-              setResetOpen(true);
-            }}
+            onClick={() => setResetOpen(true)}
           >
             Reset {label}…
           </MenuItem>
         ) : undefined}
       />
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={resetOpen && manage}
         onClose={() => setResetOpen(false)}
+        onConfirm={() => reset.mutateAsync()}
         title={`Reset ${label}?`}
         description="The conversation and its open sub-agents close, and the bot continues in a fresh one with no prior history. Active work finishes first; events already admitted stay queued."
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={() => setResetOpen(false)}>
-              Keep
-            </Button>
-            <Button type="button" variant="danger" disabled={!manage || reset.isPending} onClick={() => manage && reset.mutate()}>
-              {reset.isPending ? "Resetting…" : "Reset"}
-            </Button>
-          </>
-        }
-      >
-        {reset.error && <p className="text-sm text-destructive">{reset.error.message}</p>}
-      </Modal>
+        confirmLabel="Reset"
+        cancelLabel="Keep"
+        confirmDisabled={!manage}
+      />
     </>
   );
 }

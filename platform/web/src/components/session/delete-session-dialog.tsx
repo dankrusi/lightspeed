@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
 import { usePlatformAdmin } from "@/lib/permissions";
 import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js";
-import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 
 /** Mount for one deletion attempt; keep a failed purge retryable after soft deletion. */
 export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted }: {
@@ -18,11 +17,15 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
   const [cascade, setCascade] = useState(false);
   const [permanent, setPermanent] = useState(false);
   const [softDeleted, setSoftDeleted] = useState(false);
+  // The dialog closes itself once the deletion settles, possibly before a
+  // render has caught up with it: read progress from refs, not render state.
+  const progress = useRef({ softDeleted: false, finished: false });
   const deletion = useMutation({
     mutationFn: async () => {
       if (permanent && !platformAdmin) throw new Error("Platform admin access is required for permanent deletion.");
       if (!softDeleted) {
         await api("DELETE", `/api/v1/universes/${encodeURIComponent(universeId)}/sessions/${encodeURIComponent(sessionId)}${cascade ? "?cascade=true" : ""}`);
+        progress.current.softDeleted = true;
         setSoftDeleted(true);
       }
       if (permanent) {
@@ -32,28 +35,27 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
         void queryClient.invalidateQueries({ queryKey: ["admin", "deleted-sessions", universeId] });
       }
     },
-    onSuccess: onDeleted,
   });
+  const confirm = async () => {
+    await deletion.mutateAsync();
+    await onDeleted();
+    progress.current.finished = true;
+  };
   const dismiss = () => {
-    if (deletion.isPending) return;
-    if (softDeleted) void onDeleted();
+    if (progress.current.finished) return;
+    if (progress.current.softDeleted) void onDeleted();
     else onCancel();
   };
-  return <Modal
-    role="alertdialog"
-    size="sm"
+  return <ConfirmDialog
     open
     onClose={dismiss}
+    onConfirm={confirm}
     title={permanent ? "Permanently delete this session?" : "Delete this session?"}
     description={permanent
       ? "This removes the session and its retained history subtree permanently. This cannot be undone. Attached workspaces and environments are separate resources."
       : "This hides the session and its history from all universe members, including admins. History is retained until a platform admin permanently deletes it."}
-    footer={<>
-      <Button type="button" variant="outline" disabled={deletion.isPending} onClick={dismiss}>{softDeleted ? "Done" : "Cancel"}</Button>
-      <Button type="button" variant="danger" disabled={deletion.isPending} onClick={() => deletion.mutate()}>
-        {deletion.isPending ? "Deleting…" : permanent ? softDeleted ? "Retry permanent deletion" : "Permanently delete" : "Delete session"}
-      </Button>
-    </>}
+    confirmLabel={permanent ? softDeleted ? "Retry permanent deletion" : "Permanently delete" : "Delete session"}
+    cancelLabel={softDeleted ? "Done" : undefined}
   >
     <div className="grid gap-3">
       <label className="flex min-w-0 items-start gap-2 rounded-lg border p-3 text-sm">
@@ -70,10 +72,9 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
           <span className="block text-xs text-muted-foreground">Platform admins only. Permanent deletion is recorded in the audit log.</span>
         </span>
       </label>}
-      {deletion.error && <div role="alert" className="text-sm text-destructive">
-        {softDeleted && <p>The session is already soft-deleted. You can retry permanent deletion here or later from Platform → Universes → Deleted sessions.</p>}
-        <p>{deletion.error.message}</p>
-      </div>}
+      {deletion.error && softDeleted && <p className="text-sm text-destructive">
+        The session is already soft-deleted. You can retry permanent deletion here or later from Platform → Universes → Deleted sessions.
+      </p>}
     </div>
-  </Modal>;
+  </ConfirmDialog>;
 }

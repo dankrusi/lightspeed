@@ -6,6 +6,7 @@ import type { DeploymentApiKeyCreateResponse, DeploymentApiKeyView, MethodGroup 
 import { GroupSummary, KeyPresetField, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
 import { RotateKeyDialog } from "@/components/api-keys/rotate-key-dialog";
 import { API_KEY_SECRET_DESCRIPTION, API_KEY_SECRET_TITLE, ApiKeySecret, ApiKeySecretDone } from "@/components/api-keys/secret-once";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { api } from "@/api";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
@@ -81,9 +82,6 @@ function ApiKeyList({ universeId }: { universeId: string }) {
       />
       {keys.isLoading && <LoadingNote />}
       {keys.error && <ReadError error={keys.error} loading={!keys.data} />}
-      {revoke.error && (
-        <p className="mb-3 text-sm text-destructive">{revoke.error.message}</p>
-      )}
       {keys.data && allRows.length === 0 && (
         <EmptyState icon={KeyIcon} title="No API keys yet">
           Keys let external agents and clients reach this universe and call the method groups
@@ -171,29 +169,14 @@ function ApiKeyList({ universeId }: { universeId: string }) {
         Keys reach this universe only. Rotate a secret to replace it immediately, or revoke
         the key and create another to change what it may call.
       </p>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={revokingKey !== null}
         onClose={() => setRevokingKey(null)}
+        onConfirm={() => revokingKey ? revoke.mutateAsync(revokingKey.keyPrefix) : undefined}
         title="Revoke this API key?"
         description={`${revokingKey?.displayName ?? revokingKey?.keyPrefix ?? ""} will stop working immediately. This cannot be undone; create a replacement key if needed.`}
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setRevokingKey(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (revokingKey) revoke.mutate(revokingKey.keyPrefix);
-              setRevokingKey(null);
-            }}
-          >
-            Revoke key
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Revoke key"
+      />
       {rotatingKey && <RotateKeyDialog
         apiKey={rotatingKey}
         basePath={`/api/v1/universes/${universeId}/api-keys`}

@@ -6,6 +6,7 @@ import { api, type Universe } from "@/api";
 import { GroupSummary, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
 import { RotateKeyDialog } from "@/components/api-keys/rotate-key-dialog";
 import { API_KEY_SECRET_DESCRIPTION, API_KEY_SECRET_TITLE, ApiKeySecret, ApiKeySecretDone } from "@/components/api-keys/secret-once";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { ReadError } from "@/components/read-error";
@@ -68,7 +69,6 @@ export function AdminApiKeysPage() {
       />
       {keys.isLoading && <LoadingNote />}
       {keys.error && <ReadError error={keys.error} loading={!keys.data} />}
-      {revoke.error && <p className="mb-3 text-sm text-destructive">{revoke.error.message}</p>}
       {keys.data && allRows.length === 0 && (
         <EmptyState icon={KeyIcon} title="No API keys yet">
           Keys reach the deployment or one universe and call the method groups they were minted
@@ -144,29 +144,14 @@ export function AdminApiKeysPage() {
           onCheckedChange={setShowRevoked}
         />
       </div>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={revokingKey !== null}
         onClose={() => setRevokingKey(null)}
+        onConfirm={() => revokingKey ? revoke.mutateAsync(revokingKey.keyPrefix) : undefined}
         title="Revoke this API key?"
         description={`${revokingKey?.displayName ?? revokingKey?.keyPrefix ?? ""} stops working immediately. This cannot be undone; mint a replacement if needed.`}
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setRevokingKey(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (revokingKey) revoke.mutate(revokingKey.keyPrefix);
-              setRevokingKey(null);
-            }}
-          >
-            Revoke key
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Revoke key"
+      />
       {rotatingKey && <RotateKeyDialog
         apiKey={rotatingKey}
         basePath={"/api/v1/admin/api-keys"}

@@ -39,6 +39,7 @@ import { Checkbox } from "@versavolta/whisperink/components/Checkbox/Checkbox.js
 import { BotFaceIcon } from "@/components/icons/bot";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Tooltip } from "@versavolta/whisperink/components/Tooltip/Tooltip.js";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
@@ -695,33 +696,18 @@ function BulkActionDialog({
         {action === "close" ? <Archive /> : <Trash />}
         {verb} {count}
       </Button>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      {/* The bulk job runs in the background with its own progress in the
+          toolbar, so confirming closes the dialog straight away. */}
+      <ConfirmDialog
         open={open}
         onClose={() => setOpen(false)}
+        onConfirm={onConfirm}
         title={`${verb} ${count} ${noun}?`}
         description={action === "close"
           ? "Each permitted open session is force-closed in turn: active and queued work is cancelled and the session cannot be reopened. Other selected sessions are left alone."
           : "Each permitted closed session disappears for all universe members. History is retained. Other selected sessions are left alone."}
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => {
-                setOpen(false);
-                onConfirm();
-              }}
-            >
-              {verb} {count} {noun}
-            </Button>
-          </>
-        }
-      >
-        {null}
-      </Modal>
+        confirmLabel={`${verb} ${count} ${noun}`}
+      />
     </>
   );
 }
@@ -1942,7 +1928,11 @@ export function SessionDetail({
       );
       await queryClient.invalidateQueries({ queryKey: ["sessions", universeId] });
     },
-    onError: (error) => setCloseError(error.message),
+    onError: (error) => {
+      // The dialog closed when the close began; bring it back with the reason.
+      setCloseError(error.message);
+      setCloseOpen(true);
+    },
   });
 
   const onSessionDeleted = async () => {
@@ -2052,34 +2042,22 @@ export function SessionDetail({
           onOpenChange={setShareOpen}
         />
 
-        <Modal
-          role="alertdialog"
-          size="sm"
+        {/* A force close can take a minute or more, so it runs in the
+            background: confirming closes the dialog, and a failure reopens it. */}
+        <ConfirmDialog
           open={closeOpen && canClose}
           onClose={() => setCloseOpen(false)}
+          onConfirm={() => {
+            setCloseError(null);
+            closeSession.mutate();
+          }}
           title={runActive ? "Force close this session?" : "Close this session?"}
           description={runActive
             ? "This cancels active and queued work, then permanently closes the session. Recovery of a stuck workflow can take up to about 90 seconds while the engine terminates it and reconciles the session. The history remains available, but the session cannot be reopened."
             : "This permanently closes the session. It remains in the session list so its history can be inspected, but it cannot be reopened."}
-          footer={
-            <>
-              <Button type="button" variant="outline" onClick={() => setCloseOpen(false)}>
-                {closeSession.isPending ? "Hide" : "Cancel"}
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                disabled={closeSession.isPending}
-                onClick={() => closeSession.mutate()}
-              >
-                {closeSession.isPending
-                  ? "Force-closing…"
-                  : runActive
-                    ? "Force close session"
-                    : "Close session"}
-              </Button>
-            </>
-          }
+          confirmLabel={runActive ? "Force close session" : "Close session"}
+          cancelLabel={closeSession.isPending ? "Hide" : undefined}
+          confirmDisabled={closeSession.isPending}
         >
           {closeSession.isPending && (
             <p className="text-sm text-muted-foreground">
@@ -2088,7 +2066,7 @@ export function SessionDetail({
             </p>
           )}
           {closeError && <p className="text-sm text-destructive">{closeError}</p>}
-        </Modal>
+        </ConfirmDialog>
 
         {deleteOpen && <DeleteSessionDialog
           key={`${universeId}:${sessionId}`}

@@ -11,6 +11,7 @@ import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
@@ -121,9 +122,6 @@ export function AdminEnvironmentProvidersPage() {
       {bindings.error && (
         <ReadError error={bindings.error} loading={!bindings.data} prefix="Binding inventory unavailable" className="mb-4 text-muted-foreground" />
       )}
-      {removeProvider.error && (
-        <p className="mb-4 text-sm text-destructive">{removeProvider.error.message}</p>
-      )}
       {providers.data && rows.length === 0 && (
         <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
           No environment providers are registered. Register one to let universes
@@ -213,29 +211,14 @@ export function AdminEnvironmentProvidersPage() {
           );
         })}
       </div>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={deleting !== null}
         onClose={() => setDeleting(null)}
+        onConfirm={() => deleting ? removeProvider.mutateAsync(deleting.providerId) : undefined}
         title={`Delete provider ${deleting?.displayName ?? deleting?.providerId ?? ""}?`}
         description="Removes the registration from this deployment. The engine refuses the delete while any universe binding or any non-closed environment of this provider exists; delete those bindings and close those environments first. Provider-side machines are not touched."
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              // Its outcome shows on the page: the provider goes, or the error line appears.
-              if (deleting) removeProvider.mutate(deleting.providerId, { onSettled: () => setDeleting(null) });
-            }}
-          >
-            Delete provider
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Delete provider"
+      />
       {universes.some((universe) => universe.error) && (
         <p className="mt-6 text-xs text-muted-foreground">
           Bindings could not be read for:{" "}
@@ -268,7 +251,6 @@ function BindingRow({
     mutationFn: () => api<EnvironmentProviderBindingView>("DELETE", path),
     onSuccess: onChanged,
   });
-  const error = setEnabled.error ?? remove.error;
   const [confirming, setConfirming] = useState(false);
   return (
     <TR>
@@ -285,28 +267,15 @@ function BindingRow({
         <Button variant="ghost" size="sm" className="text-destructive" disabled={remove.isPending} onClick={() => setConfirming(true)}>
           Delete
         </Button>
-        <Modal
-          role="alertdialog"
-          size="sm"
+        <ConfirmDialog
           open={confirming}
           onClose={() => setConfirming(false)}
+          onConfirm={() => remove.mutateAsync()}
           title={`Unbind ${universe.name}?`}
           description={`${universe.name} will no longer be able to provision from ${binding.providerId}. The engine rejects the delete while a non-closed environment of this provider is still open in the universe; disable the binding instead to stop new provisioning.`}
-          footer={<>
-            <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Cancel</Button>
-            <Button
-              type="button"
-              variant="danger"
-              // Its outcome shows in the row: the binding goes, or the error line appears.
-              onClick={() => remove.mutate(undefined, { onSettled: () => setConfirming(false) })}
-            >
-              Delete binding
-            </Button>
-          </>}
-        >
-          {null}
-        </Modal>
-        {error && <div className="mt-1 text-xs text-destructive">{error.message}</div>}
+          confirmLabel="Delete binding"
+        />
+        {setEnabled.error && <div className="mt-1 text-xs text-destructive">{setEnabled.error.message}</div>}
       </TableActionsCell>
     </TR>
   );

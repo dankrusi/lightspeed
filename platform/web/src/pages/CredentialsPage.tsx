@@ -13,6 +13,7 @@ import {
 } from "@/api";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
@@ -147,9 +148,6 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
       {inventory.isLoading && <LoadingNote />}
       {inventory.error && (
         <ReadError error={inventory.error} loading={!inventory.data} />
-      )}
-      {revokeGrant.error && (
-        <p className="mb-4 text-sm text-destructive">{revokeGrant.error.message}</p>
       )}
       {inventory.data && reusable.length === 0 && (
         <EmptyState icon={LockKey} title="No credentials yet">
@@ -305,29 +303,14 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
         onOpenChange={setGitHubOpen}
         onCreated={invalidate}
       />
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={revokingGrant !== null}
         onClose={() => setRevokingGrant(null)}
         title="Revoke this credential?"
         description={`Anything referencing ${revokingGrant?.grantId ?? ""} will stop receiving its token. This cannot be undone.`}
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setRevokingGrant(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (revokingGrant) revokeGrant.mutate(revokingGrant.grantId);
-              setRevokingGrant(null);
-            }}
-          >
-            Revoke credential
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Revoke credential"
+        onConfirm={() => revokingGrant ? revokeGrant.mutateAsync(revokingGrant.grantId) : undefined}
+      />
       <Modal
         open={openApp !== null}
         onClose={() => setSelectedApp(null)}

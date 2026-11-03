@@ -220,7 +220,9 @@ it("retains details and shows the error when deletion fails", async () => {
   await click(button("Delete server"));
   const confirmation = document.body.querySelector('[role="alertdialog"]')!;
   await click([...confirmation.querySelectorAll("button")].find((item) => item.textContent === "Delete server"));
-  expect(dialog().querySelector('[role="alert"]')?.textContent).toBe("Server is still in use");
+  // The confirmation stays open with the reason, over the details it came from.
+  expect(confirmation.querySelector('[role="alert"]')?.textContent).toBe("Server is still in use");
+  expect(dialog().textContent).toContain("Delete server");
   expect(container.querySelectorAll("tbody tr")).toHaveLength(1);
 });
 

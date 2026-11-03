@@ -28,6 +28,7 @@ import {
 } from "@/components/collapsible";
 import { Field } from "@versavolta/whisperink/components/Field/Field.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
@@ -481,7 +482,6 @@ function EnvironmentCredentials({
       {credentials.error && (
         <p className="mt-3 text-sm text-destructive">{credentials.error.message}</p>
       )}
-      {unbind.error && <p className="mt-3 text-sm text-destructive">{unbind.error.message}</p>}
       {secrets && environmentCredentialOptions(secrets).length === 0 && (
         <p className="mt-3 text-xs text-muted-foreground">
           Add an environment secret or access credential on the Credentials page, or a model
@@ -528,29 +528,14 @@ function EnvironmentCredentials({
           })}
         </div>
       )}
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={unassigning !== null}
         onClose={() => setUnassigning(null)}
         title="Unassign this environment variable?"
         description={`New processes and jobs in this environment will no longer receive ${unassigning ?? ""}. The stored access credential itself will not be deleted.`}
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setUnassigning(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              // Its outcome shows on the list itself: the row goes, or the error line appears.
-              if (unassigning) unbind.mutate(unassigning, { onSettled: () => setUnassigning(null) });
-            }}
-          >
-            Unassign variable
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Unassign variable"
+        onConfirm={() => unassigning ? unbind.mutateAsync(unassigning) : undefined}
+      />
     </div>
   );
 }
@@ -822,24 +807,14 @@ function RevokeRegistrationKeyButton({
       <Button variant="outline" size="xs" onClick={() => setOpen(true)}>
         Revoke
       </Button>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={open}
         onClose={() => setOpen(false)}
         title={`Revoke “${registrationKey.displayName}”?`}
         description="New daemons presenting this key are refused from now on. Daemons that already registered keep reconnecting by their own identity unless you also close their environments."
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)}>Keep</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => revoke.mutate(undefined, { onSuccess: () => setOpen(false) })}
-            disabled={revoke.isPending}
-          >
-            {revoke.isPending ? "Revoking…" : "Revoke key"}
-          </Button>
-        </>}
+        confirmLabel="Revoke key"
+        cancelLabel="Keep"
+        onConfirm={() => revoke.mutateAsync()}
       >
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -850,8 +825,7 @@ function RevokeRegistrationKeyButton({
           Also close its {registrationKey.activeEnvironmentCount} open environment
           {registrationKey.activeEnvironmentCount === 1 ? "" : "s"}
         </label>
-        {revoke.error && <p className="text-sm text-destructive">{revoke.error.message}</p>}
-      </Modal>
+      </ConfirmDialog>
     </>
   );
 }
@@ -873,10 +847,8 @@ function RotateRegistrationKeyButton({
         "POST",
         `/api/v1/universes/${universeId}/environment-registration-keys/${registrationKey.registrationKeyId}/rotate`,
       ),
-    onSuccess: async () => {
-      setConfirming(false);
-      await queryClient.invalidateQueries({ queryKey: ["environment-registration-keys", universeId] });
-    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["environment-registration-keys", universeId] }),
   });
   return (
     <>
@@ -884,22 +856,15 @@ function RotateRegistrationKeyButton({
         <ArrowClockwise data-icon="inline-start" />
         Rotate
       </Button>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={confirming}
         onClose={() => setConfirming(false)}
         title={`Rotate “${registrationKey.displayName}”?`}
         description="The current secret stops admitting new daemons at once; give the new one to the machines that should still register. Daemons that already registered keep reconnecting by their own identity."
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Keep</Button>
-          <Button type="button" variant="danger" onClick={() => rotate.mutate()} disabled={rotate.isPending}>
-            {rotate.isPending ? "Rotating…" : "Rotate key"}
-          </Button>
-        </>}
-      >
-        {rotate.error && <p className="text-sm text-destructive">{rotate.error.message}</p>}
-      </Modal>
+        confirmLabel="Rotate key"
+        cancelLabel="Keep"
+        onConfirm={() => rotate.mutateAsync()}
+      />
       {rotate.data && <RegistrationSecret created={rotate.data} onDone={() => rotate.reset()} />}
     </>
   );

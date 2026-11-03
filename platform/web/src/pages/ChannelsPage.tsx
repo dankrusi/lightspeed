@@ -14,6 +14,7 @@ import {
   type ChannelPairingView,
   type UniverseChannelStatus,
 } from "@/api";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
@@ -112,29 +113,14 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
           </Button>
         }
       />
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={unpairing !== null}
         onClose={() => setUnpairing(null)}
+        onConfirm={() => unpairing ? unpair.mutateAsync(unpairing) : undefined}
         title="Unpair this conversation?"
         description={`It stops routing to ${unpairing?.botId ?? ""}. The conversation must connect or present a pairing code again.`}
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setUnpairing(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (unpairing) unpair.mutate(unpairing);
-              setUnpairing(null);
-            }}
-          >
-            Unpair
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Unpair"
+      />
       <ConnectChannelDialog
         universeId={universeId}
         open={connectOpen}

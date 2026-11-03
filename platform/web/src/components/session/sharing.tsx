@@ -2,8 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LockKey, Users } from "@phosphor-icons/react";
 import type { ResourceAccessSummary } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
-import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
-import { Button } from "@versavolta/whisperink/components/Button/Button.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Tooltip } from "@versavolta/whisperink/components/Tooltip/Tooltip.js";
 import { usePermissionIdentity, useUniverseRole } from "@/lib/permissions";
 
@@ -79,37 +78,20 @@ export function ShareSessionDialog({
   const share = useMutation({
     mutationFn: () => api<{ access: ResourceAccessSummary }>("POST", `/api/v1/universes/${universeId}/sessions/${sessionId}/share`),
     onSuccess: async () => {
-      onOpenChange(false);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["session", universeId, sessionId] }),
         queryClient.invalidateQueries({ queryKey: ["sessions", universeId] }),
       ]);
     },
   });
-  const close = () => {
-    onOpenChange(false);
-    share.reset();
-  };
   return (
-    <Modal
-      role="alertdialog"
-      size="sm"
+    <ConfirmDialog
       open={open}
-      onClose={close}
+      onClose={() => onOpenChange(false)}
+      onConfirm={() => share.mutateAsync()}
       title="Share with the universe?"
       description="Every member will see this session and its sub-agents, and continue it according to their role. Sharing cannot be undone."
-      footer={
-        <>
-          <Button type="button" variant="outline" onClick={close}>
-            Cancel
-          </Button>
-          <Button type="button" variant="danger" disabled={share.isPending} onClick={() => share.mutate()}>
-            Share
-          </Button>
-        </>
-      }
-    >
-      {share.error && <p className="text-sm text-destructive">{share.error.message}</p>}
-    </Modal>
+      confirmLabel="Share"
+    />
   );
 }

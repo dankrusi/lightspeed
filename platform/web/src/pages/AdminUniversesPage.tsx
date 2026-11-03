@@ -12,6 +12,7 @@ import {
   type UniverseReconcile,
   type UniverseSlugSyncResult,
 } from "@/api";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
@@ -265,52 +266,22 @@ export function AdminUniversesPage() {
           </TableCard>
         </section>
       )}
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={purging !== null}
         onClose={() => setPurging(null)}
+        onConfirm={() => purging ? purge.mutateAsync(purging.id) : undefined}
         title={`Permanently delete ${purging?.name ?? ""}?`}
         description="Purges everything engine-side (sessions, profiles, workspaces, blobs) and removes the universe, its members, and bots from the platform. This cannot be undone."
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setPurging(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (purging) purge.mutate(purging.id);
-              setPurging(null);
-            }}
-          >
-            Delete permanently
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
-      <Modal
-        role="alertdialog"
-        size="sm"
+        confirmLabel="Delete permanently"
+      />
+      <ConfirmDialog
         open={deletingOrphan !== null}
         onClose={() => setDeletingOrphan(null)}
+        onConfirm={() => deletingOrphan ? deleteOrphan.mutateAsync(deletingOrphan.universeId) : undefined}
         title="Delete this engine universe?"
         description={`Purges ${deletingOrphan?.sessions ?? 0} session(s) and ${formatBytes(deletingOrphan?.blobBytes ?? 0)} of blobs from the engine. No platform state is involved. This cannot be undone.`}
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setDeletingOrphan(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (deletingOrphan) deleteOrphan.mutate(deletingOrphan.universeId);
-              setDeletingOrphan(null);
-            }}
-          >
-            Delete permanently
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Delete permanently"
+      />
       <AdoptDialog
         key={adopting?.universeId ?? "closed"}
         orphan={adopting}

@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api, type Universe } from "@/api";
-import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Card } from "@versavolta/whisperink/components/Card/Card.js";
 import { CardContent } from "@versavolta/whisperink/components/Card/CardContent.js";
@@ -235,31 +235,14 @@ function DangerZone({ universe }: { universe: Universe }) {
             <Button variant="danger" onClick={() => setConfirmOpen(true)}>
               Archive universe
             </Button>
-            <Modal
-              role="alertdialog"
-              size="sm"
+            <ConfirmDialog
               open={confirmOpen}
               onClose={() => setConfirmOpen(false)}
               title={`Archive ${universe.name}?`}
               description="The universe will be hidden from the switcher. This does not stop bots or chats, revoke API keys, or block existing access."
-              footer={<>
-                <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => {
-                    setStatus.mutate("archived");
-                    setConfirmOpen(false);
-                  }}
-                >
-                  Archive
-                </Button>
-              </>}
-            >
-              {null}
-            </Modal>
+              confirmLabel="Archive"
+              onConfirm={() => setStatus.mutateAsync("archived")}
+            />
           </>
         )}
       </CardFooter>

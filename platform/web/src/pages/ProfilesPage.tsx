@@ -9,6 +9,7 @@ import {
   type ProfileDocument,
   type ProfileSummary,
 } from "@/api";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Segmented } from "@versavolta/whisperink/components/Tabs/Segmented.js";
@@ -248,7 +249,6 @@ function ProfileEditor({
       void queryClient.invalidateQueries({ queryKey: ["profiles", universeId] });
       navigate(`/u/${slug}/profiles`);
     },
-    onError: (err) => setError(err.message),
   });
 
   const submit = () => {
@@ -355,29 +355,14 @@ function ProfileEditor({
             >
               <Trash />
             </IconButton>
-            <Modal
-              role="alertdialog"
-              size="sm"
+            <ConfirmDialog
               open={confirmDelete}
               onClose={() => setConfirmDelete(false)}
               title={`Delete profile ${profileId}?`}
               description="Bots referencing this profile id fall back to the default configuration."
-              footer={<>
-                <Button type="button" variant="outline" onClick={() => setConfirmDelete(false)}>Cancel</Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => {
-                    remove.mutate();
-                    setConfirmDelete(false);
-                  }}
-                >
-                  Delete
-                </Button>
-              </>}
-            >
-              {null}
-            </Modal>
+              confirmLabel="Delete"
+              onConfirm={() => remove.mutateAsync()}
+            />
           </>}
         </div>
       </header>

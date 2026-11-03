@@ -17,7 +17,7 @@ import {
   type ProfileDocument,
   type ProfileSummary,
 } from "@/api";
-import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
@@ -1049,80 +1049,43 @@ function DangerSection({
             conversation is closed, schedules are dropped, and new events are refused. The record, its history, the
             id, and its environment stay.
           </p>
-          <Button variant="outline" size="sm" disabled={close.isPending} onClick={() => setConfirming("close")}>
-            {close.isPending ? "Closing…" : "Close bot"}
+          <Button variant="outline" size="sm" onClick={() => setConfirming("close")}>
+            Close bot
           </Button>
-          <Modal
-            role="alertdialog"
-            size="sm"
-            open={confirming === "close"}
-            onClose={() => setConfirming(null)}
-            title={`Close ${botLabel(bot)}?`}
-            description="This cannot be undone. Pending events are archived, active runs are cancelled, all conversations are closed, and webhooks and other bots are refused from now on. The environment is left alone. To pause instead, use Pause in the header."
-            footer={
-              <>
-                <Button type="button" variant="outline" onClick={() => setConfirming(null)}>
-                  Keep running
-                </Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => {
-                    setConfirming(null);
-                    close.mutate();
-                  }}
-                >
-                  Close bot
-                </Button>
-              </>
-            }
-          >
-            {null}
-          </Modal>
         </div>
       )}
+      {/* Outside the branch above: a successful close flips the bot to closed
+          while the dialog still waits for the refreshed lists. */}
+      <ConfirmDialog
+        open={confirming === "close"}
+        onClose={() => setConfirming(null)}
+        onConfirm={() => close.mutateAsync()}
+        title={`Close ${botLabel(bot)}?`}
+        description="This cannot be undone. Pending events are archived, active runs are cancelled, all conversations are closed, and webhooks and other bots are refused from now on. The environment is left alone. To pause instead, use Pause in the header."
+        confirmLabel="Close bot"
+        cancelLabel="Keep running"
+      />
       <div className="flex min-w-0 items-start justify-between gap-3">
         <p className="min-w-0 text-xs text-muted-foreground">
           <b className="font-medium text-foreground">Delete</b> erases the bot, its triggers, and its event history,
           retains its conversations, and frees the id{closed ? "." : " — it closes the bot first."} Environments and
           profiles are never deleted with a bot.
         </p>
-        <Button variant="danger" size="sm" disabled={remove.isPending} onClick={() => setConfirming("delete")}>
-          {remove.isPending ? "Deleting…" : "Delete bot"}
+        <Button variant="danger" size="sm" onClick={() => setConfirming("delete")}>
+          Delete bot
         </Button>
-        <Modal
-          role="alertdialog"
-          size="sm"
+        <ConfirmDialog
           open={confirming === "delete"}
           onClose={() => setConfirming(null)}
+          onConfirm={() => remove.mutateAsync()}
           title={`Delete ${botLabel(bot)}?`}
           description={closed
             ? "The record and its event history are erased. Conversation history is retained; the id becomes available again."
             : "The bot is closed first (runs cancelled, conversations closed, events refused), then the record and its event history are erased. Conversation history is retained and the id becomes available again."}
-          footer={
-            <>
-              <Button type="button" variant="outline" onClick={() => setConfirming(null)}>
-                Keep
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => {
-                  setConfirming(null);
-                  remove.mutate();
-                }}
-              >
-                Delete bot
-              </Button>
-            </>
-          }
-        >
-          {null}
-        </Modal>
+          confirmLabel="Delete bot"
+          cancelLabel="Keep"
+        />
       </div>
-      {(close.error || remove.error) && (
-        <p className="text-xs text-destructive">{close.error?.message ?? remove.error?.message}</p>
-      )}
     </SetupSection>
   );
 }

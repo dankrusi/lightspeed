@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { api, type Member } from "@/api";
 import { UNIVERSE_ROLES, type UniverseRole } from "@lightspeed-ai/platform-shared";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
@@ -88,7 +89,6 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
         }
       />
       {members.isLoading && <LoadingNote />}
-      {remove.error && <p className="mb-3 text-sm text-destructive">{remove.error.message}</p>}
       {members.error && <ReadError error={members.error} loading={!members.data} />}
       {members.data && (
         <TableCard className="mb-6">
@@ -137,29 +137,14 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
           </Table>
         </TableCard>
       )}
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={removing !== null}
         onClose={() => setRemoving(null)}
         title={`Remove ${removing?.email ?? ""}?`}
         description="They lose access to this universe on their next request. Their sessions stay."
-        footer={<>
-          <Button type="button" variant="outline" onClick={() => setRemoving(null)}>Cancel</Button>
-          <Button
-            type="button"
-            variant="danger"
-            onClick={() => {
-              if (removing) remove.mutate(removing.id);
-              setRemoving(null);
-            }}
-          >
-            Remove
-          </Button>
-        </>}
-      >
-        {null}
-      </Modal>
+        confirmLabel="Remove"
+        onConfirm={() => removing ? remove.mutateAsync(removing.id) : undefined}
+      />
       {writable && (
         <AddMemberDialog
           universeId={universeId}

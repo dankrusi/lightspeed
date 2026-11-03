@@ -284,9 +284,6 @@ export function ModelApiKeyDetails({
         universeId={universeId}
         providerId={provider.providerId}
       />
-      {remove.error && (
-        <p className="text-sm text-destructive">{remove.error.message}</p>
-      )}
       {writable && (
         <ResourceActions>
           <ConfirmDangerButton
@@ -301,7 +298,7 @@ export function ModelApiKeyDetails({
               </>
             }
             pending={remove.isPending}
-            onConfirm={() => remove.mutate()}
+            onConfirm={() => remove.mutateAsync()}
           />
           <Button className="ml-auto" size="sm" onClick={() => setReplacing(true)}>Replace key</Button>
         </ResourceActions>

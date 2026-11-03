@@ -8,7 +8,8 @@ These came from replacing the local `src/components/ui/` adapters with Whisperin
 
 - **ArrowDown no longer opens a menu from its trigger.** The old dropdown adapter added this; Whisperink's `Menu` doesn't support it. Enter and Space still open menus, and arrow keys still move between items once a menu is open. If this is wanted back, add it to `Menu` in the kit rather than at each call site.
 - **Checkbox items in menus close the menu when clicked.** Whisperink's `Menu` closes on any item. This affects the session view preferences. The old adapter behaved the same way, but the original intent was to stay open.
-- **Dialog descriptions are plain text.** `Modal` takes a string `description`, so descriptions that used monospace for ids, env var names, and `lightspeed-envd` lost that styling. `ConfirmDangerButton` puts a description with markup in the body instead, so it no longer sets `aria-describedby`.
+- **Dialog descriptions are plain text.** `Modal` and `ConfirmDialog` take a string `description`, so descriptions that used monospace for ids, env var names, and `lightspeed-envd` lost that styling. `ConfirmDangerButton` puts a description with markup in the body instead, so it no longer sets `aria-describedby`.
+- **Confirmations wait for their request.** Every confirmation is a Whisperink `ConfirmDialog`: it stays open with a busy button until the request finishes, closes on success, and shows the error in the dialog on failure. Errors that used to appear on the page (revoke key, unassign variable, remove member, delete provider) now appear there. Bulk session close/delete and the single-session close still close at once and run in the background, because a force close can take about 90 seconds; a failed single-session close reopens the dialog with the error.
 - **Decorative icons were dropped from dialog titles and the workspace picker.** These are the GitHub logo on the GitHub App dialogs, the provider logo on the add-model-provider dialog, the live avatar on the New bot dialog, and the folder icon in the workspace picker (a native select can't hold one).
 - **Popovers have a fixed gap and no offsets.** Whisperink's `Popover` places panels 6px from the trigger and has no `sideOffset`/`alignOffset`. The model picker's height cap is now a plain `max-h-[22rem]`, because the old one used a CSS variable that Base UI set and Whisperink doesn't.
 - **Tooltips use Whisperink's own delay.** The app-wide `TooltipProvider` delay is gone.
@@ -26,11 +27,7 @@ These came from replacing the local `src/components/ui/` adapters with Whisperin
 
 ## Changes to the vendored kit
 
-`vendor/whisperink` is Whisperink `7998b12` without the specimens, `catalog/` and `configuration/`, plus these host patches. Reapply them on every vendor update, or move them upstream:
-
-- `// @ts-nocheck` on `components/Modal/Modal.tsx`, `components/Tabs/roving.ts`, `floating.tsx` and `intl.ts`, which don't pass the app's `noUncheckedIndexedAccess`.
-- `components/Modal/Modal.tsx`: a `role` prop (`"dialog" | "alertdialog"`, used by every confirmation) and `data-slot="dialog-close"` on the close button (used by tests).
-- `tokens.css`: no `@tailwind` directives (the app is on Tailwind 4), and `focus-visible` ring utilities in place of `@apply focus-ring` in one rule.
+`vendor/whisperink` is Whisperink `95e0291` without the specimens, `catalog/` and `configuration/`. Every file matches upstream except `tokens.css`, which drops the `@tailwind` directives and expands `@apply focus-ring` because the app is on Tailwind 4. That goes away when Whisperink itself moves to Tailwind 4, or when its `tokens.css` stops depending on the Tailwind version.
 
 ## Untracked files
 

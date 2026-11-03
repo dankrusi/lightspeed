@@ -84,9 +84,25 @@ it("retries failed permanent deletion without repeating soft deletion", async ()
   await show(true);
   await check("Also permanently delete");
   await submit("Permanently delete");
-  expect(document.querySelector('[role="alert"]')?.textContent).toContain("already soft-deleted");
+  const dialog = document.querySelector('[role="alertdialog"]')!;
+  expect(dialog.textContent).toContain("already soft-deleted");
+  expect(dialog.querySelector('[role="alert"]')?.textContent).toContain("Purge unavailable");
+  expect(button("Done").disabled).toBe(false);
   expect(mocks.deleted).not.toHaveBeenCalled();
   await submit("Retry permanent deletion");
   expect(mocks.api.mock.calls.map(([method]) => method)).toEqual(["DELETE", "POST", "POST"]);
   expect(mocks.deleted).toHaveBeenCalledOnce();
+});
+it("stays open and busy until the deletion finishes", async () => {
+  let finish!: () => void;
+  mocks.api.mockReturnValueOnce(new Promise((resolve) => { finish = () => resolve({}); }));
+  await show(false);
+  await submit("Delete session");
+  expect(button("Delete session").getAttribute("aria-busy")).toBe("true");
+  expect(button("Cancel").disabled).toBe(true);
+  expect(mocks.deleted).not.toHaveBeenCalled();
+  await act(async () => finish());
+  await settle();
+  expect(mocks.deleted).toHaveBeenCalledOnce();
+  expect(mocks.cancel).not.toHaveBeenCalled();
 });

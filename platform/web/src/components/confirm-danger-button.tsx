@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { ConfirmDialog } from "@versavolta/whisperink/components/Modal/ConfirmDialog.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 
 /// Destructive action with a confirmation step, shared by model provider and
-/// GitHub App details.
+/// GitHub App details. `onConfirm` may return a promise to keep the dialog
+/// open, showing progress and any failure, until the action settles.
 export function ConfirmDangerButton({
   label,
   title,
@@ -15,7 +16,7 @@ export function ConfirmDangerButton({
   title: string;
   description: ReactNode;
   pending?: boolean;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<unknown>;
 }) {
   const [open, setOpen] = useState(false);
   // A plain sentence describes the dialog; one with markup (an id in code
@@ -26,33 +27,16 @@ export function ConfirmDangerButton({
       <Button variant="outline" size="sm" className="text-destructive" disabled={pending} onClick={() => setOpen(true)}>
         {label}
       </Button>
-      <Modal
-        role="alertdialog"
-        size="sm"
+      <ConfirmDialog
         open={open}
         onClose={() => setOpen(false)}
+        onConfirm={onConfirm}
         title={title}
         description={plain ? description : undefined}
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => {
-                setOpen(false);
-                onConfirm();
-              }}
-            >
-              {label}
-            </Button>
-          </>
-        }
+        confirmLabel={label}
       >
         {plain ? null : <p className="text-sm text-muted-foreground">{description}</p>}
-      </Modal>
+      </ConfirmDialog>
     </>
   );
 }
