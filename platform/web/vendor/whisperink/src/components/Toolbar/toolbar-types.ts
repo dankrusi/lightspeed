@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { UiMetadataProps } from "../../metadata.js";
 
 export type ToolbarEdge = "top" | "left" | "right" | "bottom";
 
@@ -10,8 +11,10 @@ export type ToolbarEdge = "top" | "left" | "right" | "bottom";
  * the choice it is on and keeps the rest here. The list scrolls, because how
  * long it is belongs to the document rather than to the toolbar.
  */
-export type ToolMenuEntry = { id: string; label: string; icon?: ReactNode; active?: boolean; disabled?: boolean; onClick: () => void };
-export type ToolItem = {
+/** An entry of a tool's menu. Its metadata goes on to the menu item. */
+export type ToolMenuEntry = UiMetadataProps & { id: string; label: string; icon?: ReactNode; active?: boolean; disabled?: boolean; onClick: () => void };
+/** One tool. Its metadata identifies the tool button, as `uiId` does a component. */
+export type ToolItem = UiMetadataProps & {
   id: string; icon: ReactNode; label: string; active?: boolean; disabled?: boolean; onClick?: () => void; showLabel?: boolean;
   /** Alternatives, shown under a caret joined to the button itself. */
   menu?: readonly ToolMenuEntry[];

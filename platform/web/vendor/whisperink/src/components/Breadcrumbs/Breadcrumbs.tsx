@@ -2,12 +2,13 @@ import type { MouseEvent, ReactNode } from "react";
 import { cn } from "../../cn.js";
 import { CaretRight, DotsThree } from "../../icons.js";
 import { useText } from "../../text.js";
-import { uiMetadata, type UiMetadataProps } from "../../metadata.js";
+import { itemMetadata, uiMetadata, type UiMetadataProps } from "../../metadata.js";
 import { IconButton } from "../Button/IconButton.js";
 import { Menu } from "../Menu/Menu.js";
 import { MenuItem } from "../Menu/MenuItem.js";
 
-export type Crumb = { label: string; href?: string };
+/** One level of the trail. Its metadata identifies the crumb, in the trail or in the menu of collapsed ones. */
+export type Crumb = UiMetadataProps & { label: string; href?: string };
 
 /**
  * Breadcrumb trail. Long trails collapse the middle into an ellipsis menu
@@ -42,14 +43,16 @@ export function Breadcrumbs({ uiId, uiDescription, uiComponentId, uiComponentDes
     event.preventDefault();
     onNavigate(item);
   };
-  const render = (item: Crumb, current: boolean) =>
-    current ? (
-      <span aria-current="page" className="truncate font-medium text-fg">{item.label}</span>
+  const render = (item: Crumb, current: boolean) => {
+    const metadata = uiMetadata("breadcrumb", "Go to one level of the path", item).attributes;
+    return current ? (
+      <span aria-current="page" className="truncate font-medium text-fg" {...metadata}>{item.label}</span>
     ) : item.href === undefined ? (
-      <span className="truncate text-fg-muted">{item.label}</span>
+      <span className="truncate text-fg-muted" {...metadata}>{item.label}</span>
     ) : (
-      <a href={item.href} onClick={activate(item)} className="focus-ring truncate rounded text-fg-muted transition-colors hover:text-fg">{item.label}</a>
+      <a href={item.href} onClick={activate(item)} className="focus-ring truncate rounded text-fg-muted transition-colors hover:text-fg" {...metadata}>{item.label}</a>
     );
+  };
   const text = useText();
   const separator = <span className="flex shrink-0 items-center text-fg-subtle" aria-hidden="true">{separatorContent}</span>;
   return (
@@ -62,7 +65,7 @@ export function Breadcrumbs({ uiId, uiDescription, uiComponentId, uiComponentDes
           <li className="flex items-center gap-1.5">
             <Menu align="start" trigger={({ toggle, open }) => <IconButton label={text.nav.moreCrumbs} size="sm" onClick={toggle} aria-haspopup="menu" aria-expanded={open} className="size-6"><DotsThree className="size-4" /></IconButton>}>
               {hidden.map((item, index) => (
-                <MenuItem key={`${index}-${item.label}`} href={item.href} disabled={item.href === undefined} onClick={item.href && onNavigate ? activate(item) : undefined}>
+                <MenuItem key={`${index}-${item.label}`} {...itemMetadata(item)} href={item.href} disabled={item.href === undefined} onClick={item.href && onNavigate ? activate(item) : undefined}>
                   {item.label}
                 </MenuItem>
               ))}

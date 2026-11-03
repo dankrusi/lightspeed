@@ -26,11 +26,11 @@ These came from replacing the local `src/components/ui/` adapters with Whisperin
 
 ## Changes to the vendored kit
 
-Send these upstream to Whisperink, or the next vendor update will undo them:
+`vendor/whisperink` is Whisperink `7998b12` without the specimens, `catalog/` and `configuration/`, plus these host patches. Reapply them on every vendor update, or move them upstream:
 
-- `components/Field/Field.tsx`: `min-w-0 content-start` on the root, so a taller neighbour in a row of fields doesn't push the label away from its control, and long values truncate instead of widening the form.
-- `components/Tabs/roving.ts`: `// @ts-nocheck`, like the other kit files that don't pass the app's `noUncheckedIndexedAccess`.
-- `components/Modal/Modal.tsx`: changed before this migration started; check what it was for.
+- `// @ts-nocheck` on `components/Modal/Modal.tsx`, `components/Tabs/roving.ts`, `floating.tsx` and `intl.ts`, which don't pass the app's `noUncheckedIndexedAccess`.
+- `components/Modal/Modal.tsx`: a `role` prop (`"dialog" | "alertdialog"`, used by every confirmation) and `data-slot="dialog-close"` on the close button (used by tests).
+- `tokens.css`: no `@tailwind` directives (the app is on Tailwind 4), and `focus-visible` ring utilities in place of `@apply focus-ring` in one rule.
 
 ## Untracked files
 

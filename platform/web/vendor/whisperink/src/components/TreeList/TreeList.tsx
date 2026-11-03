@@ -4,7 +4,8 @@ import { CaretRight, Check, Minus } from "../../icons.js";
 import { useText } from "../../text.js";
 import { uiMetadata, type UiMetadataProps } from "../../metadata.js";
 
-export type TreeListItem = {
+/** One node of the tree. Its metadata identifies the node's row. */
+export type TreeListItem = UiMetadataProps & {
   id: string;
   label: ReactNode;
   /** Accessible fallback when `label` is not plain text. */
@@ -240,6 +241,7 @@ export function TreeList(props: (TreeListProps) & UiMetadataProps) {
           onKeyDown={(event) => handleKeyDown(event, entry)}
           onClick={() => { setActiveId(item.id); selectItem(item); }}
           onDoubleClick={() => { if (props.selectionMode === "checkbox" || props.selectionMode === "radio") onActivate?.(item); }}
+          {...uiMetadata("tree-item", "Show one node of the tree", item).attributes}
           className={cn(
             "focus-ring group/treeitem flex w-full items-start gap-2 rounded-md px-2 text-left transition-colors",
             density === "compact" ? "min-h-8 py-1.5 text-sm" : "min-h-10 py-2 text-base",

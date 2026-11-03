@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { cn } from "../../cn.js";
 import { CaretDown } from "../../icons.js";
 import { useText } from "../../text.js";
-import { uiMetadata, type UiMetadataProps } from "../../metadata.js";
+import { itemMetadata, uiMetadata, type UiMetadataProps } from "../../metadata.js";
 import { Menu } from "../Menu/Menu.js";
 import { MenuItem } from "../Menu/MenuItem.js";
 import { Tooltip } from "../Tooltip/Tooltip.js";
@@ -21,7 +21,13 @@ export function ToolButton({ uiId, uiDescription, uiComponentId, uiComponentDesc
   /** Opens the menu of a split or menu tool on mount, for documentation; see `Popover`. */
   defaultMenuOpen?: boolean;
 }) & UiMetadataProps) {
-  const _ui = uiMetadata("tool-button", "Activate a workspace tool", { uiId, uiDescription, uiComponentId, uiComponentDescription });
+  // Props given to the button win over the ones its item carries.
+  const _ui = uiMetadata("tool-button", "Activate a workspace tool", {
+    uiId: uiId ?? item.uiId,
+    uiDescription: uiDescription ?? item.uiDescription,
+    uiComponentId: uiComponentId ?? item.uiComponentId,
+    uiComponentDescription: uiComponentDescription ?? item.uiComponentDescription,
+  });
   const text = useText();
   const roving = useContext(ToolbarRovingContext);
   const stop = (id: string) => ({
@@ -100,6 +106,7 @@ export function ToolButton({ uiId, uiDescription, uiComponentId, uiComponentDesc
           {item.menu.map((entry) => (
             <MenuItem
               key={entry.id}
+              {...itemMetadata(entry)}
               disabled={entry.disabled}
               onClick={entry.onClick}
               checked={Boolean(entry.active)}

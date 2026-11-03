@@ -47,6 +47,7 @@ export function Tabs({ uiId, uiDescription, uiComponentId, uiComponentDescriptio
             tabIndex={selected ? 0 : -1}
             disabled={item.disabled}
             onClick={() => onChange(item.value)}
+            {...uiMetadata("tab", "Show one view", item).attributes}
             className={cn(
               // The ring is drawn inside the tab: the bar clips anything outside it.
               "inline-flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-t-sm border-b-[length:var(--tab-indicator-width)] px-3 text-base font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[rgb(var(--ring))] disabled:opacity-40 [&_svg]:size-4",

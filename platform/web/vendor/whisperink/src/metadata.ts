@@ -14,6 +14,14 @@ function brief(value: string | undefined): string | undefined {
   return value?.trim().split(/\s+/u).slice(0, 10).join(" ").slice(0, 500) || undefined;
 }
 
+/**
+ * The metadata a descriptor carries (a tab, a sidebar entry, a page action),
+ * picked out so it can go on to the component that renders the item.
+ */
+export function itemMetadata(item: UiMetadataProps): UiMetadataProps {
+  return { uiId: item.uiId, uiDescription: item.uiDescription, uiComponentId: item.uiComponentId, uiComponentDescription: item.uiComponentDescription };
+}
+
 /** Resolve metadata once per component without adding layout wrappers. */
 export function uiMetadata(componentId: string, description: string, props: UiMetadataProps) {
   const uiId = identifier(props.uiId);

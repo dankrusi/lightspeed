@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { UiMetadataProps } from "../../metadata.js";
 
 /*
  * Workspace primitives for "power" applications: docks with tabbed, movable
@@ -10,7 +11,8 @@ import type { ReactNode } from "react";
 
 export type DockSide = "left" | "right" | "bottom";
 
-export type PanelDefinition = {
+/** A panel of a dock. Its metadata identifies the panel's tab. */
+export type PanelDefinition = UiMetadataProps & {
   id: string;
   title: string;
   icon: ReactNode;

@@ -37,6 +37,7 @@ export function Segmented({ uiId, uiDescription, uiComponentId, uiComponentDescr
             tabIndex={selected ? 0 : -1}
             disabled={item.disabled}
             onClick={() => onChange(item.value)}
+            {...uiMetadata("segmented-option", "Choose one option", item).attributes}
             className={cn(
               "focus-ring inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--segmented-item-radius)] font-medium transition-all disabled:opacity-40 [&_svg]:size-3.5",
               height,

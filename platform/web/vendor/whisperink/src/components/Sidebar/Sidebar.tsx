@@ -7,7 +7,8 @@ import type { Tone } from "../../tone.js";
 import { uiMetadata, type UiMetadataProps } from "../../metadata.js";
 import { IconButton } from "../Button/IconButton.js";
 
-export type NavItem = {
+/** One navigation entry. Its metadata identifies the entry, as `uiId` does a component. */
+export type NavItem = UiMetadataProps & {
   key: string;
   label: string;
   icon: ReactNode;
@@ -47,6 +48,7 @@ function SidebarEntry({
     onPointerDown: tip.trigger.onPointerDown,
     onFocus: chain(prefetch, tip.trigger.onFocus),
     onBlur: tip.trigger.onBlur,
+    ...uiMetadata("sidebar-item", "Open one section of the app", item).attributes,
     className: cn(
       "focus-ring flex h-8 w-full items-center gap-2.5 rounded px-2.5 text-left text-base transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
       selected ? "bg-subtle font-medium text-fg [&_svg]:text-fg" : "text-fg-muted hover:bg-subtle/70 hover:text-fg [&_svg]:text-fg-subtle",

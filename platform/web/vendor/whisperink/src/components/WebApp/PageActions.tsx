@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { cn } from "../../cn.js";
 import { DotsThree } from "../../icons.js";
 import { useText } from "../../text.js";
-import { uiMetadata, type UiMetadataProps } from "../../metadata.js";
+import { itemMetadata, uiMetadata, type UiMetadataProps } from "../../metadata.js";
 import type { ButtonVariant } from "../Button/button-classes.js";
 import { Button } from "../Button/Button.js";
 import { ButtonGroup } from "../Button/ButtonGroup.js";
@@ -60,14 +60,8 @@ export function PageActions({ uiId, uiDescription, uiComponentId, uiComponentDes
   const overflowPrimaries = overflow.filter((action) => action.kind === "primary");
   const overflowSecondaries = overflow.filter((action) => action.kind !== "primary");
   const hasMenu = overflow.length > 0 || visibleSecondary.length > 0;
-  const metadata = (action: PageAction): UiMetadataProps => ({
-    uiId: action.uiId,
-    uiDescription: action.uiDescription,
-    uiComponentId: action.uiComponentId,
-    uiComponentDescription: action.uiComponentDescription,
-  });
   const item = (action: PageAction, extraClass?: string) => (
-    <MenuItem key={action.id} {...metadata(action)} icon={action.icon} shortcut={action.shortcut} danger={action.danger} href={action.href} disabled={action.disabled || action.loading} onClick={action.onClick} className={extraClass}>
+    <MenuItem key={action.id} {...itemMetadata(action)} icon={action.icon} shortcut={action.shortcut} danger={action.danger} href={action.href} disabled={action.disabled || action.loading} onClick={action.onClick} className={extraClass}>
       {action.label}
     </MenuItem>
   );
@@ -89,7 +83,7 @@ export function PageActions({ uiId, uiDescription, uiComponentId, uiComponentDes
   /** One visible action; `collapse` marks the secondaries that fold into the menu below `md`. */
   const button = (action: PageAction, variant: ButtonVariant, collapse: boolean) => {
     const shared = {
-      ...metadata(action),
+      ...itemMetadata(action),
       variant,
       size: "sm" as const,
       onClick: action.onClick,

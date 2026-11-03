@@ -80,6 +80,7 @@ function DockTabs({
             onClick={() => onActivate(panel.id)}
             onAuxClick={(event) => { if (event.button === 1) onClose(panel.id); }}
             title={text.dock.panelHint(panel.title)}
+            {...uiMetadata("dock-tab", "Show one panel of the dock", panel).attributes}
             className={cn(
               "focus-ring -mb-px flex h-8 shrink-0 cursor-grab items-center gap-1.5 rounded-t border-b-[length:var(--tab-indicator-width)] px-2.5 text-sm transition-colors active:cursor-grabbing [&_svg]:size-3.5",
               selected ? "border-primary bg-surface font-medium text-fg" : "border-transparent text-fg-muted hover:text-fg",

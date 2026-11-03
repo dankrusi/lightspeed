@@ -1,8 +1,10 @@
 // @ts-nocheck
 // Host typecheck uses noUncheckedIndexedAccess; this kit file does not.
 import type { KeyboardEvent, ReactNode } from "react";
+import type { UiMetadataProps } from "../../metadata.js";
 
-export type TabItem = { value: string; label: ReactNode; count?: number; disabled?: boolean; icon?: ReactNode };
+/** One tab or option. Its metadata identifies that tab, as `uiId` does a component. */
+export type TabItem = UiMetadataProps & { value: string; label: ReactNode; count?: number; disabled?: boolean; icon?: ReactNode };
 
 export function roving(event: KeyboardEvent<HTMLElement>, items: readonly TabItem[], value: string, onChange: (value: string) => void) {
   const enabled = items.filter((item) => !item.disabled);

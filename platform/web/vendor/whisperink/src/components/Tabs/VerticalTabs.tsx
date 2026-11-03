@@ -21,6 +21,7 @@ export function VerticalTabs({ uiId, uiDescription, uiComponentId, uiComponentDe
             aria-current={selected ? "page" : undefined}
             disabled={item.disabled}
             onClick={() => onChange(item.value)}
+            {...uiMetadata("vertical-tab", "Open one section", item).attributes}
             className={cn(
               "focus-ring flex h-8 items-center gap-2 rounded px-2.5 text-left text-base font-medium transition-colors disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-4",
               selected ? "bg-subtle text-fg" : "text-fg-muted hover:bg-subtle/70 hover:text-fg",
