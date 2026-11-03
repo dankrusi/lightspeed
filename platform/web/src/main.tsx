@@ -18,7 +18,7 @@ const appBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <WhisperinkProvider locale="en-GB">
+    <WhisperinkProvider>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>

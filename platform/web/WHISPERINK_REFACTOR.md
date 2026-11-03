@@ -9,7 +9,7 @@ Source of truth for the kit: `vendor/whisperink` and its design guide (`docs/DES
 | Lightspeed surface | Whisperink |
 | --- | --- |
 | App shell, sidebar, account header | `WebApp`, `Sidebar`, header account menu |
-| Page background, text, borders, status color | `tokens.css` plus `src/whisperink-theme.css` |
+| Page background, text, borders, status color, type, and radius | `tokens.css` as shipped. `whisperink-theme.css` only exposes those variables as Tailwind utilities |
 | Buttons | `buttonClasses` on the existing button (keeps `render` for links) |
 | Text fields | `Input`, `Textarea` |
 | Checkbox and switch | `Checkbox`, `Switch`, with the app's `checked` / `onCheckedChange` names |
