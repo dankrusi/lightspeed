@@ -128,6 +128,7 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive"
+                        aria-label={`Remove ${member.name || member.email}`}
                         onClick={() => setRemoving(member)}
                       >
                         <Trash2 />
