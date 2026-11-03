@@ -10,6 +10,9 @@ These came from replacing the dialog, alert dialog, dropdown menu, and select ad
 - **Checkbox items in menus close the menu when clicked.** Whisperink's `Menu` closes on any item. This affects the session view preferences. The old adapter behaved the same way, but the original intent was to stay open.
 - **Dialog descriptions are plain text.** `Modal` takes a string `description`, so descriptions that used monospace for ids, env var names, and `lightspeed-envd` lost that styling. `ConfirmDangerButton` puts a description with markup in the body instead, so it no longer sets `aria-describedby`.
 - **Decorative icons were dropped from dialog titles and the workspace picker.** These are the GitHub logo on the GitHub App dialogs, the provider logo on the add-model-provider dialog, the live avatar on the New bot dialog, and the folder icon in the workspace picker (a native select can't hold one).
+- **Popovers have a fixed gap and no offsets.** Whisperink's `Popover` places panels 6px from the trigger and has no `sideOffset`/`alignOffset`. The model picker's height cap is now a plain `max-h-[22rem]`, because the old one used a CSS variable that Base UI set and Whisperink doesn't.
+- **Tooltips use Whisperink's own delay.** The app-wide `TooltipProvider` delay is gone.
+- **A single-select combobox stays open after a choice.** This was already true under the adapter.
 
 ## Visual checks
 
@@ -20,20 +23,10 @@ These came from replacing the dialog, alert dialog, dropdown menu, and select ad
 
 ## Next steps
 
-- **Migrate the remaining tree-walking adapters.** `popover`, `tooltip`, and `combobox` still use `ui/nodes.ts` to rebuild Whisperink's API from shadcn-style children. Once they're gone, delete `nodes.ts`. The popover adapter's extra wrapper also causes the `run-section` test failure below.
 - **Inline the thin redirects.** `input`, `textarea`, `checkbox`, `switch`, `card`, `badge`, and `button` pass props through or only rename them. Replace them with direct Whisperink imports using a codemod. `button` needs about 240 call sites rewritten to Whisperink's variant and size names (`default` → `primary`, `destructive` → `danger`, `default` size → `md`). Two call sites use its `render` prop.
 - **Swap the hand-rolled `tabs` and `field`** for Whisperink's `Tabs` and `Field`.
 - **Move the app components out of `src/components/ui/`.** These are `combobox`, `message-scroller`, `message`, `bubble`, `marker`, `settings-disclosure`, `progress-steps`, and whatever remains of `field`. They don't wrap Whisperink, so `ui/` shouldn't imply they're the design system.
 - **Migrate the remaining lucide icons to Phosphor.** The sidebar nav has moved. `user-menu.tsx`, `universe-switcher.tsx`, and the rest of the app still use lucide. The custom bot icon (`src/components/icons/bot.tsx`) is drawn at lucide's stroke weight, and only the sidebar thins it to match Phosphor light.
-
-## Known test failures
-
-- `src/components/session/run-section.test.tsx` (finished-run strip): `run-stats.tsx` uses the popover adapter, which wraps the stats button in an extra element, so the test's check for the button's position next to the strip fails.
-- `src/components/session/session-config-editor.test.ts` (model capabilities below the model identifier): the test expects `1,000,000`, but `toLocaleString()` follows the machine locale (`1’000’000` under en-CH). Not related to Whisperink.
-
-## Accessibility
-
-- The remove-member trash button in `MembersPage` has no `aria-label`. This predates the migration.
 
 ## Untracked files
 

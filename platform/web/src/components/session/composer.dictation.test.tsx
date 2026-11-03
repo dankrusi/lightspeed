@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({ capture: vi.fn(), transcribe: vi.fn(), cancel:
 vi.mock("@/api", async original => ({ ...await original<typeof import("@/api")>(), api: mocks.api }));
 vi.mock("@/lib/audio-capture", () => ({ startAudioCapture: mocks.capture, isDemoDictation: false }));
 vi.mock("@/lib/dictation", () => ({ transcribeRecording: mocks.transcribe, cancelRecording: mocks.cancel }));
-vi.mock("@/components/ui/popover", () => import("@/components/ui/popover.test-double"));
 let root: Root;
 let container: HTMLDivElement;
 let finish: (text: string) => void;

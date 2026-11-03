@@ -1759,7 +1759,7 @@ function ProfileMultiSelect({
       <ComboboxChips>
         <ComboboxValue>
           {value.map((profileId) => (
-            <ComboboxChip key={profileId}>{profileLabel(profileMap.get(profileId), profileId)}</ComboboxChip>
+            <ComboboxChip key={profileId} value={profileId}>{profileLabel(profileMap.get(profileId), profileId)}</ComboboxChip>
           ))}
         </ComboboxValue>
         <ComboboxChipsInput disabled={readOnly} placeholder={value.length ? "Add profile" : placeholder} />

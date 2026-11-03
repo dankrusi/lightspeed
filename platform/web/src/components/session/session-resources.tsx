@@ -6,7 +6,7 @@ import { openEnvironmentsQuery } from "@/lib/environments";
 import type { McpServerOption, WorkspaceOption } from "@/components/session/session-config-editor";
 import { Clock3, Code2, FolderOpen, Globe2, Network, Server, Settings2, Wrench, type LucideIcon } from "lucide-react";
 import { sessionResources, type ResourceTone, type SessionResources } from "@/lib/sessions/session-resources";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { cn } from "@/lib/utils";
 
 const TONE_DOT: Record<ResourceTone, string> = {
@@ -207,21 +207,18 @@ function Chip({ icon: Icon, label, tone, muted, title, children }: {
   children: ReactNode;
 }) {
   return (
-    <Popover>
-      <PopoverTrigger render={
-        <button type="button" aria-label={`${title}: ${label}`}
-          className={cn(
-            "inline-flex h-6 max-w-56 min-w-0 items-center gap-1 rounded-full border bg-background/60 px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted",
-            muted && "border-dashed text-muted-foreground",
-          )} />
-      }>
+    <Popover align="start" rootClassName="max-w-56 min-w-0" className="w-80 p-1.5" trigger={({ open, toggle }) => (
+      <button type="button" aria-label={`${title}: ${label}`} aria-haspopup="dialog" aria-expanded={open} onClick={toggle}
+        className={cn(
+          "inline-flex h-6 max-w-56 min-w-0 items-center gap-1 rounded-full border bg-background/60 px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted",
+          muted && "border-dashed text-muted-foreground",
+        )}>
         <Icon className="size-3 shrink-0 text-muted-foreground" aria-hidden />
         <span className="truncate">{label}</span>
         {tone && <span className={cn("size-1.5 shrink-0 rounded-full", TONE_DOT[tone])} aria-hidden />}
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 p-1.5">
-        {children}
-      </PopoverContent>
+      </button>
+    )}>
+      {children}
     </Popover>
   );
 }

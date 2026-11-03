@@ -39,7 +39,7 @@ import { BotFaceIcon } from "@/components/icons/bot";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip } from "@versavolta/whisperink/components/Tooltip/Tooltip.js";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
 import { useUserPreferences } from "@/lib/user-preferences";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
@@ -49,7 +49,7 @@ import { SessionHistoryLoader } from "@/components/session/history-loader";
 import { SetupEditorSection } from "@/components/session/setup-editor-section";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -359,169 +359,172 @@ function SessionList({
           {sessions.length}
           {pages.hasNextPage ? "+" : ""}
         </span>
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className={cn("relative ml-auto", activeFilterCount > 0 && "text-primary")}
-                aria-label={activeFilterCount > 0
-                  ? `Filter sessions, ${activeFilterCount} active`
-                  : "Filter sessions"}
+        <Popover
+          align="end"
+          rootClassName="ml-auto"
+          className="grid gap-4 p-4"
+          trigger={({ open, toggle }) => (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className={cn("relative", activeFilterCount > 0 && "text-primary")}
+              aria-label={activeFilterCount > 0
+                ? `Filter sessions, ${activeFilterCount} active`
+                : "Filter sessions"}
+              aria-haspopup="dialog"
+              aria-expanded={open}
+              onClick={toggle}
+            >
+              <ListFilter />
+              {activeFilterCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          )}
+        >
+          <h2 className="text-sm font-semibold">Filter sessions</h2>
+          <div className="grid gap-2">
+            <span className="text-xs font-medium">Include</span>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox
+                checked={showClosed}
+                onCheckedChange={(checked) => setPreferences((current) => ({
+                  ...current,
+                  showClosed: checked === true,
+                }))}
               />
-            }
-          >
-            <ListFilter />
-            {activeFilterCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
-                {activeFilterCount}
-              </span>
-            )}
-          </PopoverTrigger>
-          <PopoverContent align="end" className="grid gap-4 p-4">
-            <h2 className="text-sm font-semibold">Filter sessions</h2>
-            <div className="grid gap-2">
-              <span className="text-xs font-medium">Include</span>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <Checkbox
-                  checked={showClosed}
-                  onCheckedChange={(checked) => setPreferences((current) => ({
-                    ...current,
-                    showClosed: checked === true,
-                  }))}
-                />
-                Closed sessions
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <Checkbox
-                  checked={showSubagents}
-                  onCheckedChange={(checked) => setPreferences((current) => ({
-                    ...current,
-                    showSubagents: checked === true,
-                  }))}
-                />
-                Sub-agent sessions
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <Checkbox
-                  checked={showManagedSessions}
-                  onCheckedChange={(checked) => setPreferences((current) => ({
-                    ...current,
-                    showManagedSessions: checked === true,
-                  }))}
-                />
-                Managed sessions
-              </label>
-            </div>
-            <div className="grid gap-2 border-t pt-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium">Metadata filters</span>
-                {filterEntries.length > 0 && (
-                  <button
-                    type="button"
-                    className="text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => updateMetadataFilter({})}
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
+              Closed sessions
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox
+                checked={showSubagents}
+                onCheckedChange={(checked) => setPreferences((current) => ({
+                  ...current,
+                  showSubagents: checked === true,
+                }))}
+              />
+              Sub-agent sessions
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox
+                checked={showManagedSessions}
+                onCheckedChange={(checked) => setPreferences((current) => ({
+                  ...current,
+                  showManagedSessions: checked === true,
+                }))}
+              />
+              Managed sessions
+            </label>
+          </div>
+          <div className="grid gap-2 border-t pt-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-medium">Metadata filters</span>
               {filterEntries.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {filterEntries.map(([key, value]) => (
-                    <Badge
-                      key={key}
-                      variant="secondary"
-                      className="max-w-full gap-1 font-mono text-[11px]"
-                    >
-                      <span className="truncate">{value ? `${key}=${value}` : key}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeFilter(key)}
-                        aria-label={`Remove filter ${key}`}
-                        className="shrink-0 rounded hover:text-foreground"
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              <form onSubmit={submitFilter} className="flex gap-2">
-                <Input
-                  value={filterDraft}
-                  onChange={(event) => setFilterDraft(event.target.value)}
-                  placeholder="key or key=value"
-                  aria-label="Metadata filter"
-                  className="h-8 min-w-0 flex-1 font-mono text-xs"
-                />
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="sm"
-                  disabled={!parseMetadataPair(filterDraft)}
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => updateMetadataFilter({})}
                 >
-                  Add
-                </Button>
-              </form>
-              <p className="text-xs text-muted-foreground">
-                A key alone matches its presence. Key/value pairs match exactly.
-              </p>
-            </div>
-            <div className="grid gap-2 border-t pt-3">
-              <h2 className="text-sm font-semibold">Display</h2>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <Checkbox
-                  checked={showSessionIds}
-                  onCheckedChange={(checked) => setPreferences((current) => ({
-                    ...current,
-                    showSessionIds: checked === true,
-                  }))}
-                />
-                Show session IDs
-              </label>
-              <span className="mt-1 text-xs font-medium">Metadata keys to show</span>
-              {metadataKeys.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {metadataKeys.map((key) => (
-                    <Badge
-                      key={key}
-                      variant="secondary"
-                      className="max-w-full gap-1 font-mono text-[11px]"
-                    >
-                      <span className="truncate">{key}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeMetadataKey(key)}
-                        aria-label={`Stop showing metadata key ${key}`}
-                        className="shrink-0 rounded hover:text-foreground"
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
+                  Clear all
+                </button>
               )}
-              <form onSubmit={submitMetadataKey} className="flex gap-2">
-                <Input
-                  value={metadataKeyDraft}
-                  onChange={(event) => setMetadataKeyDraft(event.target.value)}
-                  placeholder="key"
-                  aria-label="Metadata key to show"
-                  className="h-8 min-w-0 flex-1 font-mono text-xs"
-                />
-                <Button
-                  type="submit"
-                  variant="outline"
-                  size="sm"
-                  disabled={!metadataKeyDraft.trim() || metadataKeys.includes(metadataKeyDraft.trim())}
-                >
-                  Add
-                </Button>
-              </form>
             </div>
-          </PopoverContent>
+            {filterEntries.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {filterEntries.map(([key, value]) => (
+                  <Badge
+                    key={key}
+                    variant="secondary"
+                    className="max-w-full gap-1 font-mono text-[11px]"
+                  >
+                    <span className="truncate">{value ? `${key}=${value}` : key}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFilter(key)}
+                      aria-label={`Remove filter ${key}`}
+                      className="shrink-0 rounded hover:text-foreground"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <form onSubmit={submitFilter} className="flex gap-2">
+              <Input
+                value={filterDraft}
+                onChange={(event) => setFilterDraft(event.target.value)}
+                placeholder="key or key=value"
+                aria-label="Metadata filter"
+                className="h-8 min-w-0 flex-1 font-mono text-xs"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                size="sm"
+                disabled={!parseMetadataPair(filterDraft)}
+              >
+                Add
+              </Button>
+            </form>
+            <p className="text-xs text-muted-foreground">
+              A key alone matches its presence. Key/value pairs match exactly.
+            </p>
+          </div>
+          <div className="grid gap-2 border-t pt-3">
+            <h2 className="text-sm font-semibold">Display</h2>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox
+                checked={showSessionIds}
+                onCheckedChange={(checked) => setPreferences((current) => ({
+                  ...current,
+                  showSessionIds: checked === true,
+                }))}
+              />
+              Show session IDs
+            </label>
+            <span className="mt-1 text-xs font-medium">Metadata keys to show</span>
+            {metadataKeys.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {metadataKeys.map((key) => (
+                  <Badge
+                    key={key}
+                    variant="secondary"
+                    className="max-w-full gap-1 font-mono text-[11px]"
+                  >
+                    <span className="truncate">{key}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeMetadataKey(key)}
+                      aria-label={`Stop showing metadata key ${key}`}
+                      className="shrink-0 rounded hover:text-foreground"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <form onSubmit={submitMetadataKey} className="flex gap-2">
+              <Input
+                value={metadataKeyDraft}
+                onChange={(event) => setMetadataKeyDraft(event.target.value)}
+                placeholder="key"
+                aria-label="Metadata key to show"
+                className="h-8 min-w-0 flex-1 font-mono text-xs"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                size="sm"
+                disabled={!metadataKeyDraft.trim() || metadataKeys.includes(metadataKeyDraft.trim())}
+              >
+                Add
+              </Button>
+            </form>
+          </div>
         </Popover>
         {(canSelect || selecting) && <Button
           variant="ghost"
@@ -1986,16 +1989,13 @@ export function SessionDetail({
                 via {owningBot ? botLabel(owningBot) : "a bot"}
               </NavLink>
             ) : (
-              <Tooltip>
-                <TooltipTrigger render={<span className="shrink-0" />}>
+              <Tooltip content={`Lifecycle and chat input are controlled by ${managerLabel}.`}>
+                <span className="shrink-0">
                   <Badge variant="secondary" className="gap-1">
                     <ShieldCheck />
                     <span className="hidden xl:inline">Managed by {managerLabel}</span>
                   </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {`Lifecycle and chat input are controlled by ${managerLabel}.`}
-                </TooltipContent>
+                </span>
               </Tooltip>
             ))}
             {closed ? (
@@ -2497,48 +2497,50 @@ export function SessionLineage({
             />
           ))}
           {(hiddenCount > 0 || children.hasNextPage) && (
-            <Popover>
-              <PopoverTrigger
-                render={
-                  <button
-                    type="button"
-                    className={tagClass}
-                    aria-label={`Show ${hiddenCount}${children.hasNextPage ? " or more" : ""} additional sub-agents`}
+            <Popover
+              align="start"
+              className="w-80 p-2"
+              trigger={({ open, toggle }) => (
+                <button
+                  type="button"
+                  className={tagClass}
+                  aria-label={`Show ${hiddenCount}${children.hasNextPage ? " or more" : ""} additional sub-agents`}
+                  aria-haspopup="dialog"
+                  aria-expanded={open}
+                  onClick={toggle}
+                >
+                  +{hiddenCount}{children.hasNextPage ? "+" : ""}
+                </button>
+              )}
+            >
+              <div className="mb-1 px-2 py-1 text-xs font-medium text-muted-foreground">
+                Additional sub-agents
+              </div>
+              <div className="max-h-72 overflow-y-auto">
+                {overflowChildren.map((child) => (
+                  <SubagentLineageLink
+                    key={child.id}
+                    child={child}
+                    to={href(child.id)}
+                    className="flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
                   />
-                }
-              >
-                +{hiddenCount}{children.hasNextPage ? "+" : ""}
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-80 p-2">
-                <div className="mb-1 px-2 py-1 text-xs font-medium text-muted-foreground">
-                  Additional sub-agents
-                </div>
-                <div className="max-h-72 overflow-y-auto">
-                  {overflowChildren.map((child) => (
-                    <SubagentLineageLink
-                      key={child.id}
-                      child={child}
-                      to={href(child.id)}
-                      className="flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
-                    />
-                  ))}
-                  {hiddenCount === 0 && children.isFetchingNextPage && (
-                    <p className="px-2 py-1.5 text-xs text-muted-foreground">Loading…</p>
-                  )}
-                </div>
-                {children.hasNextPage && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 w-full"
-                    disabled={children.isFetchingNextPage}
-                    onClick={() => void children.fetchNextPage()}
-                  >
-                    {children.isFetchingNextPage ? "Loading…" : "Load more sub-agents"}
-                  </Button>
+                ))}
+                {hiddenCount === 0 && children.isFetchingNextPage && (
+                  <p className="px-2 py-1.5 text-xs text-muted-foreground">Loading…</p>
                 )}
-              </PopoverContent>
+              </div>
+              {children.hasNextPage && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-1 w-full"
+                  disabled={children.isFetchingNextPage}
+                  onClick={() => void children.fetchNextPage()}
+                >
+                  {children.isFetchingNextPage ? "Loading…" : "Load more sub-agents"}
+                </Button>
+              )}
             </Popover>
           )}
         </span>

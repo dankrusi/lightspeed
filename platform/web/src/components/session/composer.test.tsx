@@ -8,7 +8,6 @@ import { SessionComposer } from "./composer";
 
 const mocks = vi.hoisted(() => ({ api: vi.fn() }));
 vi.mock("@/api", async (original) => ({ ...(await original<typeof import("@/api")>()), api: mocks.api }));
-vi.mock("@/components/ui/popover", () => import("@/components/ui/popover.test-double"));
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 let root: ReturnType<typeof createRoot>;
@@ -152,6 +151,9 @@ it("sends model choices as run options and saves them as the session default", a
   const pill = [...container.querySelectorAll("button")].find((node) => node.getAttribute("aria-label")?.startsWith("Model:"))!;
   expect(pill.textContent).toContain("gpt-5.5");
   expect(pill.textContent).toContain("High");
+  expect(pill.getAttribute("aria-expanded")).toBe("false");
+  await act(async () => pill.click());
+  expect(pill.getAttribute("aria-expanded")).toBe("true");
   await act(async () => button("gpt-5.5-mini").click());
   await act(async () => button("Low").click());
   expect(document.body.textContent).toContain("Applies to each message you send from here.");
@@ -168,6 +170,28 @@ it("sends model choices as run options and saves them as the session default", a
     attachments: [],
     options: { model: { providerId: "openai", apiKind: "openai:responses", model: "gpt-5.5-mini" } },
   }, null);
+});
+
+it("starts the model search empty each time the picker opens", async () => {
+  await setup({ runActive: false });
+  const pill = [...container.querySelectorAll("button")].find((node) => node.getAttribute("aria-label")?.startsWith("Model:"))!;
+  const search = () => container.querySelector<HTMLInputElement>('input[aria-label="Search models"]');
+  const listed = () => [...container.querySelectorAll('[role="radiogroup"][aria-label="Model"] [role="radio"]')]
+    .map((node) => node.textContent);
+  expect(search()).toBeNull();
+  await act(async () => pill.click());
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(search()!, "mini");
+    search()!.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  expect(search()!.value).toBe("mini");
+  expect(listed()).toEqual(["gpt-5.5-mini", "Use “mini”"]);
+
+  await act(async () => pill.click());
+  expect(search()).toBeNull();
+  await act(async () => pill.click());
+  expect(search()!.value).toBe("");
+  expect(listed()).toEqual(["gpt-5.5Session", "gpt-5.5-mini"]);
 });
 
 it("does not send run options with steering", async () => {

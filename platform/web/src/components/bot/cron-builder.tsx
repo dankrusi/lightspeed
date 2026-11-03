@@ -3,7 +3,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 
 export type CronFrequency = "minutes" | "hourly" | "daily" | "weekdays" | "weekly" | "monthly";
@@ -138,26 +138,25 @@ function builderSummary(state: CronBuilderState): string {
 }
 
 export function CronBuilder({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const [open, setOpen] = useState(false);
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={<Button type="button" variant="outline" size="xs" />}
-      >
-        <SlidersHorizontal className="size-3.5" />
-        Build visually
-      </PopoverTrigger>
-      <PopoverContent align="start" sideOffset={8}>
-        {open && (
-          <CronBuilderPanel
-            initial={cronBuilderFromExpression(value)}
-            onApply={(cron) => {
-              onChange(cron);
-              setOpen(false);
-            }}
-          />
-        )}
-      </PopoverContent>
+    <Popover
+      align="start"
+      trigger={({ open, toggle }) => (
+        <Button type="button" variant="outline" size="xs" aria-expanded={open} aria-haspopup="dialog" onClick={toggle}>
+          <SlidersHorizontal className="size-3.5" />
+          Build visually
+        </Button>
+      )}
+    >
+      {(close) => (
+        <CronBuilderPanel
+          initial={cronBuilderFromExpression(value)}
+          onApply={(cron) => {
+            onChange(cron);
+            close();
+          }}
+        />
+      )}
     </Popover>
   );
 }

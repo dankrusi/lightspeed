@@ -122,7 +122,7 @@ function RunStrip({
             </span>
           )}
         </button>
-        {showRunStatistics && summary && <RunStatsTrigger summary={summary} className="hidden shrink-0 md:inline-flex" />}
+        {showRunStatistics && summary && <RunStatsTrigger summary={summary} className="shrink-0 max-md:hidden" />}
       </div>
       {summary?.status === "failed" && (
         <p className="flex items-start gap-1.5 px-2 pb-1.5 text-xs text-destructive">

@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react"
+import { createPortal } from "react-dom"
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js"
 import { Input } from "@/components/ui/input"
-import { elements, named } from "@/components/ui/nodes"
 import { cn } from "@/lib/utils"
 
 type ComboboxState<T extends string = string> = {
@@ -16,6 +16,8 @@ type ComboboxState<T extends string = string> = {
   choose: (value: T) => void
   remove: (value: T) => void
   openList: () => void
+  /** The open popover's panel, where `ComboboxContent` draws the list; null while closed. */
+  panel: HTMLElement | null
 }
 
 const ComboboxContext = createContext<ComboboxState | null>(null)
@@ -77,20 +79,20 @@ function Combobox<T extends string>({
     onValueChange?.(value.filter((entry) => entry !== item) as T[])
   }
   const openList = useRef(() => {})
-  const parts = elements(children)
-  const content = parts.find((child) => named(child) === "ComboboxContent")
-  const trigger = parts.filter((child) => named(child) !== "ComboboxContent")
+  const [panel, setPanel] = useState<HTMLElement | null>(null)
+  // Children render once, beside the input; ComboboxContent portals the list
+  // into the panel, so it keeps this context without picking children apart.
   return (
-    <ComboboxContext.Provider value={{ items, query, setQuery, multiple, value, onValueChange, disabled, filtered, choose, remove, openList: () => openList.current() } as unknown as ComboboxState}>
+    <ComboboxContext.Provider value={{ items, query, setQuery, multiple, value, onValueChange, disabled, filtered, choose, remove, openList: () => openList.current(), panel } as unknown as ComboboxState}>
       <Popover
         rootClassName="w-full"
         className="max-h-72 w-[min(24rem,calc(100vw-2rem))]"
         trigger={({ toggle, open }) => {
           openList.current = () => { if (!open) toggle() }
-          return <div className="min-w-0 w-full">{trigger}</div>
+          return <div className="min-w-0 w-full">{children}</div>
         }}
       >
-        {content?.props.children}
+        <div ref={setPanel} />
       </Popover>
     </ComboboxContext.Provider>
   )
@@ -121,9 +123,9 @@ function ComboboxInput({
 }
 
 function ComboboxContent({ children }: { children?: ReactNode }) {
-  return <div>{children}</div>
+  const box = useCombobox()
+  return box.panel ? createPortal(children, box.panel) : null
 }
-ComboboxContent.displayName = "ComboboxContent"
 
 function ComboboxEmpty({ children }: { children?: ReactNode }) {
   const box = useCombobox()
@@ -156,12 +158,12 @@ function ComboboxValue({ children }: { children?: ReactNode }) {
   return <>{children}</>
 }
 
-function ComboboxChip({ children, value }: { children?: ReactNode; value?: string }) {
+function ComboboxChip({ children, value }: { children?: ReactNode; value: string }) {
   const box = useCombobox()
   return (
     <span className="inline-flex items-center gap-1 rounded bg-subtle px-1.5 py-0.5 text-xs">
       {children}
-      <button type="button" className="text-fg-muted" aria-label="Remove" disabled={box.disabled} onClick={() => value && box.remove(value)}>×</button>
+      <button type="button" className="text-fg-muted" aria-label="Remove" disabled={box.disabled} onClick={() => box.remove(value)}>×</button>
     </span>
   )
 }

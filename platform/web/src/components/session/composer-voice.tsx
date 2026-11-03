@@ -4,7 +4,7 @@ import { LoaderCircle, Mic, MicOff, RotateCw, Square, X } from "lucide-react";
 import { MAX_DICTATION_SECONDS } from "@lightspeed-ai/platform-shared";
 import type { useDictation } from "@/lib/use-dictation";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import { cn } from "@/lib/utils";
 
 type Voice = ReturnType<typeof useDictation>;
@@ -74,20 +74,18 @@ export function VoiceControl({ voice, unavailableReason, settingsHref, demo, onS
   }
   if (unavailableReason) {
     return (
-      <Popover>
-        <PopoverTrigger render={
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="Dictate message" aria-disabled="true"
-            className="text-muted-foreground/50 hover:text-muted-foreground" />
-        }>
+      <Popover side="top" align="end" className="w-72 p-3 text-sm" trigger={({ open, toggle }) => (
+        <Button type="button" variant="ghost" size="icon-sm" aria-label="Dictate message" aria-disabled="true"
+          aria-expanded={open} aria-haspopup="dialog" onClick={toggle}
+          className="text-muted-foreground/50 hover:text-muted-foreground">
           <Mic />
-        </PopoverTrigger>
-        <PopoverContent side="top" align="end" className="w-72 p-3 text-sm">
-          <p className="font-medium">Dictation is unavailable</p>
-          <p className="mt-1 text-xs text-muted-foreground">{unavailableReason}</p>
-          {settingsHref && (
-            <Link to={settingsHref} className="mt-2 inline-block text-xs font-medium underline underline-offset-2">Open Models</Link>
-          )}
-        </PopoverContent>
+        </Button>
+      )}>
+        <p className="font-medium">Dictation is unavailable</p>
+        <p className="mt-1 text-xs text-muted-foreground">{unavailableReason}</p>
+        {settingsHref && (
+          <Link to={settingsHref} className="mt-2 inline-block text-xs font-medium underline underline-offset-2">Open Models</Link>
+        )}
       </Popover>
     );
   }

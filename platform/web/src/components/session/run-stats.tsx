@@ -1,5 +1,5 @@
 import { ChevronDown, TriangleAlert } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import {
   formatDuration,
   formatTokens,
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 // No pill anywhere it appears: transparent at rest, on hover, and while the
 // popover is open; the text brightening is the whole affordance.
-const triggerClass = "inline-flex max-w-full items-center gap-1 bg-transparent px-1 py-0.5 text-xs text-muted-foreground tabular-nums transition-colors hover:bg-transparent hover:text-foreground data-[popup-open]:bg-transparent data-[popup-open]:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+const triggerClass = "inline-flex max-w-full items-center gap-1 bg-transparent px-1 py-0.5 text-xs text-muted-foreground tabular-nums transition-colors hover:bg-transparent hover:text-foreground aria-expanded:bg-transparent aria-expanded:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 function tokens(value: number | undefined) {
   return value === undefined ? "Unavailable" : `${formatTokens(value)} tokens`;
@@ -27,22 +27,24 @@ export function hasRunStats(summary: TranscriptRunSummary): boolean {
 }
 
 /// "Context 42k · Usage 61k" with the breakdown behind a popover. Renders
-/// nothing when neither figure is known.
+/// nothing when neither figure is known. `className` lays out the whole
+/// control, trigger and popover together, in its parent.
 export function RunStatsTrigger({ summary, className }: { summary: TranscriptRunSummary; className?: string }) {
   const { contextTokens } = summary;
   const total = usageTotal(summary);
   if (contextTokens === undefined && total === undefined) return null;
   return (
-    <Popover>
-      <PopoverTrigger className={cn(triggerClass, className)} aria-label="Run statistics">
+    <Popover side="top" rootClassName={cn("max-w-full", className)} className="w-[min(21rem,calc(100vw-2rem))] p-4" trigger={({ open, toggle }) => (
+      <button type="button" className={triggerClass} aria-label="Run statistics" aria-haspopup="dialog" aria-expanded={open} onClick={toggle}>
         {contextTokens !== undefined && <span>Context {formatTokens(contextTokens)}</span>}
         {contextTokens !== undefined && total !== undefined && <span aria-hidden="true">·</span>}
         {total !== undefined && <span>Usage {formatTokens(total)}</span>}
         <ChevronDown className="size-3! shrink-0" />
-      </PopoverTrigger>
-      <PopoverContent className="w-[min(21rem,calc(100vw-2rem))] p-4" aria-label="Run statistics" side="top">
+      </button>
+    )}>
+      <div role="group" aria-label="Run statistics">
         <RunStatsDetails summary={summary} />
-      </PopoverContent>
+      </div>
     </Popover>
   );
 }

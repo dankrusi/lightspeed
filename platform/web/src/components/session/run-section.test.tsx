@@ -107,10 +107,12 @@ it("folds a finished run behind one strip that names the outcome, keeps the repl
   expect(container.textContent).not.toContain("Interim progress note.");
   expect(container.textContent).not.toContain("cargo clippy");
   // Folded: the statistics sit on the strip, shown from medium widths up.
+  // The control (trigger with its popover) is the strip's sibling.
   const triggers = container.querySelectorAll('[aria-label="Run statistics"]');
   expect(triggers).toHaveLength(1);
-  expect(triggers[0]!.className).toContain("md:inline-flex");
-  expect(strip().parentElement).toBe(triggers[0]!.parentElement);
+  const control = [...strip().parentElement!.children].find((child) => child.contains(triggers[0]!))!;
+  expect(control).toBeDefined();
+  expect(control.className).toContain("max-md:hidden");
 });
 
 it("opens on click, then reveals a row's details with the meta line, and follows the preference when it changes", async () => {

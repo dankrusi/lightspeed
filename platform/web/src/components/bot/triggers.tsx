@@ -1075,7 +1075,7 @@ export function BotMultiSelect({
       <ComboboxChips>
         <ComboboxValue>
           {value.map((botId) => (
-            <ComboboxChip key={botId}>{label(botId)}</ComboboxChip>
+            <ComboboxChip key={botId} value={botId}>{label(botId)}</ComboboxChip>
           ))}
         </ComboboxValue>
         <ComboboxChipsInput id="inbox-from" placeholder={value.length ? "Add bot" : "Select bots"} />

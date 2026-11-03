@@ -4,7 +4,7 @@ import type { ResourceAccessSummary } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip } from "@versavolta/whisperink/components/Tooltip/Tooltip.js";
 import { usePermissionIdentity, useUniverseRole } from "@/lib/permissions";
 
 /**
@@ -24,22 +24,17 @@ export function SharingMark({
   if (quiet && !shared) return null;
   const Icon = shared ? Users : LockKeyhole;
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <span
-            className="flex shrink-0 text-muted-foreground"
-            aria-label={shared ? "Shared" : "Private"}
-          />
-        }
+    <Tooltip
+      content={shared
+        ? "Shared — every member of the universe sees this"
+        : "Private — only its creator and admins see this"}
+    >
+      <span
+        className="flex shrink-0 text-muted-foreground"
+        aria-label={shared ? "Shared" : "Private"}
       >
         <Icon className="size-3.5" />
-      </TooltipTrigger>
-      <TooltipContent>
-        {shared
-          ? "Shared — every member of the universe sees this"
-          : "Private — only its creator and admins see this"}
-      </TooltipContent>
+      </span>
     </Tooltip>
   );
 }
