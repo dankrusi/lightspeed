@@ -1,28 +1,16 @@
 import { slugify, universeSlugSchema } from "@lightspeed-ai/platform-shared";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { UniverseIcon } from "@/components/universe-icon";
 import { api, type Universe } from "@/api";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
+import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { memberships, universeHome, useUniverses } from "@/lib/universes";
@@ -47,14 +35,13 @@ export function UniverseSwitcher({
 
   return (
     <>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="focus-ring flex max-w-64 items-center gap-2 rounded px-1 py-1 text-left hover:bg-subtle"
-              />
-            }
+        <Menu align="start" className="min-w-56" trigger={({ open, toggle }) => (
+          <button
+            type="button"
+            className="focus-ring flex max-w-64 items-center gap-2 rounded px-1 py-1 text-left hover:bg-subtle"
+            aria-haspopup="menu"
+            aria-expanded={open}
+            onClick={toggle}
           >
             <UniverseIcon icon={active?.icon} iconColor={active?.iconColor} />
             <div className="grid flex-1 text-left leading-tight">
@@ -70,35 +57,33 @@ export function UniverseSwitcher({
               </span>
             </div>
             <ChevronsUpDown className="ml-auto size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="min-w-56" align="start">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Universes</DropdownMenuLabel>
-            </DropdownMenuGroup>
-            {mine.map((universe) => (
-              <DropdownMenuItem
-                key={universe.id}
-                onClick={() => navigate(universeHome(universe))}
-              >
-                <UniverseIcon icon={universe.icon} iconColor={universe.iconColor} className="size-6 rounded-md" />
+          </button>
+        )}>
+          <MenuLabel>Universes</MenuLabel>
+          {mine.map((universe) => (
+            <MenuItem
+              key={universe.id}
+              icon={<UniverseIcon icon={universe.icon} iconColor={universe.iconColor} className="size-6 rounded-md" />}
+              onClick={() => navigate(universeHome(universe))}
+            >
+              <span className="flex items-center gap-2">
                 <span className="truncate">{universe.name}</span>
                 {universe.id === active?.id && <Check className="ml-auto size-4" />}
-              </DropdownMenuItem>
-            ))}
-            {mine.length === 0 && (
-              <DropdownMenuItem disabled>No universes yet</DropdownMenuItem>
-            )}
-            {canCreate && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setCreateOpen(true)}>
-                  <Plus />
-                  New universe
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </span>
+            </MenuItem>
+          ))}
+          {mine.length === 0 && (
+            <MenuItem disabled>No universes yet</MenuItem>
+          )}
+          {canCreate && (
+            <>
+              <MenuSeparator />
+              <MenuItem icon={<Plus />} onClick={() => setCreateOpen(true)}>
+                New universe
+              </MenuItem>
+            </>
+          )}
+        </Menu>
         <NewUniverseDialog open={createOpen} onOpenChange={setCreateOpen} />
     </>
   );
@@ -116,6 +101,7 @@ export function NewUniverseDialog({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
+  const formId = useId();
 
   const create = useMutation({
     mutationFn: (input: { name: string; slug: string }) =>
@@ -137,45 +123,42 @@ export function NewUniverseDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New universe</DialogTitle>
-          <DialogDescription>
-            Universes start blank — connect chats and configure them afterwards.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="new-universe-name">Name</FieldLabel>
-            <Input
-              id="new-universe-name"
-              value={name}
-              onChange={(e) => { setName(e.target.value); if (!slugEdited) setSlug(slugify(e.target.value)); }}
-              placeholder="My Universe"
-              autoFocus
-              required
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="new-universe-slug">Slug</FieldLabel>
-            <Input id="new-universe-slug" value={slug} required maxLength={128}
-              onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }} placeholder="my-universe" />
-            <p className="text-sm text-muted-foreground">Unique in runtime and used in Platform URLs.</p>
-          </Field>
-          {create.error && (
-            <p className="text-sm text-destructive">{create.error.message}</p>
-          )}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={create.isPending || !name.trim() || !universeSlugSchema.safeParse(slug.trim()).success}>
-              {create.isPending ? "Creating…" : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="New universe"
+      description="Universes start blank — connect chats and configure them afterwards."
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={create.isPending || !name.trim() || !universeSlugSchema.safeParse(slug.trim()).success}>
+          {create.isPending ? "Creating…" : "Create"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="new-universe-name">Name</FieldLabel>
+          <Input
+            id="new-universe-name"
+            value={name}
+            onChange={(e) => { setName(e.target.value); if (!slugEdited) setSlug(slugify(e.target.value)); }}
+            placeholder="My Universe"
+            autoFocus
+            required
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="new-universe-slug">Slug</FieldLabel>
+          <Input id="new-universe-slug" value={slug} required maxLength={128}
+            onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }} placeholder="my-universe" />
+          <p className="text-sm text-muted-foreground">Unique in runtime and used in Platform URLs.</p>
+        </Field>
+        {create.error && (
+          <p className="text-sm text-destructive">{create.error.message}</p>
+        )}
+      </form>
+    </Modal>
   );
 }

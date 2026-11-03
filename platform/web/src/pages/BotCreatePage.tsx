@@ -40,7 +40,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ProgressSteps } from "@/components/ui/progress-steps";
@@ -404,17 +404,38 @@ function Wizard({
     <BotEditorDialog
       open={open}
       onOpenChange={onOpenChange}
-      icon={
-        <BotAvatar
-          botId={botId.trim() || "new-bot"}
-          size={36}
-          className={cn(!botId.trim() && "text-muted-foreground")}
-          color={botId.trim() ? undefined : "var(--muted)"}
-        />
-      }
       title="New bot"
       description="Define its job, triggers, session profile, collaborators, and guardrails."
-      contentClassName="sm:max-w-4xl"
+      footer={
+        <>
+          <Button className="shrink-0" variant="outline" onClick={back} disabled={stepIndex === 0}>
+            Back
+          </Button>
+          <div className="min-w-0 flex-1 truncate text-center text-xs">
+            {create.error ? (
+              <span className="text-destructive">{create.error.message}</span>
+          ) : problems.length > 0 && stepIndex === STEPS.length - 1 ? (
+            <span className="text-amber-700 dark:text-amber-400">
+              {problems.length} {problems.length === 1 ? "item needs" : "items need"} attention
+            </span>
+          ) : null}
+          </div>
+          {stepIndex < STEPS.length - 1 ? (
+            <Button className="shrink-0" onClick={next}>
+              <span className="sm:hidden">Next</span>
+              <span className="hidden sm:inline">Next: {STEPS[stepIndex + 1]!.label}</span>
+            </Button>
+          ) : (
+            <Button
+              className="shrink-0"
+              onClick={() => create.mutate()}
+              disabled={!permissions.can("create_bot") || (setupMode === "own" && !permissions.can("create_profile")) || create.isPending || problems.length > 0}
+            >
+              {create.isPending ? "Creating…" : "Create bot"}
+            </Button>
+          )}
+        </>
+      }
     >
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ProgressSteps
@@ -599,17 +620,15 @@ function Wizard({
                         </span>
                       </Label>
                       <Select
+                        id="new-bot-inbox"
+                        size="sm"
+                        className="w-40 max-w-full shrink-0"
                         value={inboxMode}
-                        onValueChange={(value) => value && setInbox(value as "off" | "any" | "selected")}
+                        onChange={(event) => setInbox(event.target.value as "off" | "any" | "selected")}
                       >
-                        <SelectTrigger id="new-bot-inbox" size="sm" className="w-40 max-w-full shrink-0">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="off">Nobody</SelectItem>
-                          <SelectItem value="any">Any bot here</SelectItem>
-                          <SelectItem value="selected">Only these bots</SelectItem>
-                        </SelectContent>
+                        <option value="off">Nobody</option>
+                        <option value="any">Any bot here</option>
+                        <option value="selected">Only these bots</option>
                       </Select>
                     </div>
                     {inboxMode === "selected" && (
@@ -653,18 +672,19 @@ function Wizard({
                 </div>
                 {setupMode === "shared" ? (
                   <Field>
-                    <FieldLabel>Profile</FieldLabel>
-                    <Select value={sharedProfileId} onValueChange={(value) => value && setSharedProfileId(value)}>
-                      <SelectTrigger className="w-full sm:w-80">
-                        <SelectValue placeholder="Select a profile" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {profiles.data?.map((profile) => (
-                          <SelectItem key={profile.profileId} value={profile.profileId}>
-                            {profile.displayName ?? profile.profileId}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
+                    <FieldLabel htmlFor="new-bot-shared-profile">Profile</FieldLabel>
+                    <Select
+                      id="new-bot-shared-profile"
+                      className="w-full sm:w-80"
+                      value={sharedProfileId}
+                      onChange={(event) => setSharedProfileId(event.target.value)}
+                    >
+                      <option value="" disabled>Select a profile</option>
+                      {profiles.data?.map((profile) => (
+                        <option key={profile.profileId} value={profile.profileId}>
+                          {profile.displayName ?? profile.profileId}
+                        </option>
+                      ))}
                     </Select>
                     {profiles.data?.length === 0 && (
                       <FieldDescription>No profiles yet — give the bot its own setup instead.</FieldDescription>
@@ -747,34 +767,6 @@ function Wizard({
             )}
           </div>
         </main>
-        <div className="flex shrink-0 items-center gap-3 border-t bg-popover px-5 py-3">
-          <Button className="shrink-0" variant="outline" onClick={back} disabled={stepIndex === 0}>
-            Back
-          </Button>
-          <div className="min-w-0 flex-1 truncate text-center text-xs">
-            {create.error ? (
-              <span className="text-destructive">{create.error.message}</span>
-          ) : problems.length > 0 && stepIndex === STEPS.length - 1 ? (
-            <span className="text-amber-700 dark:text-amber-400">
-              {problems.length} {problems.length === 1 ? "item needs" : "items need"} attention
-            </span>
-          ) : null}
-          </div>
-          {stepIndex < STEPS.length - 1 ? (
-            <Button className="shrink-0" onClick={next}>
-              <span className="sm:hidden">Next</span>
-              <span className="hidden sm:inline">Next: {STEPS[stepIndex + 1]!.label}</span>
-            </Button>
-          ) : (
-            <Button
-              className="shrink-0"
-              onClick={() => create.mutate()}
-              disabled={!permissions.can("create_bot") || (setupMode === "own" && !permissions.can("create_profile")) || create.isPending || problems.length > 0}
-            >
-              {create.isPending ? "Creating…" : "Create bot"}
-            </Button>
-          )}
-        </div>
       </div>
     </BotEditorDialog>
   );

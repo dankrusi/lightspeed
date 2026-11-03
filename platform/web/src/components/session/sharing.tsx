@@ -2,16 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LockKeyhole, Users } from "lucide-react";
 import type { ResourceAccessSummary } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { usePermissionIdentity, useUniverseRole } from "@/lib/permissions";
 
@@ -99,30 +91,30 @@ export function ShareSessionDialog({
       ]);
     },
   });
+  const close = () => {
+    onOpenChange(false);
+    share.reset();
+  };
   return (
-    <AlertDialog
+    <Modal
+      role="alertdialog"
+      size="sm"
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (next) share.reset();
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Share with the universe?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Every member will see this session and its sub-agents, and continue it according to their
-            role. Sharing cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        {share.error && <p className="text-sm text-destructive">{share.error.message}</p>}
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction disabled={share.isPending} onClick={() => share.mutate()}>
+      onClose={close}
+      title="Share with the universe?"
+      description="Every member will see this session and its sub-agents, and continue it according to their role. Sharing cannot be undone."
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={close}>
+            Cancel
+          </Button>
+          <Button type="button" variant="destructive" disabled={share.isPending} onClick={() => share.mutate()}>
             Share
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </>
+      }
+    >
+      {share.error && <p className="text-sm text-destructive">{share.error.message}</p>}
+    </Modal>
   );
 }

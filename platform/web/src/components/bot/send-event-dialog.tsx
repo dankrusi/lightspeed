@@ -1,16 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useActionPermissions } from "@/lib/permissions";
 import { api } from "@/api";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +26,7 @@ export function SendEventDialog({
   const [summary, setSummary] = useState("");
   const [data, setData] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
   const send = useMutation({
     mutationFn: () => {
       if (!invoke) throw new Error("You do not have permission to invoke this bot.");
@@ -62,51 +56,49 @@ export function SendEventDialog({
     send.mutate();
   };
   return (
-    <Dialog open={open && invoke} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Send event</DialogTitle>
-          <DialogDescription>
-            Queue a durable event for this bot. It is delivered to the bot's session as untrusted
-            input.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="bot-event-kind">Kind</FieldLabel>
-            <Input id="bot-event-kind" value={kind} onChange={(event) => setKind(event.target.value)} />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="bot-event-summary">Summary</FieldLabel>
-            <Textarea
-              id="bot-event-summary"
-              value={summary}
-              onChange={(event) => setSummary(event.target.value)}
-              rows={4}
-              autoFocus
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="bot-event-data">Data (optional JSON)</FieldLabel>
-            <Textarea
-              id="bot-event-data"
-              value={data}
-              onChange={(event) => setData(event.target.value)}
-              rows={5}
-              className="font-mono text-xs"
-            />
-          </Field>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!invoke || send.isPending || !kind.trim() || !summary.trim()}>
-              {send.isPending ? "Sending…" : "Send event"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open && invoke}
+      onClose={() => onOpenChange(false)}
+      title="Send event"
+      description="Queue a durable event for this bot. It is delivered to the bot's session as untrusted input."
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" form={formId} disabled={!invoke || send.isPending || !kind.trim() || !summary.trim()}>
+            {send.isPending ? "Sending…" : "Send event"}
+          </Button>
+        </>
+      }
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="bot-event-kind">Kind</FieldLabel>
+          <Input id="bot-event-kind" value={kind} onChange={(event) => setKind(event.target.value)} />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="bot-event-summary">Summary</FieldLabel>
+          <Textarea
+            id="bot-event-summary"
+            value={summary}
+            onChange={(event) => setSummary(event.target.value)}
+            rows={4}
+            data-autofocus
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="bot-event-data">Data (optional JSON)</FieldLabel>
+          <Textarea
+            id="bot-event-data"
+            value={data}
+            onChange={(event) => setData(event.target.value)}
+            rows={5}
+            className="font-mono text-xs"
+          />
+        </Field>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }

@@ -1,0 +1,40 @@
+# Whisperink migration TODOs
+
+Open follow-ups from moving the web UI onto Whisperink. See `WHISPERINK_REFACTOR.md` for what has already moved.
+
+## Behavior changes to decide on
+
+These came from replacing the dialog, alert dialog, dropdown menu, and select adapters with Whisperink's `Modal`, `Menu`, and `Select`.
+
+- **ArrowDown no longer opens a menu from its trigger.** The old dropdown adapter added this; Whisperink's `Menu` doesn't support it. Enter and Space still open menus, and arrow keys still move between items once a menu is open. If this is wanted back, add it to `Menu` in the kit rather than at each call site.
+- **Checkbox items in menus close the menu when clicked.** Whisperink's `Menu` closes on any item. This affects the session view preferences. The old adapter behaved the same way, but the original intent was to stay open.
+- **Dialog descriptions are plain text.** `Modal` takes a string `description`, so descriptions that used monospace for ids, env var names, and `lightspeed-envd` lost that styling. `ConfirmDangerButton` puts a description with markup in the body instead, so it no longer sets `aria-describedby`.
+- **Decorative icons were dropped from dialog titles and the workspace picker.** These are the GitHub logo on the GitHub App dialogs, the provider logo on the add-model-provider dialog, the live avatar on the New bot dialog, and the folder icon in the workspace picker (a native select can't hold one).
+
+## Visual checks
+
+- **Double padding:** `BotCreatePage` (`px-5 py-6 md:px-6`) and `BotSetup` now sit inside `Modal`'s own `px-6`.
+- **Wide dialogs:** Whisperink tops out at `xl` (`max-w-5xl`). The bot editor (`max-w-6xl`/`max-w-4xl`) and the new-session setup step (`max-w-4xl`) are now `xl`. The MCP server dialog (`max-w-xl`) is now the default `md` (`max-w-lg`).
+- **Session settings dialog:** a body wrapper with a fixed grid height keeps the Apply footer pinned.
+- **Multi-line menu item:** "Steer the current run" in the composer overrides `MenuItem`'s `h-8`.
+
+## Next steps
+
+- **Migrate the remaining tree-walking adapters.** `popover`, `tooltip`, and `combobox` still use `ui/nodes.ts` to rebuild Whisperink's API from shadcn-style children. Once they're gone, delete `nodes.ts`. The popover adapter's extra wrapper also causes the `run-section` test failure below.
+- **Inline the thin redirects.** `input`, `textarea`, `checkbox`, `switch`, `card`, `badge`, and `button` pass props through or only rename them. Replace them with direct Whisperink imports using a codemod. `button` needs about 240 call sites rewritten to Whisperink's variant and size names (`default` → `primary`, `destructive` → `danger`, `default` size → `md`). Two call sites use its `render` prop.
+- **Swap the hand-rolled `tabs` and `field`** for Whisperink's `Tabs` and `Field`.
+- **Move the app components out of `src/components/ui/`.** These are `combobox`, `message-scroller`, `message`, `bubble`, `marker`, `settings-disclosure`, `progress-steps`, and whatever remains of `field`. They don't wrap Whisperink, so `ui/` shouldn't imply they're the design system.
+- **Migrate the remaining lucide icons to Phosphor.** The sidebar nav has moved. `user-menu.tsx`, `universe-switcher.tsx`, and the rest of the app still use lucide. The custom bot icon (`src/components/icons/bot.tsx`) is drawn at lucide's stroke weight, and only the sidebar thins it to match Phosphor light.
+
+## Known test failures
+
+- `src/components/session/run-section.test.tsx` (finished-run strip): `run-stats.tsx` uses the popover adapter, which wraps the stats button in an extra element, so the test's check for the button's position next to the strip fails.
+- `src/components/session/session-config-editor.test.ts` (model capabilities below the model identifier): the test expects `1,000,000`, but `toLocaleString()` follows the machine locale (`1’000’000` under en-CH). Not related to Whisperink.
+
+## Accessibility
+
+- The remove-member trash button in `MembersPage` has no `aria-label`. This predates the migration.
+
+## Untracked files
+
+- `pnpm-lock.yaml` and `pnpm-workspace.yaml` at the repo root look like they came from an accidental pnpm run, since the repo uses npm. `platform/web/surface-check.mjs` is a one-off Playwright debug script. Delete or ignore them.

@@ -1,27 +1,14 @@
 import { ReadError } from "@/components/read-error";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { authClient, useLoginConfig, type SessionUser } from "@/auth";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -154,6 +141,7 @@ function EditUserDialog({
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const open = user !== null;
   const isCurrentUser = user?.id === currentUserId;
@@ -264,126 +252,116 @@ function EditUserDialog({
   };
 
   return (
-    <Dialog
+    <Modal
       open={open}
-      onOpenChange={(next) => {
-        if (!next) close();
-      }}
+      onClose={close}
+      title="Edit user"
+      description={company ? `Identity and platform role for ${user?.email} are managed by the company. Universe roles are managed on Members.` : `Update the platform account for ${user?.email}. A password reset signs the user out of every session.`}
+      footer={<>
+        <Button type="button" variant="outline" onClick={close}>
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          form={formId}
+          disabled={edit.isPending || !hasChanges || !name.trim() || !email.trim()}
+        >
+          {edit.isPending ? "Saving…" : "Save changes"}
+        </Button>
+      </>}
     >
-      <DialogContent className="max-h-[min(92dvh,800px)] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit user</DialogTitle>
-          <DialogDescription>
-            {company ? `Identity and platform role for ${user?.email} are managed by the company. Universe roles are managed on Members.` : `Update the platform account for ${user?.email}. A password reset signs the user out of every session.`}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-5">
-          <div className="grid gap-4">
-            <Field>
-              <FieldLabel htmlFor="edit-user-name">Name</FieldLabel>
-              <Input
-                id="edit-user-name"
-                value={name}
-                disabled={company}
-                onChange={(event) => setName(event.target.value)}
-                required
-                autoFocus
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="edit-user-email">Email</FieldLabel>
-              <Input
-                id="edit-user-email"
-                type="email"
-                value={email}
-                disabled={company}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-              <FieldDescription>
-                Admin-managed addresses are treated as verified sign-in addresses.
-              </FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="edit-user-role">Platform role</FieldLabel>
-              <Select
-                value={role}
-                onValueChange={(value) => setRole(value as string)}
-                disabled={isCurrentUser || company || user?.emergencyAdmin === true}
-              >
-                <SelectTrigger id="edit-user-role" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">user</SelectItem>
-                  <SelectItem value="admin">admin</SelectItem>
-                </SelectContent>
-              </Select>
-              {isCurrentUser && (
-                <FieldDescription>
-                  Another platform admin must change your role, preventing accidental
-                  self-lockout.
-                </FieldDescription>
-              )}
-            </Field>
-          </div>
-
-          {passwordAllowed && <div className="grid gap-4 border-t pt-5">
-            <div>
-              <p className="font-medium">Reset password</p>
-              <p className="text-sm text-muted-foreground">
-                Leave these fields empty to keep the current password.
-                {isCurrentUser ? " You will be signed out if you reset your own password." : ""}
-              </p>
-            </div>
-            <Field>
-              <FieldLabel htmlFor="edit-user-password">New password</FieldLabel>
-              <Input
-                id="edit-user-password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                minLength={8}
-                autoComplete="new-password"
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="edit-user-confirm">Repeat new password</FieldLabel>
-              <Input
-                id="edit-user-confirm"
-                type="password"
-                value={confirm}
-                onChange={(event) => setConfirm(event.target.value)}
-                minLength={8}
-                autoComplete="new-password"
-                required={Boolean(password)}
-              />
-            </Field>
-          </div>}
-
-          <div className="grid gap-2 border-t pt-5">
-            <p className="text-sm text-muted-foreground">Suspension blocks Platform access and signs out every device. Core API keys must be revoked separately.</p>
-            {!isCurrentUser && <Button type="button" variant="outline" disabled={accessChange.isPending} onClick={() => accessChange.mutate(user?.banned ? "reinstate" : "suspend")}>
-              {user?.banned ? "Reinstate access" : "Suspend access"}
-            </Button>}
-            <Button type="button" variant="outline" disabled={accessChange.isPending} onClick={() => accessChange.mutate("revoke")}>Sign out all sessions</Button>
-          </div>
-
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={close}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={edit.isPending || !hasChanges || !name.trim() || !email.trim()}
+      <form id={formId} onSubmit={submit} className="grid gap-5">
+        <div className="grid gap-4">
+          <Field>
+            <FieldLabel htmlFor="edit-user-name">Name</FieldLabel>
+            <Input
+              id="edit-user-name"
+              value={name}
+              disabled={company}
+              onChange={(event) => setName(event.target.value)}
+              required
+              autoFocus
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="edit-user-email">Email</FieldLabel>
+            <Input
+              id="edit-user-email"
+              type="email"
+              value={email}
+              disabled={company}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+            <FieldDescription>
+              Admin-managed addresses are treated as verified sign-in addresses.
+            </FieldDescription>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="edit-user-role">Platform role</FieldLabel>
+            <Select
+              id="edit-user-role"
+              className="w-full"
+              value={role}
+              onChange={(event) => setRole(event.target.value)}
+              disabled={isCurrentUser || company || user?.emergencyAdmin === true}
             >
-              {edit.isPending ? "Saving…" : "Save changes"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </Select>
+            {isCurrentUser && (
+              <FieldDescription>
+                Another platform admin must change your role, preventing accidental
+                self-lockout.
+              </FieldDescription>
+            )}
+          </Field>
+        </div>
+
+        {passwordAllowed && <div className="grid gap-4 border-t pt-5">
+          <div>
+            <p className="font-medium">Reset password</p>
+            <p className="text-sm text-muted-foreground">
+              Leave these fields empty to keep the current password.
+              {isCurrentUser ? " You will be signed out if you reset your own password." : ""}
+            </p>
+          </div>
+          <Field>
+            <FieldLabel htmlFor="edit-user-password">New password</FieldLabel>
+            <Input
+              id="edit-user-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              minLength={8}
+              autoComplete="new-password"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="edit-user-confirm">Repeat new password</FieldLabel>
+            <Input
+              id="edit-user-confirm"
+              type="password"
+              value={confirm}
+              onChange={(event) => setConfirm(event.target.value)}
+              minLength={8}
+              autoComplete="new-password"
+              required={Boolean(password)}
+            />
+          </Field>
+        </div>}
+
+        <div className="grid gap-2 border-t pt-5">
+          <p className="text-sm text-muted-foreground">Suspension blocks Platform access and signs out every device. Core API keys must be revoked separately.</p>
+          {!isCurrentUser && <Button type="button" variant="outline" disabled={accessChange.isPending} onClick={() => accessChange.mutate(user?.banned ? "reinstate" : "suspend")}>
+            {user?.banned ? "Reinstate access" : "Suspend access"}
+          </Button>}
+          <Button type="button" variant="outline" disabled={accessChange.isPending} onClick={() => accessChange.mutate("revoke")}>Sign out all sessions</Button>
+        </div>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 
@@ -402,6 +380,7 @@ function CreateUserDialog({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const reset = () => {
     setName("");
@@ -440,71 +419,69 @@ function CreateUserDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { onOpenChange(next); if (!next) reset(); }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{sso ? "Create emergency admin" : "Create user"}</DialogTitle>
-          <DialogDescription>
-            {sso ? "Creates a separate local administrator for emergency access. Use an email distinct from company sign-in accounts and store the password securely." : "Creates a platform account. Share the password out of band — users can change it under Account."}
-          </DialogDescription>
-        </DialogHeader>
-          <form onSubmit={submit} className="grid gap-4">
-            <div className="grid gap-4">
-              <Field>
-                <FieldLabel htmlFor="user-name">Name</FieldLabel>
-                <Input
-                  id="user-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  autoFocus
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="user-email">Email</FieldLabel>
-                <Input
-                  id="user-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="user-password">Password</FieldLabel>
-                <Input
-                  id="user-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={8}
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="user-role">Role</FieldLabel>
-                <Select value={sso ? "admin" : role} disabled={sso} onValueChange={(value) => setRole(value as string)}>
-                  <SelectTrigger id="user-role" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">user</SelectItem>
-                    <SelectItem value="admin">admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={create.isPending}>
-                {create.isPending ? "Creating…" : "Create user"}
-              </Button>
-            </DialogFooter>
-          </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={() => { onOpenChange(false); reset(); }}
+      title={sso ? "Create emergency admin" : "Create user"}
+      description={sso ? "Creates a separate local administrator for emergency access. Use an email distinct from company sign-in accounts and store the password securely." : "Creates a platform account. Share the password out of band — users can change it under Account."}
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={create.isPending}>
+          {create.isPending ? "Creating…" : "Create user"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <div className="grid gap-4">
+          <Field>
+            <FieldLabel htmlFor="user-name">Name</FieldLabel>
+            <Input
+              id="user-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="user-email">Email</FieldLabel>
+            <Input
+              id="user-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="user-password">Password</FieldLabel>
+            <Input
+              id="user-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              required
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="user-role">Role</FieldLabel>
+            <Select
+              id="user-role"
+              className="w-full"
+              value={sso ? "admin" : role}
+              disabled={sso}
+              onChange={(event) => setRole(event.target.value)}
+            >
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </Select>
+          </Field>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }

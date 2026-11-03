@@ -17,28 +17,12 @@ import {
   type ProfileDocument,
   type ProfileSummary,
 } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
@@ -587,19 +571,19 @@ function ProfileSwitcher({
     <Field>
       <FieldLabel htmlFor="bot-profile">Profile</FieldLabel>
       <div className="flex flex-wrap items-center gap-2">
-        <Select value={selected} onValueChange={(value) => value && setSelected(value)} disabled={!manage}>
-          <SelectTrigger id="bot-profile" className="w-64">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {!known && <SelectItem value={bot.profileId}>{bot.profileId}</SelectItem>}
-            {profiles.data?.map((profile) => (
-              <SelectItem key={profile.profileId} value={profile.profileId}>
-                {profile.displayName ?? profile.profileId}
-                {profile.displayName && profile.displayName !== profile.profileId ? ` · ${profile.profileId}` : ""}
-              </SelectItem>
-            ))}
-          </SelectContent>
+        <Select
+          id="bot-profile"
+          className="w-64"
+          value={selected}
+          onChange={(event) => setSelected(event.target.value)}
+          disabled={!manage}
+        >
+          {!known && <option value={bot.profileId}>{bot.profileId}</option>}
+          {profiles.data?.map((profile) => (
+            <option key={profile.profileId} value={profile.profileId}>
+              {`${profile.displayName ?? profile.profileId}${profile.displayName && profile.displayName !== profile.profileId ? ` · ${profile.profileId}` : ""}`}
+            </option>
+          ))}
         </Select>
         {manage && selected !== bot.profileId ? (
           <>
@@ -897,15 +881,17 @@ function OtherBotsSection({
                 : "Which bots may address this one. Messages from them arrive like any other event."}
             </span>
           </Label>
-          <Select value={mode} onValueChange={(value) => value && setMode(value as InboxMode)} disabled={readOnly}>
-            <SelectTrigger id="bot-inbox-mode" size="sm" className="w-40 max-w-full shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="off">Nobody</SelectItem>
-              <SelectItem value="any">Any bot here</SelectItem>
-              <SelectItem value="selected">Only these bots</SelectItem>
-            </SelectContent>
+          <Select
+            id="bot-inbox-mode"
+            size="sm"
+            className="w-40 max-w-full shrink-0"
+            value={mode}
+            onChange={(event) => setMode(event.target.value as InboxMode)}
+            disabled={readOnly}
+          >
+            <option value="off">Nobody</option>
+            <option value="any">Any bot here</option>
+            <option value="selected">Only these bots</option>
           </Select>
         </div>
         {mode === "selected" && (
@@ -1005,6 +991,7 @@ function DangerSection({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const closed = bot.closedAtMs != null;
+  const [confirming, setConfirming] = useState<"close" | "delete" | null>(null);
   const close = useMutation({
     mutationFn: () =>
       api<BotCloseResponse>("POST", `/api/v1/universes/${universeId}/bots/${bot.botId}/close`),
@@ -1045,25 +1032,36 @@ function DangerSection({
             conversation is closed, schedules are dropped, and new events are refused. The record, its history, the
             id, and its environment stay.
           </p>
-          <AlertDialog>
-            <AlertDialogTrigger render={<Button variant="outline" size="sm" disabled={close.isPending} />}>
-              {close.isPending ? "Closing…" : "Close bot"}
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Close {botLabel(bot)}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This cannot be undone. Pending events are archived, active runs are cancelled, all conversations
-                  are closed, and webhooks and other bots are refused from now on. The environment is left alone.
-                  To pause instead, use Pause in the header.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep running</AlertDialogCancel>
-                <AlertDialogAction onClick={() => close.mutate()}>Close bot</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button variant="outline" size="sm" disabled={close.isPending} onClick={() => setConfirming("close")}>
+            {close.isPending ? "Closing…" : "Close bot"}
+          </Button>
+          <Modal
+            role="alertdialog"
+            size="sm"
+            open={confirming === "close"}
+            onClose={() => setConfirming(null)}
+            title={`Close ${botLabel(bot)}?`}
+            description="This cannot be undone. Pending events are archived, active runs are cancelled, all conversations are closed, and webhooks and other bots are refused from now on. The environment is left alone. To pause instead, use Pause in the header."
+            footer={
+              <>
+                <Button type="button" variant="outline" onClick={() => setConfirming(null)}>
+                  Keep running
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    setConfirming(null);
+                    close.mutate();
+                  }}
+                >
+                  Close bot
+                </Button>
+              </>
+            }
+          >
+            {null}
+          </Modal>
         </div>
       )}
       <div className="flex min-w-0 items-start justify-between gap-3">
@@ -1072,25 +1070,38 @@ function DangerSection({
           retains its conversations, and frees the id{closed ? "." : " — it closes the bot first."} Environments and
           profiles are never deleted with a bot.
         </p>
-        <AlertDialog>
-          <AlertDialogTrigger render={<Button variant="destructive" size="sm" disabled={remove.isPending} />}>
-            {remove.isPending ? "Deleting…" : "Delete bot"}
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete {botLabel(bot)}?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {closed
-                  ? "The record and its event history are erased. Conversation history is retained; the id becomes available again."
-                  : "The bot is closed first (runs cancelled, conversations closed, events refused), then the record and its event history are erased. Conversation history is retained and the id becomes available again."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Keep</AlertDialogCancel>
-              <AlertDialogAction onClick={() => remove.mutate()}>Delete bot</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button variant="destructive" size="sm" disabled={remove.isPending} onClick={() => setConfirming("delete")}>
+          {remove.isPending ? "Deleting…" : "Delete bot"}
+        </Button>
+        <Modal
+          role="alertdialog"
+          size="sm"
+          open={confirming === "delete"}
+          onClose={() => setConfirming(null)}
+          title={`Delete ${botLabel(bot)}?`}
+          description={closed
+            ? "The record and its event history are erased. Conversation history is retained; the id becomes available again."
+            : "The bot is closed first (runs cancelled, conversations closed, events refused), then the record and its event history are erased. Conversation history is retained and the id becomes available again."}
+          footer={
+            <>
+              <Button type="button" variant="outline" onClick={() => setConfirming(null)}>
+                Keep
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => {
+                  setConfirming(null);
+                  remove.mutate();
+                }}
+              >
+                Delete bot
+              </Button>
+            </>
+          }
+        >
+          {null}
+        </Modal>
       </div>
       {(close.error || remove.error) && (
         <p className="text-xs text-destructive">{close.error?.message ?? remove.error?.message}</p>

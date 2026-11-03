@@ -37,13 +37,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -220,15 +214,14 @@ export function ScheduleFields({
         </p>
       ) : (
         <Field>
-          <FieldLabel>When</FieldLabel>
-          <Select value={form.once ? "once" : "cron"} onValueChange={(value) => setForm({ ...form, once: value === "once" })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cron">On a recurring schedule</SelectItem>
-              <SelectItem value="once">Once, at a specific time</SelectItem>
-            </SelectContent>
+          <FieldLabel htmlFor="schedule-when">When</FieldLabel>
+          <Select
+            id="schedule-when"
+            value={form.once ? "once" : "cron"}
+            onChange={(event) => setForm({ ...form, once: event.target.value === "once" })}
+          >
+            <option value="cron">On a recurring schedule</option>
+            <option value="once">Once, at a specific time</option>
           </Select>
         </Field>
       )}
@@ -1125,18 +1118,16 @@ export function InboxFields({
   return (
     <>
       <Field>
-        <FieldLabel>Allowed senders</FieldLabel>
+        <FieldLabel htmlFor="inbox-from-mode">Allowed senders</FieldLabel>
         <Select
+          id="inbox-from-mode"
           value={form.fromMode}
-          onValueChange={(value) =>
-            value && setForm({ ...form, fromMode: value as InboxFormState["fromMode"] })
+          onChange={(event) =>
+            setForm({ ...form, fromMode: event.target.value as InboxFormState["fromMode"] })
           }
         >
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="any">Any bot in this universe</SelectItem>
-            <SelectItem value="selected">Selected bots</SelectItem>
-          </SelectContent>
+          <option value="any">Any bot in this universe</option>
+          <option value="selected">Selected bots</option>
         </Select>
         <FieldDescription>
           These bots can address this inbox with bot_emit. Narrow further with the filter (CEL sees
@@ -1471,22 +1462,20 @@ export function ChatFields({
       <Field>
         <FieldLabel htmlFor="chat-account">Messaging account</FieldLabel>
         <Select
+          id="chat-account"
+          className="w-full"
           value={form.channelAccountId}
-          onValueChange={(value) => setForm({ ...form, channelAccountId: (value as string | null) ?? "" })}
+          onChange={(event) => setForm({ ...form, channelAccountId: event.target.value })}
         >
-          <SelectTrigger id="chat-account" className="w-full">
-            <SelectValue placeholder="Select an account">
-              {(value: string) => (value ? accountLabel(value) : "Select an account")}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {accountList.map((account) => (
-              <SelectItem key={account.accountId} value={account.accountId} disabled={account.enabled === false}>
-                {account.provider} · {account.displayName}
-                {account.enabled === false && " (disabled)"}
-              </SelectItem>
-            ))}
-          </SelectContent>
+          <option value="" disabled>Select an account</option>
+          {form.channelAccountId && !accountList.some((account) => account.accountId === form.channelAccountId) && (
+            <option value={form.channelAccountId}>{accountLabel(form.channelAccountId)}</option>
+          )}
+          {accountList.map((account) => (
+            <option key={account.accountId} value={account.accountId} disabled={account.enabled === false}>
+              {`${account.provider} · ${account.displayName}${account.enabled === false ? " (disabled)" : ""}`}
+            </option>
+          ))}
         </Select>
         <FieldDescription>
           {accounts.error
@@ -1498,37 +1487,29 @@ export function ChatFields({
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field>
-          <FieldLabel>Conversations</FieldLabel>
+          <FieldLabel htmlFor="chat-scope">Conversations</FieldLabel>
           <Select
+            id="chat-scope"
             value={form.scope}
-            onValueChange={(value) => value && setForm({ ...form, scope: value as ChatFormState["scope"] })}
+            onChange={(event) => setForm({ ...form, scope: event.target.value as ChatFormState["scope"] })}
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Direct chats and groups</SelectItem>
-              <SelectItem value="direct">Direct chats only</SelectItem>
-              <SelectItem value="group">Groups only</SelectItem>
-            </SelectContent>
+            <option value="any">Direct chats and groups</option>
+            <option value="direct">Direct chats only</option>
+            <option value="group">Groups only</option>
           </Select>
         </Field>
         {form.scope !== "direct" && (
           <Field>
-            <FieldLabel>In groups, respond</FieldLabel>
+            <FieldLabel htmlFor="chat-group-activation">In groups, respond</FieldLabel>
             <Select
+              id="chat-group-activation"
               value={form.groupActivation}
-              onValueChange={(value) =>
-                value && setForm({ ...form, groupActivation: value as ChatFormState["groupActivation"] })
+              onChange={(event) =>
+                setForm({ ...form, groupActivation: event.target.value as ChatFormState["groupActivation"] })
               }
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mention">When mentioned or prefixed</SelectItem>
-                <SelectItem value="always">To every message</SelectItem>
-              </SelectContent>
+              <option value="mention">When mentioned or prefixed</option>
+              <option value="always">To every message</option>
             </Select>
           </Field>
         )}
@@ -1560,18 +1541,14 @@ export function ChatFields({
       )}
       <div className="grid grid-cols-2 gap-3">
         <Field>
-          <FieldLabel>Who may talk to the bot</FieldLabel>
+          <FieldLabel htmlFor="chat-access-turn">Who may talk to the bot</FieldLabel>
           <Select
+            id="chat-access-turn"
             value={form.accessTurn}
-            onValueChange={(value) => value && setForm({ ...form, accessTurn: value as ChatFormState["accessTurn"] })}
+            onChange={(event) => setForm({ ...form, accessTurn: event.target.value as ChatFormState["accessTurn"] })}
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="anyone">Anyone in a paired conversation</SelectItem>
-              <SelectItem value="listed">Listed handles only</SelectItem>
-            </SelectContent>
+            <option value="anyone">Anyone in a paired conversation</option>
+            <option value="listed">Listed handles only</option>
           </Select>
         </Field>
         <Field>
@@ -1908,11 +1885,12 @@ export function WebhookFields({
   return (
     <>
       <Field>
-        <FieldLabel>Verification</FieldLabel>
+        <FieldLabel htmlFor="webhook-verification">Verification</FieldLabel>
         <Select
+          id="webhook-verification"
           value={form.preset ? "github" : form.scheme}
-          onValueChange={(value) => {
-            if (!value) return;
+          onChange={(event) => {
+            const value = event.target.value;
             if (value === "github") {
               setForm({
                 ...form,
@@ -1926,14 +1904,9 @@ export function WebhookFields({
             }
           }}
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="token">URL token only</SelectItem>
-            <SelectItem value="hmac-sha256">HMAC-SHA256 signature</SelectItem>
-            <SelectItem value="github">GitHub (signed)</SelectItem>
-          </SelectContent>
+          <option value="token">URL token only</option>
+          <option value="hmac-sha256">HMAC-SHA256 signature</option>
+          <option value="github">GitHub (signed)</option>
         </Select>
         <FieldDescription>
           The ingest URL always carries a secret token; a signature additionally authenticates the
@@ -2013,28 +1986,24 @@ function DeliveryFieldsBody<T extends DeliveryFormState>({
   return (
     <>
       <Field>
-        <FieldLabel>Sessions</FieldLabel>
+        <FieldLabel htmlFor="trigger-route-policy">Sessions</FieldLabel>
         <Select
+          id="trigger-route-policy"
           value={form.routePolicy}
-          onValueChange={(value) => value && setForm({ ...form, routePolicy: value as DeliveryFormState["routePolicy"] })}
+          onChange={(event) => setForm({ ...form, routePolicy: event.target.value as DeliveryFormState["routePolicy"] })}
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {chat ? (
-              <>
-                <SelectItem value="perKey">One session per conversation</SelectItem>
-                <SelectItem value="perEvent">One session per message</SelectItem>
-              </>
-            ) : (
-              <>
-                <SelectItem value="bot">Deliver to the main session</SelectItem>
-                <SelectItem value="perKey">One session per key</SelectItem>
-                <SelectItem value="perEvent">One session per event</SelectItem>
-              </>
-            )}
-          </SelectContent>
+          {chat ? (
+            <>
+              <option value="perKey">One session per conversation</option>
+              <option value="perEvent">One session per message</option>
+            </>
+          ) : (
+            <>
+              <option value="bot">Deliver to the main session</option>
+              <option value="perKey">One session per key</option>
+              <option value="perEvent">One session per event</option>
+            </>
+          )}
         </Select>
       </Field>
       {form.routePolicy === "perKey" && (
@@ -2057,21 +2026,17 @@ function DeliveryFieldsBody<T extends DeliveryFormState>({
       {form.routePolicy !== "bot" && (
         <div className="grid grid-cols-2 gap-3">
           <Field>
-            <FieldLabel>Idle close</FieldLabel>
+            <FieldLabel htmlFor="trigger-close-mode">Idle close</FieldLabel>
             <Select
+              id="trigger-close-mode"
               value={form.closeMode}
-              onValueChange={(value) =>
-                value && setForm({ ...form, closeMode: value as DeliveryFormState["closeMode"] })
+              onChange={(event) =>
+                setForm({ ...form, closeMode: event.target.value as DeliveryFormState["closeMode"] })
               }
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="inherit">Inherit the bot's setting</SelectItem>
-                <SelectItem value="forever">Keep sessions forever</SelectItem>
-                <SelectItem value="hours">Close idle sessions after…</SelectItem>
-              </SelectContent>
+              <option value="inherit">Inherit the bot's setting</option>
+              <option value="forever">Keep sessions forever</option>
+              <option value="hours">Close idle sessions after…</option>
             </Select>
           </Field>
           {form.closeMode === "hours" && (
@@ -2145,21 +2110,17 @@ function DeliveryFieldsBody<T extends DeliveryFormState>({
         as one batch. Leave debounce empty to deliver each event individually.
       </p>
       <Field>
-        <FieldLabel>While the session is busy</FieldLabel>
+        <FieldLabel htmlFor="trigger-when-busy">While the session is busy</FieldLabel>
         <Select
+          id="trigger-when-busy"
           value={form.whenBusy}
-          onValueChange={(value) =>
-            value && setForm({ ...form, whenBusy: value as DeliveryFormState["whenBusy"] })
+          onChange={(event) =>
+            setForm({ ...form, whenBusy: event.target.value as DeliveryFormState["whenBusy"] })
           }
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="queue">Queue a run for when it finishes</SelectItem>
-            <SelectItem value="steer">Steer the active run</SelectItem>
-            <SelectItem value="append">Append as context only (never runs)</SelectItem>
-          </SelectContent>
+          <option value="queue">Queue a run for when it finishes</option>
+          <option value="steer">Steer the active run</option>
+          <option value="append">Append as context only (never runs)</option>
         </Select>
       </Field>
     </>
@@ -2297,25 +2258,21 @@ export function PollFields({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field>
-          <FieldLabel>New-item detection</FieldLabel>
+          <FieldLabel htmlFor="poll-dedupe">New-item detection</FieldLabel>
           <Select
+            id="poll-dedupe"
             value={form.dedupe}
-            onValueChange={(value) =>
-              value &&
+            onChange={(event) => {
+              const value = event.target.value;
               setForm({
                 ...form,
                 dedupe: value as PollFormState["dedupe"],
                 dedupeField: form.dedupeField || (value === "idSet" ? "id" : "updated_at"),
-              })
-            }
+              });
+            }}
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="idSet">Unseen id</SelectItem>
-              <SelectItem value="watermark">Increasing field</SelectItem>
-            </SelectContent>
+            <option value="idSet">Unseen id</option>
+            <option value="watermark">Increasing field</option>
           </Select>
         </Field>
         <Field>

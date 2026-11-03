@@ -1,7 +1,7 @@
 import { DeletedSessionsDialog } from "@/components/admin/deleted-sessions";
 import { universeSlugSchema } from "@lightspeed-ai/platform-shared";
 import { ReadError } from "@/components/read-error";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
@@ -12,27 +12,9 @@ import {
   type UniverseReconcile,
   type UniverseSlugSyncResult,
 } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -64,6 +46,8 @@ export function AdminUniversesPage() {
   const [deletedUniverse, setDeletedUniverse] = useState<Universe | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [adopting, setAdopting] = useState<EngineUniverse | null>(null);
+  const [purging, setPurging] = useState<Universe | null>(null);
+  const [deletingOrphan, setDeletingOrphan] = useState<EngineUniverse | null>(null);
 
   const reconcile = useQuery({
     queryKey: ["universes-reconcile"],
@@ -215,41 +199,14 @@ export function AdminUniversesPage() {
                         >
                           Restore
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive"
-                              />
-                            }
-                          >
-                            Delete
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Permanently delete {universe.name}?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Purges everything engine-side (sessions, profiles,
-                                workspaces, blobs) and removes the universe, its
-                                members, and bots from the platform. This
-                                cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive text-white hover:bg-destructive/90"
-                                onClick={() => purge.mutate(universe.id)}
-                              >
-                                Delete permanently
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive"
+                          onClick={() => setPurging(universe)}
+                        >
+                          Delete
+                        </Button>
                       </>
                     )}
                   </TableActionsCell>
@@ -297,41 +254,14 @@ export function AdminUniversesPage() {
                       >
                         Adopt
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive"
-                            />
-                          }
-                        >
-                          Delete
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Delete this engine universe?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Purges {orphan.sessions ?? 0} session(s) and{" "}
-                              {formatBytes(orphan.blobBytes ?? 0)} of blobs from the
-                              engine. No platform state is involved. This cannot be
-                              undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-white hover:bg-destructive/90"
-                              onClick={() => deleteOrphan.mutate(orphan.universeId)}
-                            >
-                              Delete permanently
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive"
+                        onClick={() => setDeletingOrphan(orphan)}
+                      >
+                        Delete
+                      </Button>
                     </TableActionsCell>
                   </TableRow>
                 ))}
@@ -340,6 +270,52 @@ export function AdminUniversesPage() {
           </TableCard>
         </section>
       )}
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={purging !== null}
+        onClose={() => setPurging(null)}
+        title={`Permanently delete ${purging?.name ?? ""}?`}
+        description="Purges everything engine-side (sessions, profiles, workspaces, blobs) and removes the universe, its members, and bots from the platform. This cannot be undone."
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setPurging(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (purging) purge.mutate(purging.id);
+              setPurging(null);
+            }}
+          >
+            Delete permanently
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={deletingOrphan !== null}
+        onClose={() => setDeletingOrphan(null)}
+        title="Delete this engine universe?"
+        description={`Purges ${deletingOrphan?.sessions ?? 0} session(s) and ${formatBytes(deletingOrphan?.blobBytes ?? 0)} of blobs from the engine. No platform state is involved. This cannot be undone.`}
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setDeletingOrphan(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (deletingOrphan) deleteOrphan.mutate(deletingOrphan.universeId);
+              setDeletingOrphan(null);
+            }}
+          >
+            Delete permanently
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
       <AdoptDialog
         key={adopting?.universeId ?? "closed"}
         orphan={adopting}
@@ -387,6 +363,7 @@ export function AdoptDialog({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const adopt = useMutation({
     mutationFn: () =>
@@ -418,49 +395,44 @@ export function AdoptDialog({
   };
 
   return (
-    <Dialog open={orphan !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Adopt engine universe</DialogTitle>
-          <DialogDescription>
-            Creates the Platform display entry linked to{" "}
-            <span className="font-mono text-xs">{orphan?.universeId}</span>. Engine
-            permissions are managed separately.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="adopt-name">Name</FieldLabel>
-            <Input
-              id="adopt-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Adopted universe"
-              autoFocus
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="adopt-slug">Slug</FieldLabel>
-            <Input id="adopt-slug" value={orphan?.slug ?? slug}
-              onChange={(e) => setSlug(e.target.value)} readOnly={!!orphan?.slug}
-              required maxLength={128} placeholder="my-universe" />
-            <p className="text-sm text-muted-foreground">
-              {orphan?.slug ? "Uses the existing runtime slug. Rename it separately in runtime if needed."
-                : "Required for Platform URLs. This assigns the slug to the runtime universe."}
-            </p>
-          </Field>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={adopt.isPending}>
-              {adopt.isPending ? "Adopting…" : "Adopt"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={orphan !== null}
+      onClose={() => onOpenChange(false)}
+      title="Adopt engine universe"
+      description={`Creates the Platform display entry linked to ${orphan?.universeId ?? ""}. Engine permissions are managed separately.`}
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={adopt.isPending}>
+          {adopt.isPending ? "Adopting…" : "Adopt"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="adopt-name">Name</FieldLabel>
+          <Input
+            id="adopt-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Adopted universe"
+            autoFocus
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="adopt-slug">Slug</FieldLabel>
+          <Input id="adopt-slug" value={orphan?.slug ?? slug}
+            onChange={(e) => setSlug(e.target.value)} readOnly={!!orphan?.slug}
+            required maxLength={128} placeholder="my-universe" />
+          <p className="text-sm text-muted-foreground">
+            {orphan?.slug ? "Uses the existing runtime slug. Rename it separately in runtime if needed."
+              : "Required for Platform URLs. This assigns the slug to the runtime universe."}
+          </p>
+        </Field>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 

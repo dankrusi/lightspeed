@@ -12,28 +12,6 @@ vi.mock("@/api", async (original) => ({ ...await original<typeof import("@/api")
 vi.mock("@/lib/universes", () => ({
   useActiveUniverse: () => ({ universe: { id: "universe", slug: "test", name: "Test", role: mocks.role }, slug: "test", isLoading: false }),
 }));
-// JSDOM has no popup layout; keep the real options and exercise changes with a native select.
-vi.mock("@/components/ui/select", async () => {
-  const React = await import("react");
-  const Part = () => null;
-  return {
-    Select: ({ value, onValueChange, children, disabled }: { value: string; onValueChange: (value: string) => void; children: React.ReactNode; disabled?: boolean }) => {
-      const options: { value: string; label: React.ReactNode }[] = [];
-      const visit = (children: React.ReactNode) => React.Children.forEach(children, (child) => {
-        if (!React.isValidElement(child)) return;
-        const props = child.props as { value?: string; children?: React.ReactNode };
-        if (props.value !== undefined) options.push({ value: props.value, label: props.children });
-        else if (props.children) visit(props.children);
-      });
-      visit(children);
-      return <select aria-label="Role" value={value} disabled={disabled} onChange={(event) => onValueChange(event.target.value)}>
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>;
-    },
-    SelectContent: Part, SelectItem: Part, SelectTrigger: Part, SelectValue: Part,
-  };
-});
-
 const members = [
   { id: "member-alice", userId: "alice", name: "Alice", email: "alice@example.test", role: "contributor", createdAt: "" },
   { id: "member-bob", userId: "bob", name: "Bob", email: "bob@example.test", role: "viewer", createdAt: "" },
@@ -76,7 +54,9 @@ function button(label: string) {
   return [...document.body.querySelectorAll<HTMLButtonElement>("button")].find((node) => node.textContent?.trim() === label);
 }
 async function chooseMemberRole(role: string) {
-  const select = document.querySelector<HTMLSelectElement>('[role="dialog"] select[aria-label="Role"]')!;
+  const label = [...document.querySelectorAll<HTMLLabelElement>('[role="dialog"] label')].find((node) => node.textContent === "Role")!;
+  const select = document.getElementById(label.htmlFor) as HTMLSelectElement;
+  expect(select.tagName).toBe("SELECT");
   await act(async () => {
     select.value = role;
     select.dispatchEvent(new Event("change", { bubbles: true }));

@@ -4,7 +4,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { api } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { LoadingNote } from "@/components/page";
 
 type Universe = { id: string; name: string };
@@ -82,11 +82,20 @@ function DeletedSessionsContent({ universe, onClose }: { universe: Universe; onC
     prepareAll.reset(); purge.reset(); setNotice(null);
     setConfirmation({ ids: selectedIds, all: false });
   };
-  return <Dialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
-    <DialogContent>
-      <DialogHeader><DialogTitle>Deleted sessions · {universe.name}</DialogTitle>
-        <DialogDescription>These sessions are hidden from everyone in the universe. Select sessions to purge, or purge all deleted sessions in this universe.</DialogDescription>
-      </DialogHeader>
+  return <Modal
+    open
+    onClose={() => { if (!busy) onClose(); }}
+    title={`Deleted sessions · ${universe.name}`}
+    description="These sessions are hidden from everyone in the universe. Select sessions to purge, or purge all deleted sessions in this universe."
+    footer={confirmation ? <>
+      <Button variant="outline" disabled={busy} onClick={() => { setConfirmation(null); purge.reset(); }}>Back</Button>
+      <Button variant="destructive" disabled={busy} onClick={() => purge.mutate(confirmation.ids)}>{purge.isPending ? "Purging…" : purge.data?.failures.length ? "Retry failed" : confirmation.all ? "Purge all" : "Purge selected"}</Button>
+    </> : <>
+      <Button variant="outline" disabled={busy || rows.length === 0} onClick={() => { purge.reset(); prepareAll.mutate(); }}>{prepareAll.isPending ? "Collecting sessions…" : "Purge all…"}</Button>
+      <Button variant="destructive" disabled={busy || selectedIds.length === 0} onClick={reviewSelected}>Purge selected…</Button>
+    </>}
+  >
+    <div className="grid gap-4">
       {notice && <p role="status" className="text-sm">{notice}</p>}
       {confirmation ? <>
         <p>Permanently delete {confirmation.all ? "all " : ""}<strong>{confirmation.ids.length} {confirmation.ids.length === 1 ? "selected session" : "selected sessions"}</strong> and their deleted history forks and delegated children? This cannot be undone.</p>
@@ -94,10 +103,6 @@ function DeletedSessionsContent({ universe, onClose }: { universe: Universe; onC
         {!!purge.data?.failures.length && <div role="alert" className="max-h-32 overflow-auto text-sm text-destructive">
           {purge.data.failures.map(({ id, error }) => <p key={id}>{id}: {error}</p>)}
         </div>}
-        <DialogFooter>
-          <Button variant="outline" disabled={busy} onClick={() => { setConfirmation(null); purge.reset(); }}>Back</Button>
-          <Button variant="destructive" disabled={busy} onClick={() => purge.mutate(confirmation.ids)}>{purge.isPending ? "Purging…" : purge.data?.failures.length ? "Retry failed" : confirmation.all ? "Purge all" : "Purge selected"}</Button>
-        </DialogFooter>
       </> : <>
         {sessions.isLoading && <LoadingNote />}
         {sessions.error && <p role="alert">{sessions.error.message}</p>}
@@ -118,11 +123,7 @@ function DeletedSessionsContent({ universe, onClose }: { universe: Universe; onC
           {sessions.data?.pages[0]?.sessions.length === 0 && <p>No deleted sessions.</p>}
         </div>
         {sessions.hasNextPage && <Button variant="outline" disabled={busy || sessions.isFetchingNextPage} onClick={() => void sessions.fetchNextPage()}>Load more</Button>}
-        <DialogFooter>
-          <Button variant="outline" disabled={busy || rows.length === 0} onClick={() => { purge.reset(); prepareAll.mutate(); }}>{prepareAll.isPending ? "Collecting sessions…" : "Purge all…"}</Button>
-          <Button variant="destructive" disabled={busy || selectedIds.length === 0} onClick={reviewSelected}>Purge selected…</Button>
-        </DialogFooter>
       </>}
-    </DialogContent>
-  </Dialog>;
+    </div>
+  </Modal>;
 }

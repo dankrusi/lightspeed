@@ -10,26 +10,13 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { api, botLabel, type BotControllerSnapshot, type BotStateView, type BotView, type SessionView } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
+import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { SessionActionsMenu } from "@/components/session/session-actions-menu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { activityTone, foldActivity } from "@/components/activity-dot";
 import type { SessionActivity } from "@lightspeed-ai/sdk";
 import { cn } from "@/lib/utils";
@@ -283,7 +270,6 @@ export function BotDetail({
         onOpenChange={setSettingsOpen}
         title={`Bot Settings (${botLabel(bot)})`}
         description="Identity, job, triggers, session profile, collaborators, guardrails, and lifecycle."
-        contentClassName="sm:max-w-4xl"
       >
         <BotSetup universeId={universeId} slug={slug} bot={bot} state={state} manage={manage} />
       </BotEditorDialog>
@@ -324,45 +310,46 @@ function OverflowTabs({ tabs, sessionHref }: { tabs: ConversationTab[]; sessionH
   const threads = tabs.filter((tab) => tab.kind !== "subagent");
   const subagents = tabs.filter((tab) => tab.kind === "subagent");
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button
-            type="button"
-            className="flex shrink-0 items-center gap-1 border-b-2 border-transparent px-2 py-2 text-sm text-muted-foreground hover:text-foreground"
-          />
-        }
-      >
-        +{tabs.length}
-        <ChevronDown className="size-3.5" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-96 min-w-64 overflow-y-auto">
-        {threads.length > 0 && (
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Threads</DropdownMenuLabel>
-            {threads.map((tab) => (
-              <OverflowItem key={tab.id} tab={tab} onSelect={() => navigate(sessionHref(tab.id))} />
-            ))}
-          </DropdownMenuGroup>
-        )}
-        {threads.length > 0 && subagents.length > 0 && <DropdownMenuSeparator />}
-        {subagents.length > 0 && (
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Sub-agents</DropdownMenuLabel>
-            {subagents.map((tab) => (
-              <OverflowItem key={tab.id} tab={tab} onSelect={() => navigate(sessionHref(tab.id))} />
-            ))}
-          </DropdownMenuGroup>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Menu
+      align="start"
+      className="max-h-96 min-w-64 overflow-y-auto"
+      trigger={({ open, toggle }) => (
+        <button
+          type="button"
+          className="flex shrink-0 items-center gap-1 border-b-2 border-transparent px-2 py-2 text-sm text-muted-foreground hover:text-foreground"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onClick={toggle}
+        >
+          +{tabs.length}
+          <ChevronDown className="size-3.5" />
+        </button>
+      )}
+    >
+      {threads.length > 0 && (
+        <>
+          <MenuLabel>Threads</MenuLabel>
+          {threads.map((tab) => (
+            <OverflowItem key={tab.id} tab={tab} onSelect={() => navigate(sessionHref(tab.id))} />
+          ))}
+        </>
+      )}
+      {threads.length > 0 && subagents.length > 0 && <MenuSeparator />}
+      {subagents.length > 0 && (
+        <>
+          <MenuLabel>Sub-agents</MenuLabel>
+          {subagents.map((tab) => (
+            <OverflowItem key={tab.id} tab={tab} onSelect={() => navigate(sessionHref(tab.id))} />
+          ))}
+        </>
+      )}
+    </Menu>
   );
 }
 
 function OverflowItem({ tab, onSelect }: { tab: ConversationTab; onSelect: () => void }) {
   return (
-    <DropdownMenuItem onClick={onSelect} className="gap-2">
-      <StatusDot tone={activityTone(tab.activity, tab.closed)} />
+    <MenuItem icon={<StatusDot tone={activityTone(tab.activity, tab.closed)} />} onClick={onSelect}>
       <span className="min-w-0 flex-1">
         <span className={cn("block truncate", tab.closed && "text-muted-foreground")}>{tab.label}</span>
         <span className="block truncate text-[11px] text-muted-foreground">{tab.hint}</span>
@@ -370,7 +357,7 @@ function OverflowItem({ tab, onSelect }: { tab: ConversationTab; onSelect: () =>
       {tab.lastActiveMs !== undefined && (
         <span className="shrink-0 text-[11px] text-muted-foreground">{relativeTime(tab.lastActiveMs)}</span>
       )}
-    </DropdownMenuItem>
+    </MenuItem>
   );
 }
 
@@ -438,35 +425,38 @@ function ConversationMenu({
           icon: <ArrowUpRight />,
         }}
         lifecycle={manage && managedHere && bot.closedAtMs == null ? (
-          <DropdownMenuItem disabled={reset.isPending} onClick={() => setResetOpen(true)}>
-            <RotateCcw /> Reset {label}…
-          </DropdownMenuItem>
+          <MenuItem
+            icon={<RotateCcw />}
+            disabled={reset.isPending}
+            onClick={() => {
+              reset.reset();
+              setResetOpen(true);
+            }}
+          >
+            Reset {label}…
+          </MenuItem>
         ) : undefined}
       />
-      <AlertDialog
+      <Modal
+        role="alertdialog"
+        size="sm"
         open={resetOpen && manage}
-        onOpenChange={(open) => {
-          setResetOpen(open);
-          if (open) reset.reset();
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reset {label}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The conversation and its open sub-agents close, and the bot continues in a fresh one
-              with no prior history. Active work finishes first; events already admitted stay queued.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {reset.error && <p className="text-sm text-destructive">{reset.error.message}</p>}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep</AlertDialogCancel>
-            <AlertDialogAction disabled={!manage || reset.isPending} onClick={() => manage && reset.mutate()}>
+        onClose={() => setResetOpen(false)}
+        title={`Reset ${label}?`}
+        description="The conversation and its open sub-agents close, and the bot continues in a fresh one with no prior history. Active work finishes first; events already admitted stay queued."
+        footer={
+          <>
+            <Button type="button" variant="outline" onClick={() => setResetOpen(false)}>
+              Keep
+            </Button>
+            <Button type="button" variant="destructive" disabled={!manage || reset.isPending} onClick={() => manage && reset.mutate()}>
               {reset.isPending ? "Resetting…" : "Reset"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </>
+        }
+      >
+        {reset.error && <p className="text-sm text-destructive">{reset.error.message}</p>}
+      </Modal>
     </>
   );
 }

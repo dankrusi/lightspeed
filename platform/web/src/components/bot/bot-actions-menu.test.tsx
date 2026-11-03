@@ -1,25 +1,8 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { BotActionsMenu } from "./bot-actions-menu";
-
-// The menu's contents are what is under test, not the popup: render every
-// primitive in place, separators as <hr>.
-vi.mock("@/components/ui/dropdown-menu", () => {
-  const pass = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
-  return {
-    DropdownMenu: pass,
-    DropdownMenuTrigger: () => null,
-    DropdownMenuContent: pass,
-    DropdownMenuGroup: pass,
-    DropdownMenuLabel: pass,
-    DropdownMenuItem: ({ children, onClick }: { children?: ReactNode; onClick?: () => void }) => (
-      <button type="button" onClick={onClick}>{children}</button>
-    ),
-    DropdownMenuSeparator: () => <hr />,
-  };
-});
 
 let root: Root;
 let container: HTMLDivElement;
@@ -35,13 +18,18 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
+/** Opens the menu and reads its text, one entry per group between separators. */
 async function groups(props: Partial<Parameters<typeof BotActionsMenu>[0]>): Promise<string[]> {
   await act(async () => root.render(<BotActionsMenu botId="helper" onSettings={() => undefined} {...props} />));
-  return container.innerHTML.split("<hr>").map((html) => {
-    const part = document.createElement("div");
-    part.innerHTML = html;
-    return part.textContent?.trim() ?? "";
-  });
+  const trigger = container.querySelector<HTMLButtonElement>('button[aria-label="Bot actions"]')!;
+  if (trigger.getAttribute("aria-expanded") !== "true") await act(async () => trigger.click());
+  const menu = container.querySelector('[role="menu"]')!;
+  const parts: string[] = [""];
+  for (const child of menu.children) {
+    if (child.getAttribute("role") === "separator") parts.push("");
+    else parts[parts.length - 1] += ` ${child.textContent ?? ""}`;
+  }
+  return parts.map((part) => part.trim());
 }
 
 it("offers settings and pausing, then the bot's id", async () => {
@@ -51,7 +39,7 @@ it("offers settings and pausing, then the bot's id", async () => {
   expect(identity).toMatch(/^Bot ID\s*helper/);
   expect(container.querySelector('[aria-label="Copy bot id"]')).not.toBeNull();
   expect(rest).toEqual([]);
-  const pause = [...container.querySelectorAll("button")].find((button) => button.textContent === "Pause bot")!;
+  const pause = [...container.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === "Pause bot") as HTMLElement;
   await act(async () => pause.click());
   expect(onToggle).toHaveBeenCalledOnce();
 });

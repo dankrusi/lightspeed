@@ -3,17 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api, type Universe } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -224,6 +214,7 @@ function DangerZone({ universe }: { universe: Universe }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const archived = universe.status === "archived";
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const setStatus = useMutation({
     mutationFn: (status: "active" | "archived") =>
@@ -251,29 +242,36 @@ function DangerZone({ universe }: { universe: Universe }) {
             Restore universe
           </Button>
         ) : (
-          <AlertDialog>
-            <AlertDialogTrigger render={<Button variant="destructive" />}>
+          <>
+            <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
               Archive universe
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Archive {universe.name}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  The universe will be hidden from the switcher. This does not
-                  stop bots or chats, revoke API keys, or block existing access.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-white hover:bg-destructive/90"
-                  onClick={() => setStatus.mutate("archived")}
+            </Button>
+            <Modal
+              role="alertdialog"
+              size="sm"
+              open={confirmOpen}
+              onClose={() => setConfirmOpen(false)}
+              title={`Archive ${universe.name}?`}
+              description="The universe will be hidden from the switcher. This does not stop bots or chats, revoke API keys, or block existing access."
+              footer={<>
+                <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    setStatus.mutate("archived");
+                    setConfirmOpen(false);
+                  }}
                 >
                   Archive
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </>}
+            >
+              {null}
+            </Modal>
+          </>
         )}
       </CardFooter>
     </Card>

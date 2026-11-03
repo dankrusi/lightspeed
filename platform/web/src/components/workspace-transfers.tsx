@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useId,
   useRef,
   useState,
   type ReactNode,
@@ -40,21 +41,10 @@ import {
 } from "@/lib/workspace-transfers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { cn } from "@/lib/utils";
 
 type UploadReview = {
@@ -160,6 +150,9 @@ export function WorkspaceTransfers({
   const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const renameFormId = useId();
+  const folderFormId = useId();
+  const workspaceRenameFormId = useId();
   const invalidate = () =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: treeKey }),
@@ -726,385 +719,339 @@ export function WorkspaceTransfers({
             event.target.value = "";
           }}
         />
-        <Dialog
+        <Modal
           open={!!renaming}
-          onOpenChange={(open) => {
-            if (!open && !busy) setRenaming(null);
-          }}
-        >
-          <DialogContent>
-            <form
-              className="grid gap-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void confirmRename();
-              }}
+          onClose={() => setRenaming(null)}
+          dismissible={!busy}
+          title={`Rename ${renaming?.directory ? "folder" : "file"}`}
+          description={`Choose a new name for “${renaming?.path}”.`}
+          footer={<>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setRenaming(null)}
             >
-              <DialogHeader>
-                <DialogTitle>
-                  Rename {renaming?.directory ? "folder" : "file"}
-                </DialogTitle>
-                <DialogDescription>
-                  Choose a new name for “{renaming?.path}”.
-                </DialogDescription>
-              </DialogHeader>
-              <label className="grid gap-2 text-sm">
-                {renaming?.directory ? "Folder name" : "File name"}
-                <Input
-                  autoFocus
-                  required
-                  value={renaming?.name ?? ""}
-                  disabled={busy}
-                  onFocus={(event) => {
-                    const input = event.currentTarget;
-                    const extension = input.value.lastIndexOf(".");
-                    input.setSelectionRange(
-                      0,
-                      !renaming?.directory && extension > 0
-                        ? extension
-                        : input.value.length,
-                    );
-                  }}
-                  onChange={(event) => {
-                    if (renaming)
-                      setRenaming({
-                        ...renaming,
-                        name: event.target.value,
-                        error: undefined,
-                      });
-                  }}
-                />
-              </label>
-              {renaming?.error && (
-                <p role="alert" className="text-sm text-destructive">
-                  {renaming.error}
-                </p>
-              )}
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => setRenaming(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={
-                    busy ||
-                    !renaming?.name.trim() ||
-                    renaming.name === renaming.path.split("/").at(-1)
-                  }
-                >
-                  {busy ? "Renaming…" : "Rename"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-        <Dialog
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form={renameFormId}
+              disabled={
+                busy ||
+                !renaming?.name.trim() ||
+                renaming.name === renaming.path.split("/").at(-1)
+              }
+            >
+              {busy ? "Renaming…" : "Rename"}
+            </Button>
+          </>}
+        >
+          <form
+            id={renameFormId}
+            className="grid gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void confirmRename();
+            }}
+          >
+            <label className="grid gap-2 text-sm">
+              {renaming?.directory ? "Folder name" : "File name"}
+              <Input
+                autoFocus
+                required
+                value={renaming?.name ?? ""}
+                disabled={busy}
+                onFocus={(event) => {
+                  const input = event.currentTarget;
+                  const extension = input.value.lastIndexOf(".");
+                  input.setSelectionRange(
+                    0,
+                    !renaming?.directory && extension > 0
+                      ? extension
+                      : input.value.length,
+                  );
+                }}
+                onChange={(event) => {
+                  if (renaming)
+                    setRenaming({
+                      ...renaming,
+                      name: event.target.value,
+                      error: undefined,
+                    });
+                }}
+              />
+            </label>
+            {renaming?.error && (
+              <p role="alert" className="text-sm text-destructive">
+                {renaming.error}
+              </p>
+            )}
+          </form>
+        </Modal>
+        <Modal
           open={!!folder}
-          onOpenChange={(open) => {
-            if (!open && !busy) setFolder(null);
-          }}
-        >
-          <DialogContent>
-            <form
-              className="grid gap-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void createFolder();
-              }}
+          onClose={() => setFolder(null)}
+          dismissible={!busy}
+          title="New folder"
+          description={`Create a folder in ${folder?.parent || "the workspace root"}.`}
+          footer={<>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setFolder(null)}
             >
-              <DialogHeader>
-                <DialogTitle>New folder</DialogTitle>
-                <DialogDescription>
-                  Create a folder in {folder?.parent || "the workspace root"}.
-                </DialogDescription>
-              </DialogHeader>
-              <label className="grid gap-2 text-sm">
-                Folder name
-                <Input
-                  autoFocus
-                  required
-                  value={folder?.name ?? ""}
-                  disabled={busy}
-                  onChange={(event) => {
-                    if (folder)
-                      setFolder({
-                        ...folder,
-                        name: event.target.value,
-                        error: undefined,
-                      });
-                  }}
-                />
-              </label>
-              {folder?.error && (
-                <p role="alert" className="text-sm text-destructive">
-                  {folder.error}
-                </p>
-              )}
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => setFolder(null)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={busy || !folder?.name.trim()}>
-                  {busy ? "Creating…" : "Create folder"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-        <Dialog
+              Cancel
+            </Button>
+            <Button type="submit" form={folderFormId} disabled={busy || !folder?.name.trim()}>
+              {busy ? "Creating…" : "Create folder"}
+            </Button>
+          </>}
+        >
+          <form
+            id={folderFormId}
+            className="grid gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void createFolder();
+            }}
+          >
+            <label className="grid gap-2 text-sm">
+              Folder name
+              <Input
+                autoFocus
+                required
+                value={folder?.name ?? ""}
+                disabled={busy}
+                onChange={(event) => {
+                  if (folder)
+                    setFolder({
+                      ...folder,
+                      name: event.target.value,
+                      error: undefined,
+                    });
+                }}
+              />
+            </label>
+            {folder?.error && (
+              <p role="alert" className="text-sm text-destructive">
+                {folder.error}
+              </p>
+            )}
+          </form>
+        </Modal>
+        <Modal
           open={!!error}
-          onOpenChange={(open) => {
-            if (!open) setError(null);
-          }}
+          onClose={() => setError(null)}
+          title="Workspace action couldn’t finish"
+          description={error ?? undefined}
+          footer={<Button onClick={() => setError(null)}>Close</Button>}
         >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Workspace action couldn’t finish</DialogTitle>
-              <DialogDescription>{error}</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button onClick={() => setError(null)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <Dialog
+          {null}
+        </Modal>
+        <Modal
           open={!!review}
-          onOpenChange={(open) => {
-            if (!open && !busy) setReview(null);
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {review?.conflicts.length
-                  ? "Replace existing files?"
-                  : "Upload couldn’t finish"}
-              </DialogTitle>
-              <DialogDescription>
-                {review?.conflicts.length
-                  ? `${review.conflicts.length} ${review.conflicts.length === 1 ? "file already exists" : "files already exist"}. Replace them, or skip them and upload the remaining items. Nothing has been uploaded yet.`
-                  : "Review the error before trying again. Retrying checks the latest workspace contents first."}
-              </DialogDescription>
-            </DialogHeader>
-            {!!review?.conflicts.length && (
-              <ul className="max-h-48 overflow-auto break-all text-sm">
-                {review.conflicts.map((path) => (
-                  <li key={path}>{path}</li>
-                ))}
-              </ul>
-            )}
-            {review?.error && (
-              <p role="alert" className="text-sm text-destructive">
-                {review.error}
-              </p>
-            )}
-            <DialogFooter>
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={() => setReview(null)}
-              >
-                {review?.error ? "Close" : "Cancel"}
-              </Button>
-              {!!review?.conflicts.length && (
-                <Button
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => {
-                    const paths = new Set(review.conflicts);
-                    const remaining = review.entries.filter(
-                      (entry) => !paths.has(entry.path),
-                    );
-                    setReview(null);
-                    if (remaining.length) void upload(async () => remaining);
-                  }}
-                >
-                  Skip existing
-                </Button>
-              )}
-              {!!review?.entries.length && (
-                <Button
-                  disabled={busy}
-                  onClick={() =>
-                    void upload(
-                      async () => review.entries,
-                      review.conflicts.length ? review.revision : undefined,
-                    )
-                  }
-                >
-                  {busy
-                    ? progress
-                    : review.conflicts.length
-                      ? "Replace and upload"
-                      : "Retry"}
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <Dialog
-          open={!!workspaceRenaming}
-          onOpenChange={(open) => {
-            if (!open && !busy) setWorkspaceRenaming(null);
-          }}
-        >
-          <DialogContent>
-            <form
-              className="grid gap-4"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void confirmRenameWorkspace();
-              }}
+          onClose={() => setReview(null)}
+          dismissible={!busy}
+          title={
+            review?.conflicts.length
+              ? "Replace existing files?"
+              : "Upload couldn’t finish"
+          }
+          description={
+            review?.conflicts.length
+              ? `${review.conflicts.length} ${review.conflicts.length === 1 ? "file already exists" : "files already exist"}. Replace them, or skip them and upload the remaining items. Nothing has been uploaded yet.`
+              : "Review the error before trying again. Retrying checks the latest workspace contents first."
+          }
+          footer={<>
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => setReview(null)}
             >
-              <DialogHeader>
-                <DialogTitle>Rename workspace</DialogTitle>
-                <DialogDescription>
-                  Choose a new display name. Connected sessions keep using this
-                  workspace.
-                </DialogDescription>
-              </DialogHeader>
-              <label className="grid gap-2 text-sm">
-                Workspace name
-                <Input
-                  autoFocus
-                  required
-                  maxLength={100}
-                  disabled={busy}
-                  value={workspaceRenaming?.name ?? ""}
-                  onFocus={(event) => event.currentTarget.select()}
-                  onChange={(event) => {
-                    if (workspaceRenaming)
-                      setWorkspaceRenaming({
-                        ...workspaceRenaming,
-                        name: event.target.value,
-                        error: undefined,
-                      });
-                  }}
-                />
-              </label>
-              {workspaceRenaming?.error && (
-                <p role="alert" className="text-sm text-destructive">
-                  {workspaceRenaming.error}
-                </p>
-              )}
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() => setWorkspaceRenaming(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={
-                    busy ||
-                    !canConfigureWorkspace ||
-                    !workspaceRenaming?.name.trim() ||
-                    workspaceRenaming.name.trim() ===
-                      workspaceRenaming.originalName
-                  }
-                >
-                  {busy ? "Renaming…" : "Rename"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-        <Dialog
-          open={!!workspaceDeletion}
-          onOpenChange={(open) => {
-            if (!open && !busy) setWorkspaceDeletion(null);
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete workspace?</DialogTitle>
-              <DialogDescription>
-                “{workspaceDeletion?.name}” will be removed from your workspace
-                list. Previously stored file versions will be retained.
-              </DialogDescription>
-            </DialogHeader>
-            {workspaceDeletion?.error && (
-              <p role="alert" className="text-sm text-destructive">
-                {workspaceDeletion.error}
-              </p>
-            )}
-            <DialogFooter>
+              {review?.error ? "Close" : "Cancel"}
+            </Button>
+            {!!review?.conflicts.length && (
               <Button
                 variant="outline"
                 disabled={busy}
-                onClick={() => setWorkspaceDeletion(null)}
+                onClick={() => {
+                  const paths = new Set(review.conflicts);
+                  const remaining = review.entries.filter(
+                    (entry) => !paths.has(entry.path),
+                  );
+                  setReview(null);
+                  if (remaining.length) void upload(async () => remaining);
+                }}
               >
-                Cancel
+                Skip existing
               </Button>
+            )}
+            {!!review?.entries.length && (
+              <Button
+                disabled={busy}
+                onClick={() =>
+                  void upload(
+                    async () => review.entries,
+                    review.conflicts.length ? review.revision : undefined,
+                  )
+                }
+              >
+                {busy
+                  ? progress
+                  : review.conflicts.length
+                    ? "Replace and upload"
+                    : "Retry"}
+              </Button>
+            )}
+          </>}
+        >
+          {!!review?.conflicts.length && (
+            <ul className="max-h-48 overflow-auto break-all text-sm">
+              {review.conflicts.map((path) => (
+                <li key={path}>{path}</li>
+              ))}
+            </ul>
+          )}
+          {review?.error && (
+            <p role="alert" className="text-sm text-destructive">
+              {review.error}
+            </p>
+          )}
+        </Modal>
+        <Modal
+          open={!!workspaceRenaming}
+          onClose={() => setWorkspaceRenaming(null)}
+          dismissible={!busy}
+          title="Rename workspace"
+          description="Choose a new display name. Connected sessions keep using this workspace."
+          footer={<>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setWorkspaceRenaming(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form={workspaceRenameFormId}
+              disabled={
+                busy ||
+                !canConfigureWorkspace ||
+                !workspaceRenaming?.name.trim() ||
+                workspaceRenaming.name.trim() ===
+                  workspaceRenaming.originalName
+              }
+            >
+              {busy ? "Renaming…" : "Rename"}
+            </Button>
+          </>}
+        >
+          <form
+            id={workspaceRenameFormId}
+            className="grid gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void confirmRenameWorkspace();
+            }}
+          >
+            <label className="grid gap-2 text-sm">
+              Workspace name
+              <Input
+                autoFocus
+                required
+                maxLength={100}
+                disabled={busy}
+                value={workspaceRenaming?.name ?? ""}
+                onFocus={(event) => event.currentTarget.select()}
+                onChange={(event) => {
+                  if (workspaceRenaming)
+                    setWorkspaceRenaming({
+                      ...workspaceRenaming,
+                      name: event.target.value,
+                      error: undefined,
+                    });
+                }}
+              />
+            </label>
+            {workspaceRenaming?.error && (
+              <p role="alert" className="text-sm text-destructive">
+                {workspaceRenaming.error}
+              </p>
+            )}
+          </form>
+        </Modal>
+        <Modal
+          open={!!workspaceDeletion}
+          onClose={() => setWorkspaceDeletion(null)}
+          dismissible={!busy}
+          title="Delete workspace?"
+          description={`“${workspaceDeletion?.name}” will be removed from your workspace list. Previously stored file versions will be retained.`}
+          footer={<>
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => setWorkspaceDeletion(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={busy || !canConfigureWorkspace}
+              onClick={() => void confirmDeleteWorkspace()}
+            >
+              {busy ? "Deleting…" : "Delete workspace"}
+            </Button>
+          </>}
+        >
+          {workspaceDeletion?.error && (
+            <p role="alert" className="text-sm text-destructive">
+              {workspaceDeletion.error}
+            </p>
+          )}
+        </Modal>
+        <Modal
+          open={!!deletion}
+          onClose={() => setDeletion(null)}
+          dismissible={!busy}
+          title={`Delete ${deletion?.directory ? "folder" : "file"}?`}
+          description={
+            deletion?.directory
+              ? `“${deletion.path}” and all files and folders inside it will be removed from this workspace.`
+              : `“${deletion?.path}” will be removed from this workspace.`
+          }
+          footer={<>
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => setDeletion(null)}
+            >
+              {deletion?.error ? "Close" : "Cancel"}
+            </Button>
+            {!deletion?.error && (
               <Button
                 variant="destructive"
-                disabled={busy || !canConfigureWorkspace}
-                onClick={() => void confirmDeleteWorkspace()}
-              >
-                {busy ? "Deleting…" : "Delete workspace"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        <Dialog
-          open={!!deletion}
-          onOpenChange={(open) => {
-            if (!open && !busy) setDeletion(null);
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                Delete {deletion?.directory ? "folder" : "file"}?
-              </DialogTitle>
-              <DialogDescription>
-                {deletion?.directory
-                  ? `“${deletion.path}” and all files and folders inside it will be removed from this workspace.`
-                  : `“${deletion?.path}” will be removed from this workspace.`}
-              </DialogDescription>
-            </DialogHeader>
-            {deletion?.error && (
-              <p role="alert" className="text-sm text-destructive">
-                {deletion.error}
-              </p>
-            )}
-            <DialogFooter>
-              <Button
-                variant="outline"
                 disabled={busy}
-                onClick={() => setDeletion(null)}
+                onClick={() => void confirmDelete()}
               >
-                {deletion?.error ? "Close" : "Cancel"}
+                {busy
+                  ? "Deleting…"
+                  : deletion?.directory
+                    ? "Delete folder"
+                    : "Delete file"}
               </Button>
-              {!deletion?.error && (
-                <Button
-                  variant="destructive"
-                  disabled={busy}
-                  onClick={() => void confirmDelete()}
-                >
-                  {busy
-                    ? "Deleting…"
-                    : deletion?.directory
-                      ? "Delete folder"
-                      : "Delete file"}
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            )}
+          </>}
+        >
+          {deletion?.error && (
+            <p role="alert" className="text-sm text-destructive">
+              {deletion.error}
+            </p>
+          )}
+        </Modal>
       </div>
     </Transfers.Provider>
   );
@@ -1166,23 +1113,22 @@ export function WorkspaceActionsMenu({
       ? "Workspace actions"
       : `${kind === "folder" ? "Folder" : "File"} actions: ${path}`;
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={label}
-            data-workspace-actions
-            tabIndex={tabIndex}
-            title={label}
-            className={cn(
-              "shrink-0 text-muted-foreground",
-              kind !== "workspace" &&
-                "absolute right-0 top-1/2 -translate-y-1/2 bg-background group-hover/tree-row:bg-[color-mix(in_oklch,var(--muted)_50%,var(--background))] group-data-[active=true]/tree-row:bg-muted hover:bg-[color-mix(in_oklch,var(--foreground)_15%,var(--background))]! aria-expanded:bg-[color-mix(in_oklch,var(--foreground)_15%,var(--background))]! [@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover/tree-row:opacity-100! data-popup-open:opacity-100! focus-visible:opacity-100!",
-            )}
-          />
-        }
+    <Menu align="end" className="w-56" trigger={({ open, toggle }) => (
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={toggle}
+        data-workspace-actions
+        tabIndex={tabIndex}
+        title={label}
+        className={cn(
+          "shrink-0 text-muted-foreground",
+          kind !== "workspace" &&
+            "absolute right-0 top-1/2 -translate-y-1/2 bg-background group-hover/tree-row:bg-[color-mix(in_oklch,var(--muted)_50%,var(--background))] group-data-[active=true]/tree-row:bg-muted hover:bg-[color-mix(in_oklch,var(--foreground)_15%,var(--background))]! aria-expanded:bg-[color-mix(in_oklch,var(--foreground)_15%,var(--background))]! [@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover/tree-row:opacity-100! aria-expanded:opacity-100! focus-visible:opacity-100!",
+        )}
       >
         {kind === "workspace" ? (
           <>
@@ -1200,108 +1146,107 @@ export function WorkspaceActionsMenu({
         ) : (
           <Ellipsis />
         )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        {transfers.canUpload && (
-          <>
-            {directory && (
-              <DropdownMenuItem
-                disabled={transfers.busy || disabled}
-                onClick={() => transfers.newFile(path)}
-              >
-                <FilePlus />
-                New file
-              </DropdownMenuItem>
-            )}
-            {directory && (
-              <DropdownMenuItem
-                disabled={transfers.busy || disabled}
-                onClick={() => transfers.newFolder(path)}
-              >
-                <FolderPlus />
-                New folder
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
+      </Button>
+    )}>
+      {transfers.canUpload && (
+        <>
+          {directory && (
+            <MenuItem
+              icon={<FilePlus />}
               disabled={transfers.busy || disabled}
-              onClick={() => transfers.choose(false, path, !directory)}
+              onClick={() => transfers.newFile(path)}
             >
-              <Upload />
-              {directory ? "Upload files" : "Upload replacement…"}
-            </DropdownMenuItem>
-            {directory && (
-              <DropdownMenuItem
-                disabled={transfers.busy || disabled}
-                onClick={() => transfers.choose(true, path)}
-              >
-                <FolderUp />
-                Upload folder
-              </DropdownMenuItem>
-            )}
-          </>
-        )}
-        <DropdownMenuItem
-          disabled={transfers.downloading}
-          onClick={() => transfers.download(path, directory)}
-        >
-          <Download />
-          {directory ? "Download as ZIP" : "Download"}
-        </DropdownMenuItem>
-        {path && transfers.canUpload && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
+              New file
+            </MenuItem>
+          )}
+          {directory && (
+            <MenuItem
+              icon={<FolderPlus />}
               disabled={transfers.busy || disabled}
-              onClick={() => transfers.rename(path, directory)}
+              onClick={() => transfers.newFolder(path)}
             >
-              <Pencil />
-              Rename…
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
+              New folder
+            </MenuItem>
+          )}
+          <MenuItem
+            icon={<Upload />}
+            disabled={transfers.busy || disabled}
+            onClick={() => transfers.choose(false, path, !directory)}
+          >
+            {directory ? "Upload files" : "Upload replacement…"}
+          </MenuItem>
+          {directory && (
+            <MenuItem
+              icon={<FolderUp />}
               disabled={transfers.busy || disabled}
-              onClick={() => transfers.remove(path, directory)}
+              onClick={() => transfers.choose(true, path)}
             >
-              <Trash2 />
-              {directory ? "Delete folder…" : "Delete file…"}
-            </DropdownMenuItem>
-          </>
-        )}
-        {kind === "workspace" && transfers.canConfigureWorkspace && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              disabled={transfers.busy || disabled}
-              onClick={transfers.renameWorkspace}
-            >
-              <Pencil />
-              Rename workspace…
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              disabled={transfers.busy || disabled}
-              onClick={transfers.removeWorkspace}
-            >
-              <Trash2 />
-              Delete workspace…
-            </DropdownMenuItem>
-          </>
-        )}
-        {kind === "workspace" && fileCount !== undefined && (
-          <>
-            <DropdownMenuSeparator />
-            <dl
-              aria-label="Workspace information"
-              className="px-2 py-1.5 text-xs text-muted-foreground"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <dt>Files</dt>
-                <dd>{fileCount.toLocaleString()}</dd>
-              </div>
-            </dl>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+              Upload folder
+            </MenuItem>
+          )}
+        </>
+      )}
+      <MenuItem
+        icon={<Download />}
+        disabled={transfers.downloading}
+        onClick={() => transfers.download(path, directory)}
+      >
+        {directory ? "Download as ZIP" : "Download"}
+      </MenuItem>
+      {path && transfers.canUpload && (
+        <>
+          <MenuSeparator />
+          <MenuItem
+            icon={<Pencil />}
+            disabled={transfers.busy || disabled}
+            onClick={() => transfers.rename(path, directory)}
+          >
+            Rename…
+          </MenuItem>
+          <MenuItem
+            danger
+            icon={<Trash2 />}
+            disabled={transfers.busy || disabled}
+            onClick={() => transfers.remove(path, directory)}
+          >
+            {directory ? "Delete folder…" : "Delete file…"}
+          </MenuItem>
+        </>
+      )}
+      {kind === "workspace" && transfers.canConfigureWorkspace && (
+        <>
+          <MenuSeparator />
+          <MenuItem
+            icon={<Pencil />}
+            disabled={transfers.busy || disabled}
+            onClick={transfers.renameWorkspace}
+          >
+            Rename workspace…
+          </MenuItem>
+          <MenuItem
+            danger
+            icon={<Trash2 />}
+            disabled={transfers.busy || disabled}
+            onClick={transfers.removeWorkspace}
+          >
+            Delete workspace…
+          </MenuItem>
+        </>
+      )}
+      {kind === "workspace" && fileCount !== undefined && (
+        <>
+          <MenuSeparator />
+          <dl
+            aria-label="Workspace information"
+            className="px-2 py-1.5 text-xs text-muted-foreground"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <dt>Files</dt>
+              <dd>{fileCount.toLocaleString()}</dd>
+            </div>
+          </dl>
+        </>
+      )}
+    </Menu>
   );
 }

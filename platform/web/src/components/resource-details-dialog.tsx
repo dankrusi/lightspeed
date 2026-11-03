@@ -1,31 +1,28 @@
-import { useRef, type ReactNode, type RefObject } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { cn } from "@/lib/utils";
 
-export function ResourceDetailsDialog({ open, onOpenChange, title, description, icon, finalFocus, children }: {
+export function ResourceDetailsDialog({ open, onOpenChange, title, description, finalFocus, children }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: ReactNode;
-  icon?: ReactNode;
+  description: string;
+  /** Element to focus once the dialog closes, when its opener may no longer hold focus. */
   finalFocus?: RefObject<HTMLElement | null>;
   children: ReactNode;
 }) {
-  const contentRef = useRef<HTMLDivElement | null>(null);
+  // Modal restores focus in its own effect cleanup, which runs before this
+  // effect; restoring here takes precedence over it.
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (wasOpen.current && !open) finalFocus?.current?.focus();
+    wasOpen.current = open;
+  }, [open, finalFocus]);
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent ref={contentRef} initialFocus={contentRef}
-        className="flex max-h-[min(90dvh,860px)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl" finalFocus={finalFocus}>
-        <DialogHeader className="shrink-0 border-b p-6 pr-14">
-          <DialogTitle className="flex min-w-0 items-center gap-2">
-            {icon && <span aria-hidden="true" className="shrink-0">{icon}</span>}
-            <span className="min-w-0 break-words">{title}</span>
-          </DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <div className="grid min-h-0 gap-6 overflow-y-auto p-6">{children}</div>
-      </DialogContent>
-    </Dialog>
+    <Modal open={open} onClose={() => onOpenChange(false)} title={title} description={description} size="lg">
+      {/* Opening focuses the details themselves rather than their first action. */}
+      <div data-autofocus tabIndex={-1} className="grid gap-6 outline-none">{children}</div>
+    </Modal>
   );
 }
 

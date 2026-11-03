@@ -1,5 +1,5 @@
 import { ReadError } from "@/components/read-error";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { slugify } from "@lightspeed-ai/platform-shared";
@@ -9,41 +9,17 @@ import {
   type ProfileDocument,
   type ProfileSummary,
 } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@/components/ui/button";
 import {
   MetadataMapEditor,
 } from "@/components/session/metadata-editor";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
 import { SessionConfigEditor } from "@/components/session/session-config-editor";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailPrompt, ListNote, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";
@@ -216,6 +192,7 @@ function ProfileEditor({
   const [configError, setConfigError] = useState<string | null>(null);
   const [retentionError, setRetentionError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Re-sync on every (re)load — including the refetch after a save, which
   // brings the new revision. The active tab is deliberately left alone.
@@ -368,33 +345,40 @@ function ProfileEditor({
               {save.isPending ? "Saving…" : dirty ? "Save" : "Saved"}
             </Button>
           )}
-          {manage && <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant="ghost" size="icon-sm" className="text-destructive" aria-label="Delete profile" />
-              }
+          {manage && <>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-destructive"
+              aria-label="Delete profile"
+              onClick={() => setConfirmDelete(true)}
             >
               <Trash2 />
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete profile {profileId}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Bots referencing this profile id fall back to the default
-                  configuration.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-destructive text-white hover:bg-destructive/90"
-                  onClick={() => remove.mutate()}
+            </Button>
+            <Modal
+              role="alertdialog"
+              size="sm"
+              open={confirmDelete}
+              onClose={() => setConfirmDelete(false)}
+              title={`Delete profile ${profileId}?`}
+              description="Bots referencing this profile id fall back to the default configuration."
+              footer={<>
+                <Button type="button" variant="outline" onClick={() => setConfirmDelete(false)}>Cancel</Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    remove.mutate();
+                    setConfirmDelete(false);
+                  }}
                 >
                   Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>}
+                </Button>
+              </>}
+            >
+              {null}
+            </Modal>
+          </>}
         </div>
       </header>
       {!manage && (
@@ -645,6 +629,7 @@ function NewProfileDialog({
   const [idTouched, setIdTouched] = useState(false);
   const [sourceProfileId, setSourceProfileId] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const create = useMutation({
     mutationFn: async () => {
@@ -685,100 +670,92 @@ function NewProfileDialog({
     ?? sourceProfileId;
 
   return (
-    <Dialog open={open && canCreate} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New profile</DialogTitle>
-          <DialogDescription>
-            Bots apply it to their sessions via the profile id.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="new-profile-name">Display name</FieldLabel>
-            <Input
-              id="new-profile-name"
-              value={displayName}
-              onChange={(e) => {
-                setDisplayName(e.target.value);
-                if (!idTouched) {
-                  setProfileId(e.target.value ? slugify(e.target.value) : "");
-                }
-              }}
-              placeholder="Owner"
-              autoFocus
-            />
-            {/* The id follows the name until it is edited; it opens on its own when missing. */}
-            <SettingsDisclosure
-              summary={profileId
-                ? <>Id: <code className="font-mono">{profileId}</code></>
-                : "Id derived from the display name"}
-              action="Change"
-              label="Change profile id"
-              forceOpen={Boolean(error) && !profileId}
-            >
-              <Field>
-                <FieldLabel htmlFor="new-profile-id">Profile id</FieldLabel>
-                <Input
-                  id="new-profile-id"
-                  value={profileId}
-                  onChange={(e) => {
-                    setProfileId(e.target.value);
-                    setIdTouched(e.target.value.length > 0);
-                  }}
-                  placeholder="owner"
-                  className="font-mono"
-                />
-                <FieldDescription>
-                  What bots and tooling reference — cannot be changed later.
-                </FieldDescription>
-              </Field>
-            </SettingsDisclosure>
-          </Field>
+    <Modal
+      open={open && canCreate}
+      onClose={() => onOpenChange(false)}
+      title="New profile"
+      description="Bots apply it to their sessions via the profile id."
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={!canCreate || create.isPending}>
+          {create.isPending ? "Creating…" : "Create"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="new-profile-name">Display name</FieldLabel>
+          <Input
+            id="new-profile-name"
+            value={displayName}
+            onChange={(e) => {
+              setDisplayName(e.target.value);
+              if (!idTouched) {
+                setProfileId(e.target.value ? slugify(e.target.value) : "");
+              }
+            }}
+            placeholder="Owner"
+            autoFocus
+          />
+          {/* The id follows the name until it is edited; it opens on its own when missing. */}
           <SettingsDisclosure
-            summary={sourceProfileId ? `Copies ${sourceName}` : "Starts empty"}
+            summary={profileId
+              ? <>Id: <code className="font-mono">{profileId}</code></>
+              : "Id derived from the display name"}
             action="Change"
-            label="Change starting point"
+            label="Change profile id"
+            forceOpen={Boolean(error) && !profileId}
           >
             <Field>
-              <FieldLabel htmlFor="new-profile-source">Start from</FieldLabel>
-              <Select
-                value={sourceProfileId}
-                onValueChange={(value) => setSourceProfileId((value as string) ?? "")}
-              >
-                <SelectTrigger id="new-profile-source" className="w-full">
-                  <SelectValue>
-                    {sourceProfileId ? sourceName : "Empty profile"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Empty profile</SelectItem>
-                  {profiles.map((profile) => (
-                    <SelectItem key={profile.profileId} value={profile.profileId}>
-                      {profile.displayName ?? profile.profileId}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FieldLabel htmlFor="new-profile-id">Profile id</FieldLabel>
+              <Input
+                id="new-profile-id"
+                value={profileId}
+                onChange={(e) => {
+                  setProfileId(e.target.value);
+                  setIdTouched(e.target.value.length > 0);
+                }}
+                placeholder="owner"
+                className="font-mono"
+              />
               <FieldDescription>
-                {sourceProfileId
-                  ? "Copies the profile’s current setup once. Later changes to it are not inherited."
-                  : "Starts with no profile configuration."}
+                What bots and tooling reference — cannot be changed later.
               </FieldDescription>
             </Field>
           </SettingsDisclosure>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!canCreate || create.isPending}>
-              {create.isPending ? "Creating…" : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </Field>
+        <SettingsDisclosure
+          summary={sourceProfileId ? `Copies ${sourceName}` : "Starts empty"}
+          action="Change"
+          label="Change starting point"
+        >
+          <Field>
+            <FieldLabel htmlFor="new-profile-source">Start from</FieldLabel>
+            <Select
+              id="new-profile-source"
+              className="w-full"
+              value={sourceProfileId}
+              onChange={(event) => setSourceProfileId(event.target.value)}
+            >
+              <option value="">Empty profile</option>
+              {profiles.map((profile) => (
+                <option key={profile.profileId} value={profile.profileId}>
+                  {profile.displayName ?? profile.profileId}
+                </option>
+              ))}
+            </Select>
+            <FieldDescription>
+              {sourceProfileId
+                ? "Copies the profile’s current setup once. Later changes to it are not inherited."
+                : "Starts with no profile configuration."}
+            </FieldDescription>
+          </Field>
+        </SettingsDisclosure>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 

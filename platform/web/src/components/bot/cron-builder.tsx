@@ -4,13 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 
 export type CronFrequency = "minutes" | "hourly" | "daily" | "weekdays" | "weekly" | "monthly";
 
@@ -184,20 +178,18 @@ function CronBuilderPanel({
         <p className="text-xs text-muted-foreground">Choose a common pattern, then apply it to the cron field.</p>
       </div>
       <Field>
-        <FieldLabel>Repeat</FieldLabel>
+        <FieldLabel htmlFor="cron-builder-frequency">Repeat</FieldLabel>
         <Select
+          id="cron-builder-frequency"
           value={draft.frequency}
-          onValueChange={(value) => value && setDraft({ ...draft, frequency: value as CronFrequency })}
+          onChange={(event) => setDraft({ ...draft, frequency: event.target.value as CronFrequency })}
         >
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="minutes">Every few minutes</SelectItem>
-            <SelectItem value="hourly">Every hour</SelectItem>
-            <SelectItem value="daily">Every day</SelectItem>
-            <SelectItem value="weekdays">Weekdays</SelectItem>
-            <SelectItem value="weekly">Every week</SelectItem>
-            <SelectItem value="monthly">Every month</SelectItem>
-          </SelectContent>
+          <option value="minutes">Every few minutes</option>
+          <option value="hourly">Every hour</option>
+          <option value="daily">Every day</option>
+          <option value="weekdays">Weekdays</option>
+          <option value="weekly">Every week</option>
+          <option value="monthly">Every month</option>
         </Select>
       </Field>
 
@@ -233,15 +225,13 @@ function CronBuilderPanel({
       {draft.frequency === "weekly" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Field>
-            <FieldLabel>Day</FieldLabel>
+            <FieldLabel htmlFor="cron-builder-weekday">Day</FieldLabel>
             <Select
+              id="cron-builder-weekday"
               value={String(draft.weekday)}
-              onValueChange={(value) => value !== null && setDraft({ ...draft, weekday: Number(value) })}
+              onChange={(event) => setDraft({ ...draft, weekday: Number(event.target.value) })}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {WEEKDAYS.map(([value, label]) => <SelectItem key={value} value={String(value)}>{label}</SelectItem>)}
-              </SelectContent>
+              {WEEKDAYS.map(([value, label]) => <option key={value} value={String(value)}>{label}</option>)}
             </Select>
           </Field>
           <TimeInput draft={draft} setDraft={setDraft} />

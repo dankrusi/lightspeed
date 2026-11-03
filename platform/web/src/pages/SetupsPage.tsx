@@ -1,25 +1,18 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, PackageOpen, RefreshCw, Sparkles } from "lucide-react";
 import type { DeploymentApiKeyView, MethodGroup } from "@lightspeed-ai/sdk";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { api, type UniverseSetup } from "@/api";
 import { KeyPresetField, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";
 import { groupSummary, groupsFor, UNIVERSE_KEY_PRESETS } from "@/lib/method-groups";
 import { useActiveUniverse } from "@/lib/universes";
@@ -243,6 +236,7 @@ function ConfiguratorKeyDialog({
   const [groups, setGroups] = useState<Set<MethodGroup>>(() => new Set(CONFIGURATION_GROUPS));
   const [keyPrefix, setKeyPrefix] = useState("");
   const [secret, setSecret] = useState("");
+  const formId = useId();
   const keys = useQuery({
     queryKey: ["api-keys", universeId],
     queryFn: () => api<DeploymentApiKeyView[]>("GET", `/api/v1/universes/${universeId}/api-keys`),
@@ -270,99 +264,91 @@ function ConfiguratorKeyDialog({
   ];
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Configurator key</DialogTitle>
-          <DialogDescription>
-            The Configurator MCP server acts with this key and offers only the tools it may call.
-            Anyone who can attach the server acts with it.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Key">
-            {options.map((option) => (
-              <Button
-                key={option.kind}
-                type="button"
-                size="sm"
-                variant={kind === option.kind ? "secondary" : "outline"}
-                aria-pressed={kind === option.kind}
-                onClick={() => setKind(option.kind)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          {kind === "current" && setup.resources?.keyPrefix && (
-            <p className="text-sm text-muted-foreground">
-              Keeps <code className="font-mono text-xs">{setup.resources.keyPrefix}</code>
-              {setup.resources.keyGroups ? `, which may call: ${groupSummary("universe", setup.resources.keyGroups)}.` : "."}
-            </p>
-          )}
-          {kind === "new" && (
-            <>
-              <KeyPresetField groups={groups} onChange={setGroups} />
-              <MethodGroupPicker idPrefix="configurator-key" allowed={groupsFor("universe")} chosen={groups} onChange={setGroups} />
-              {hasKey && setup.resources?.keySource !== "existing" && (
-                <p className="text-xs text-muted-foreground">The Configurator's current key is revoked.</p>
-              )}
-            </>
-          )}
-          {kind === "existing" && (
-            <>
-              <Field>
-                <FieldLabel htmlFor="configurator-existing-key">Key</FieldLabel>
-                <Select value={keyPrefix} onValueChange={(value) => setKeyPrefix(value as string)}>
-                  <SelectTrigger id="configurator-existing-key" className="w-full">
-                    <SelectValue placeholder={keys.isLoading ? "Loading keys…" : "Choose a key"}>
-                      {(value: string) => {
-                        const key = activeKeys.find((candidate) => candidate.keyPrefix === value);
-                        return key ? `${key.displayName ?? "Unnamed key"} · ${key.keyPrefix}` : value;
-                      }}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activeKeys.map((key) => (
-                      <SelectItem key={key.keyPrefix} value={key.keyPrefix}>
-                        {key.displayName ?? "Unnamed key"} · {key.keyPrefix}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldDescription>
-                  {chosen
-                    ? `May call: ${groupSummary("universe", chosen.groups)}`
-                    : "Only this universe's active keys."}
-                </FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="configurator-existing-secret">Secret</FieldLabel>
-                <Input
-                  id="configurator-existing-secret"
-                  type="password"
-                  autoComplete="off"
-                  value={secret}
-                  onChange={(event) => setSecret(event.target.value)}
-                  placeholder="lsk_…"
-                />
-                <FieldDescription>
-                  Lightspeed keeps only a hash of each key, so paste the secret shown when the key was
-                  created. It is checked against the chosen key and stored encrypted. Replacing this key
-                  later never revokes it.
-                </FieldDescription>
-              </Field>
-            </>
-          )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-            <Button type="submit" disabled={pending || !ready}>
-              {pending ? "Installing…" : "Install"}
+    <Modal
+      open
+      onClose={onCancel}
+      title="Configurator key"
+      description="The Configurator MCP server acts with this key and offers only the tools it may call. Anyone who can attach the server acts with it."
+      footer={<>
+        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" form={formId} disabled={pending || !ready}>
+          {pending ? "Installing…" : "Install"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Key">
+          {options.map((option) => (
+            <Button
+              key={option.kind}
+              type="button"
+              size="sm"
+              variant={kind === option.kind ? "secondary" : "outline"}
+              aria-pressed={kind === option.kind}
+              onClick={() => setKind(option.kind)}
+            >
+              {option.label}
             </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          ))}
+        </div>
+        {kind === "current" && setup.resources?.keyPrefix && (
+          <p className="text-sm text-muted-foreground">
+            Keeps <code className="font-mono text-xs">{setup.resources.keyPrefix}</code>
+            {setup.resources.keyGroups ? `, which may call: ${groupSummary("universe", setup.resources.keyGroups)}.` : "."}
+          </p>
+        )}
+        {kind === "new" && (
+          <>
+            <KeyPresetField groups={groups} onChange={setGroups} />
+            <MethodGroupPicker idPrefix="configurator-key" allowed={groupsFor("universe")} chosen={groups} onChange={setGroups} />
+            {hasKey && setup.resources?.keySource !== "existing" && (
+              <p className="text-xs text-muted-foreground">The Configurator's current key is revoked.</p>
+            )}
+          </>
+        )}
+        {kind === "existing" && (
+          <>
+            <Field>
+              <FieldLabel htmlFor="configurator-existing-key">Key</FieldLabel>
+              <Select
+                id="configurator-existing-key"
+                className="w-full"
+                value={keyPrefix}
+                onChange={(event) => setKeyPrefix(event.target.value)}
+              >
+                <option value="" disabled>{keys.isLoading ? "Loading keys…" : "Choose a key"}</option>
+                {activeKeys.map((key) => (
+                  <option key={key.keyPrefix} value={key.keyPrefix}>
+                    {`${key.displayName ?? "Unnamed key"} · ${key.keyPrefix}`}
+                  </option>
+                ))}
+              </Select>
+              <FieldDescription>
+                {chosen
+                  ? `May call: ${groupSummary("universe", chosen.groups)}`
+                  : "Only this universe's active keys."}
+              </FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="configurator-existing-secret">Secret</FieldLabel>
+              <Input
+                id="configurator-existing-secret"
+                type="password"
+                autoComplete="off"
+                value={secret}
+                onChange={(event) => setSecret(event.target.value)}
+                placeholder="lsk_…"
+              />
+              <FieldDescription>
+                Lightspeed keeps only a hash of each key, so paste the secret shown when the key was
+                created. It is checked against the chosen key and stored encrypted. Replacing this key
+                later never revokes it.
+              </FieldDescription>
+            </Field>
+          </>
+        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }

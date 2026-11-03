@@ -1,33 +1,15 @@
 import { ReadError } from "@/components/read-error";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyRound, Plus, RotateCw, ShieldOff } from "lucide-react";
 import type { DeploymentApiKeyCreateResponse, DeploymentApiKeyView, MethodGroup } from "@lightspeed-ai/sdk";
 import { GroupSummary, KeyPresetField, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
 import { RotateKeyDialog } from "@/components/api-keys/rotate-key-dialog";
-import { ApiKeySecret } from "@/components/api-keys/secret-once";
+import { API_KEY_SECRET_DESCRIPTION, API_KEY_SECRET_TITLE, ApiKeySecret, ApiKeySecretDone } from "@/components/api-keys/secret-once";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { api } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -64,6 +46,7 @@ function ApiKeyList({ universeId }: { universeId: string }) {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [rotatingKey, setRotatingKey] = useState<DeploymentApiKeyView | null>(null);
+  const [revokingKey, setRevokingKey] = useState<DeploymentApiKeyView | null>(null);
   const keys = useQuery({
     queryKey: ["api-keys", universeId],
     queryFn: () =>
@@ -158,38 +141,15 @@ function ApiKeyList({ universeId }: { universeId: string }) {
                         </Button>
                       )}
                       {!revoked && (
-                        <AlertDialog>
-                          <AlertDialogTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                className="text-destructive"
-                                aria-label={`Revoke ${key.displayName ?? key.keyPrefix}`}
-                              />
-                            }
-                          >
-                            <ShieldOff />
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Revoke this API key?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {key.displayName ?? key.keyPrefix} will stop working immediately.
-                                This cannot be undone; create a replacement key if needed.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive text-white hover:bg-destructive/90"
-                                onClick={() => revoke.mutate(key.keyPrefix)}
-                              >
-                                Revoke key
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-destructive"
+                          aria-label={`Revoke ${key.displayName ?? key.keyPrefix}`}
+                          onClick={() => setRevokingKey(key)}
+                        >
+                          <ShieldOff />
+                        </Button>
                       )}
                     </TableActionsCell>
                   </TableRow>
@@ -215,6 +175,29 @@ function ApiKeyList({ universeId }: { universeId: string }) {
         Keys reach this universe only. Rotate a secret to replace it immediately, or revoke
         the key and create another to change what it may call.
       </p>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={revokingKey !== null}
+        onClose={() => setRevokingKey(null)}
+        title="Revoke this API key?"
+        description={`${revokingKey?.displayName ?? revokingKey?.keyPrefix ?? ""} will stop working immediately. This cannot be undone; create a replacement key if needed.`}
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setRevokingKey(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (revokingKey) revoke.mutate(revokingKey.keyPrefix);
+              setRevokingKey(null);
+            }}
+          >
+            Revoke key
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
       {rotatingKey && <RotateKeyDialog
         apiKey={rotatingKey}
         basePath={`/api/v1/universes/${universeId}/api-keys`}
@@ -245,6 +228,7 @@ function CreateApiKeyDialog({
   const [displayName, setDisplayName] = useState("");
   const [groups, setGroups] = useState<Set<MethodGroup>>(() => new Set(DEFAULT_UNIVERSE_KEY_GROUPS));
   const [created, setCreated] = useState<DeploymentApiKeyCreateResponse | null>(null);
+  const formId = useId();
   const allowed = groupsFor("universe");
 
   const create = useMutation({
@@ -275,56 +259,46 @@ function CreateApiKeyDialog({
   };
 
   return (
-    <Dialog
+    <Modal
       open={open}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen) {
-          close();
-        }
-      }}
+      onClose={close}
+      dismissible={!created}
+      title={created ? API_KEY_SECRET_TITLE : "Create API key"}
+      description={created
+        ? API_KEY_SECRET_DESCRIPTION
+        : "Name the client or agent that will use this key and choose what it may call. A key never changes; revoke it and create another to change it."}
+      footer={created ? <ApiKeySecretDone onDone={close} /> : <>
+        <Button type="button" variant="outline" onClick={close}>Cancel</Button>
+        <Button type="submit" form={formId} disabled={create.isPending || !displayName.trim() || groups.size === 0}>
+          {create.isPending ? "Creating…" : "Create key"}
+        </Button>
+      </>}
     >
-      <DialogContent showCloseButton={!created} className="sm:max-w-lg">
-        {created ? (
-          <ApiKeySecret secret={created.secret} keyPrefix={created.apiKey.keyPrefix} onDone={close} />
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle>Create API key</DialogTitle>
-              <DialogDescription>
-                Name the client or agent that will use this key and choose what it may call. A key
-                never changes; revoke it and create another to change it.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={submit} className="grid gap-4">
-              <Field>
-                <FieldLabel htmlFor="api-key-name">Name</FieldLabel>
-                <Input
-                  id="api-key-name"
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder="Production coding agent"
-                  maxLength={120}
-                  autoFocus
-                  required
-                />
-                <FieldDescription>Shown in this list; it is not part of the secret.</FieldDescription>
-              </Field>
-              <KeyPresetField groups={groups} onChange={setGroups} />
-              <MethodGroupPicker idPrefix="api-key" allowed={allowed} chosen={groups} onChange={setGroups} />
-              {create.error && (
-                <p className="text-sm text-destructive">{create.error.message}</p>
-              )}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={close}>Cancel</Button>
-                <Button type="submit" disabled={create.isPending || !displayName.trim() || groups.size === 0}>
-                  {create.isPending ? "Creating…" : "Create key"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+      {created ? (
+        <ApiKeySecret secret={created.secret} keyPrefix={created.apiKey.keyPrefix} />
+      ) : (
+        <form id={formId} onSubmit={submit} className="grid gap-4">
+          <Field>
+            <FieldLabel htmlFor="api-key-name">Name</FieldLabel>
+            <Input
+              id="api-key-name"
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              placeholder="Production coding agent"
+              maxLength={120}
+              autoFocus
+              required
+            />
+            <FieldDescription>Shown in this list; it is not part of the secret.</FieldDescription>
+          </Field>
+          <KeyPresetField groups={groups} onChange={setGroups} />
+          <MethodGroupPicker idPrefix="api-key" allowed={allowed} chosen={groups} onChange={setGroups} />
+          {create.error && (
+            <p className="text-sm text-destructive">{create.error.message}</p>
+          )}
+        </form>
+      )}
+    </Modal>
   );
 }
 

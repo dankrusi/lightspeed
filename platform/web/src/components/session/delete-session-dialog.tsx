@@ -3,7 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api";
 import { usePlatformAdmin } from "@/lib/permissions";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Button } from "@/components/ui/button";
 
 /** Mount for one deletion attempt; keep a failed purge retryable after soft deletion. */
 export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted }: {
@@ -38,16 +39,23 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
     if (softDeleted) void onDeleted();
     else onCancel();
   };
-  return <AlertDialog open onOpenChange={(open) => { if (!open) dismiss(); }}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>{permanent ? "Permanently delete this session?" : "Delete this session?"}</AlertDialogTitle>
-        <AlertDialogDescription>
-          {permanent
-            ? "This removes the session and its retained history subtree permanently. This cannot be undone. Attached workspaces and environments are separate resources."
-            : "This hides the session and its history from all universe members, including admins. History is retained until a platform admin permanently deletes it."}
-        </AlertDialogDescription>
-      </AlertDialogHeader>
+  return <Modal
+    role="alertdialog"
+    size="sm"
+    open
+    onClose={dismiss}
+    title={permanent ? "Permanently delete this session?" : "Delete this session?"}
+    description={permanent
+      ? "This removes the session and its retained history subtree permanently. This cannot be undone. Attached workspaces and environments are separate resources."
+      : "This hides the session and its history from all universe members, including admins. History is retained until a platform admin permanently deletes it."}
+    footer={<>
+      <Button type="button" variant="outline" disabled={deletion.isPending} onClick={dismiss}>{softDeleted ? "Done" : "Cancel"}</Button>
+      <Button type="button" variant="destructive" disabled={deletion.isPending} onClick={() => deletion.mutate()}>
+        {deletion.isPending ? "Deleting…" : permanent ? softDeleted ? "Retry permanent deletion" : "Permanently delete" : "Delete session"}
+      </Button>
+    </>}
+  >
+    <div className="grid gap-3">
       <label className="flex min-w-0 items-start gap-2 rounded-lg border p-3 text-sm">
         <Checkbox checked={cascade} onCheckedChange={(checked) => setCascade(checked === true)} disabled={deletion.isPending || softDeleted} />
         <span className="min-w-0">
@@ -66,12 +74,6 @@ export function DeleteSessionDialog({ universeId, sessionId, onCancel, onDeleted
         {softDeleted && <p>The session is already soft-deleted. You can retry permanent deletion here or later from Platform → Universes → Deleted sessions.</p>}
         <p>{deletion.error.message}</p>
       </div>}
-      <AlertDialogFooter>
-        <AlertDialogCancel disabled={deletion.isPending}>{softDeleted ? "Done" : "Cancel"}</AlertDialogCancel>
-        <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={deletion.isPending} onClick={(event) => { event.preventDefault(); deletion.mutate(); }}>
-          {deletion.isPending ? "Deleting…" : permanent ? softDeleted ? "Retry permanent deletion" : "Permanently delete" : "Delete session"}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>;
+    </div>
+  </Modal>;
 }

@@ -4,7 +4,7 @@ import { useDictationAvailability } from "@/lib/use-dictation";
 import { ShareSessionDialog, SharingMark, useCanShareSession, useSessionOwner } from "@/components/session/sharing";
 import { ActivityDot, activityLabel } from "@/components/activity-dot";
 import { SessionActionsMenu } from "@/components/session/session-actions-menu";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   type InfiniteData,
   useInfiniteQuery,
@@ -36,19 +36,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BotFaceIcon } from "@/components/icons/bot";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { MetadataMapEditor } from "@/components/session/metadata-editor";
 import { useUserPreferences } from "@/lib/user-preferences";
 import { ProfileRetentionEditor } from "@/components/session/profile-retention-editor";
@@ -56,14 +47,6 @@ import { SessionConfigEditor } from "@/components/session/session-config-editor"
 import { SessionSettingsDialog } from "@/components/session/session-settings-sheet";
 import { SessionHistoryLoader } from "@/components/session/history-loader";
 import { SetupEditorSection } from "@/components/session/setup-editor-section";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -77,13 +60,6 @@ import {
   useMessageScroller,
   useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { sessionDraftKey } from "@/lib/sessions/draft";
 import { SessionComposer, type ComposerMessage, type ComposerMode } from "@/components/session/composer";
 import { SessionResourceChips, useSessionResources } from "@/components/session/session-resources";
@@ -709,45 +685,45 @@ function BulkActionDialog({
   const verb = action === "close" ? "Close" : "Delete";
   const noun = count === 1 ? "session" : "sessions";
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger
-        render={
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-destructive"
-            disabled={count === 0 || pending}
-          />
-        }
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-destructive"
+        disabled={count === 0 || pending}
+        onClick={() => setOpen(true)}
       >
         {action === "close" ? <Archive /> : <Trash2 />}
         {verb} {count}
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {verb} {count} {noun}?
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {action === "close"
-              ? "Each permitted open session is force-closed in turn: active and queued work is cancelled and the session cannot be reopened. Other selected sessions are left alone."
-              : "Each permitted closed session disappears for all universe members. History is retained. Other selected sessions are left alone."}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-destructive text-white hover:bg-destructive/90"
-            onClick={() => {
-              setOpen(false);
-              onConfirm();
-            }}
-          >
-            {verb} {count} {noun}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      </Button>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`${verb} ${count} ${noun}?`}
+        description={action === "close"
+          ? "Each permitted open session is force-closed in turn: active and queued work is cancelled and the session cannot be reopened. Other selected sessions are left alone."
+          : "Each permitted closed session disappears for all universe members. History is retained. Other selected sessions are left alone."}
+        footer={
+          <>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                setOpen(false);
+                onConfirm();
+              }}
+            >
+              {verb} {count} {noun}
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Modal>
+    </>
   );
 }
 
@@ -1044,142 +1020,120 @@ function NewSessionDialog({
   const resourceFeatureError = inlineProfile
     ? setupResourceFeatureError(inlineProfile)
     : null;
+  const formId = useId();
 
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogContent
-        className={step === "setup"
-          ? "h-[min(92dvh,900px)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 p-0 sm:max-w-4xl"
-          : undefined}
-      >
-        {step === "basics" ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>New session</DialogTitle>
-              <DialogDescription>
-                {canConfigure ? "Start from a named profile or customize an inline setup for this session." : "Start with the universe defaults or choose an existing profile."}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={submit} className="grid gap-4">
-              <Field>
-                <FieldLabel htmlFor="new-session-name">Name</FieldLabel>
-                <Input
-                  id="new-session-name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Scratch chat"
-                  autoFocus
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Profile</FieldLabel>
-                <Select
-                  value={profileId}
-                  onValueChange={(value) => {
-                    setProfileId(value as string);
-                    setInlineProfile(null);
-                    setConfigError(null);
-                    setRetentionError(null);
-                    setError(null);
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
-                      {(value: string) =>
-                        value
-                          ? (profiles.data?.find((p) => p.profileId === value)?.displayName ?? value)
-                          : "No profile (universe default)"
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No profile (universe default)</SelectItem>
-                    {(profiles.data ?? []).map((profile) => (
-                      <SelectItem key={profile.profileId} value={profile.profileId}>
-                        {profile.displayName ?? profile.profileId}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              {modelSummary}
-              {canConfigure && <Button
-                type="button"
-                variant="outline"
-                disabled={Boolean(profileId) && selectedProfile.isLoading}
-                onClick={customize}
-              >
-                {inlineProfile ? "Edit customized setup" : "Customize setup…"}
-              </Button>}
-              <p className="text-xs text-muted-foreground">
-                A new session is private: you and the universe admins see it until you share it.
-              </p>
-              {selectedProfile.error && (
-                <p className="text-sm text-destructive">{selectedProfile.error.message}</p>
-              )}
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={create.isPending || modelPending || modelMissing || (creationProfile.kind === "named" && Boolean(selectedProfile.error))}>
-                  {create.isPending ? "Creating…" : "Create"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
-        ) : (
-          <>
-            <DialogHeader className="border-b p-6 pr-14">
-              <DialogTitle>Configure new session</DialogTitle>
-              <DialogDescription>
-                {profileId
-                  ? `Customized from ${profiles.data?.find((profile) => profile.profileId === profileId)?.displayName ?? profileId}.`
-                  : "Inline setup for this session."}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="min-h-0 space-y-5 overflow-y-auto p-6">
-              {modelSummary}
-              <InlineSetupEditor
-                canSetRetention={canSetRetention}
-                value={inlineProfile ?? {}}
-                options={editorOptions}
-                onValidityChange={setConfigError}
-                onRetentionValidityChange={setRetentionError}
-                onChange={setInlineProfile}
-              />
-            </div>
-            <div className="grid gap-2 border-t p-4">
-              {resourceFeatureError && (
-                <p className="text-sm text-destructive">{resourceFeatureError}</p>
-              )}
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setStep("basics")}>
-                  Back
-                </Button>
-                {profileId && selectedProfile.data && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setInlineProfile(inlineProfileFromDocument(selectedProfile.data!))}
-                  >
-                    Reset to profile
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  disabled={create.isPending || modelPending || modelMissing || Boolean(configError || retentionError || resourceFeatureError)}
-                  onClick={() => create.mutate()}
-                >
-                  {create.isPending ? "Creating…" : "Create session"}
-                </Button>
-              </DialogFooter>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={() => changeOpen(false)}
+      size={step === "setup" ? "xl" : undefined}
+      title={step === "basics" ? "New session" : "Configure new session"}
+      description={step === "basics"
+        ? canConfigure ? "Start from a named profile or customize an inline setup for this session." : "Start with the universe defaults or choose an existing profile."
+        : profileId
+          ? `Customized from ${profiles.data?.find((profile) => profile.profileId === profileId)?.displayName ?? profileId}.`
+          : "Inline setup for this session."}
+      footer={step === "basics" ? (
+        <>
+          <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" form={formId} disabled={create.isPending || modelPending || modelMissing || (creationProfile.kind === "named" && Boolean(selectedProfile.error))}>
+            {create.isPending ? "Creating…" : "Create"}
+          </Button>
+        </>
+      ) : (
+        <>
+          {resourceFeatureError && (
+            <p className="w-full text-sm text-destructive">{resourceFeatureError}</p>
+          )}
+          {error && <p className="w-full text-sm text-destructive">{error}</p>}
+          <Button type="button" variant="outline" onClick={() => setStep("basics")}>
+            Back
+          </Button>
+          {profileId && selectedProfile.data && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInlineProfile(inlineProfileFromDocument(selectedProfile.data!))}
+            >
+              Reset to profile
+            </Button>
+          )}
+          <Button
+            type="button"
+            disabled={create.isPending || modelPending || modelMissing || Boolean(configError || retentionError || resourceFeatureError)}
+            onClick={() => create.mutate()}
+          >
+            {create.isPending ? "Creating…" : "Create session"}
+          </Button>
+        </>
+      )}
+    >
+      {step === "basics" ? (
+        <form id={formId} onSubmit={submit} className="grid gap-4">
+          <Field>
+            <FieldLabel htmlFor="new-session-name">Name</FieldLabel>
+            <Input
+              id="new-session-name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Scratch chat"
+              autoFocus
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="new-session-profile">Profile</FieldLabel>
+            <Select
+              id="new-session-profile"
+              value={profileId}
+              onChange={(event) => {
+                setProfileId(event.target.value);
+                setInlineProfile(null);
+                setConfigError(null);
+                setRetentionError(null);
+                setError(null);
+              }}
+            >
+              <option value="">No profile (universe default)</option>
+              {(profiles.data ?? []).map((profile) => (
+                <option key={profile.profileId} value={profile.profileId}>
+                  {profile.displayName ?? profile.profileId}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {modelSummary}
+          {canConfigure && <Button
+            type="button"
+            variant="outline"
+            disabled={Boolean(profileId) && selectedProfile.isLoading}
+            onClick={customize}
+          >
+            {inlineProfile ? "Edit customized setup" : "Customize setup…"}
+          </Button>}
+          <p className="text-xs text-muted-foreground">
+            A new session is private: you and the universe admins see it until you share it.
+          </p>
+          {selectedProfile.error && (
+            <p className="text-sm text-destructive">{selectedProfile.error.message}</p>
+          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </form>
+      ) : (
+        <div className="space-y-5">
+          {modelSummary}
+          <InlineSetupEditor
+            canSetRetention={canSetRetention}
+            value={inlineProfile ?? {}}
+            options={editorOptions}
+            onValidityChange={setConfigError}
+            onRetentionValidityChange={setRetentionError}
+            onChange={setInlineProfile}
+          />
+        </div>
+      )}
+    </Modal>
   );
 }
 
@@ -2068,22 +2022,24 @@ export function SessionDetail({
               onShare={canShare ? () => setShareOpen(true) : undefined}
               lifecycle={((!managed || permissions.role === "admin") && canClose && !closed) || (canDelete && closed) ? (
                 closed ? (
-                  <DropdownMenuItem
-                    variant="destructive"
+                  <MenuItem
+                    danger
+                    icon={<Trash2 />}
                     onClick={() => setDeleteOpen(true)}
                   >
-                    <Trash2 /> Delete session…
-                  </DropdownMenuItem>
+                    Delete session…
+                  </MenuItem>
                 ) : (
-                  <DropdownMenuItem
-                    variant="destructive"
+                  <MenuItem
+                    danger
+                    icon={<Archive />}
                     onClick={() => {
                       setCloseError(null);
                       setCloseOpen(true);
                     }}
                   >
-                    <Archive /> {runActive ? "Force close session…" : "Close session…"}
-                  </DropdownMenuItem>
+                    {runActive ? "Force close session…" : "Close session…"}
+                  </MenuItem>
                 )
               ) : undefined}
             />
@@ -2097,37 +2053,23 @@ export function SessionDetail({
           onOpenChange={setShareOpen}
         />
 
-        <AlertDialog
+        <Modal
+          role="alertdialog"
+          size="sm"
           open={closeOpen && canClose}
-          onOpenChange={(open) => {
-            setCloseOpen(open);
-            if (open) setCloseError(null);
-          }}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {runActive ? "Force close this session?" : "Close this session?"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {runActive
-                  ? "This cancels active and queued work, then permanently closes the session. Recovery of a stuck workflow can take up to about 90 seconds while the engine terminates it and reconciles the session. The history remains available, but the session cannot be reopened."
-                  : "This permanently closes the session. It remains in the session list so its history can be inspected, but it cannot be reopened."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            {closeSession.isPending && (
-              <p className="text-sm text-muted-foreground">
-                Force close is running in the background. You can hide this dialog and
-                continue using the app.
-              </p>
-            )}
-            {closeError && <p className="text-sm text-destructive">{closeError}</p>}
-            <AlertDialogFooter>
-              <AlertDialogCancel>
+          onClose={() => setCloseOpen(false)}
+          title={runActive ? "Force close this session?" : "Close this session?"}
+          description={runActive
+            ? "This cancels active and queued work, then permanently closes the session. Recovery of a stuck workflow can take up to about 90 seconds while the engine terminates it and reconciles the session. The history remains available, but the session cannot be reopened."
+            : "This permanently closes the session. It remains in the session list so its history can be inspected, but it cannot be reopened."}
+          footer={
+            <>
+              <Button type="button" variant="outline" onClick={() => setCloseOpen(false)}>
                 {closeSession.isPending ? "Hide" : "Cancel"}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-white hover:bg-destructive/90"
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
                 disabled={closeSession.isPending}
                 onClick={() => closeSession.mutate()}
               >
@@ -2136,10 +2078,18 @@ export function SessionDetail({
                   : runActive
                     ? "Force close session"
                     : "Close session"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </>
+          }
+        >
+          {closeSession.isPending && (
+            <p className="text-sm text-muted-foreground">
+              Force close is running in the background. You can hide this dialog and
+              continue using the app.
+            </p>
+          )}
+          {closeError && <p className="text-sm text-destructive">{closeError}</p>}
+        </Modal>
 
         {deleteOpen && <DeleteSessionDialog
           key={`${universeId}:${sessionId}`}

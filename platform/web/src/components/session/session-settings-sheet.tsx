@@ -25,20 +25,8 @@ import {
 } from "@/components/session/session-config-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { useSessionConfigEditorOptions } from "@/lib/sessions/editor-options";
 import { environmentName, openEnvironmentsQuery } from "@/lib/environments";
 import {
@@ -69,16 +57,16 @@ export function SessionSettingsDialog({
   const managed = session?.managed === true;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[min(92dvh,900px)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 p-0 sm:max-w-5xl">
-        <DialogHeader className="border-b p-6 pr-14">
-          <DialogTitle>Session settings</DialogTitle>
-          <DialogDescription>
-            {!canConfigure ? "View this session’s configuration. Operator permission is required to change it." : managed
-              ? `Edit configuration directly. Lifecycle and chat delivery remain managed by ${managedSessionOwnerLabel(management)}.`
-              : "Edit this live session directly, then apply the setup in one operation."}
-          </DialogDescription>
-        </DialogHeader>
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      size="xl"
+      title="Session settings"
+      description={!canConfigure ? "View this session’s configuration. Operator permission is required to change it." : managed
+        ? `Edit configuration directly. Lifecycle and chat delivery remain managed by ${managedSessionOwnerLabel(management)}.`
+        : "Edit this live session directly, then apply the setup in one operation."}
+    >
+      <div className="grid h-[min(calc(92dvh-8rem),780px)] grid-rows-[minmax(0,1fr)_auto]">
         <LiveSessionSetup
           universeId={universeId}
           sessionId={sessionId}
@@ -87,8 +75,8 @@ export function SessionSettingsDialog({
           enabled={open}
           onApplied={() => onOpenChange(false)}
         />
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }
 
@@ -296,7 +284,7 @@ function LiveSessionSetup({
 
   return (
     <>
-      <div className="min-h-0 overflow-y-auto p-6">
+      <div className="min-h-0 overflow-y-auto pb-6">
         <div className="grid gap-8">
           <section className="grid gap-3">
             <div className="grid gap-0.5">
@@ -410,7 +398,7 @@ function LiveSessionSetup({
           {instructions.error && <p className="text-sm text-destructive">{instructions.error.message}</p>}
         </div>
       </div>
-      <div className="grid gap-2 border-t p-4">
+      <div className="grid gap-2 border-t pt-4">
         {canConfigure && runActive && (
           <p className="text-sm text-muted-foreground">
             Session setup can be applied after the active run finishes.
@@ -497,37 +485,27 @@ function ActiveEnvironmentEditor({
         </p>
       )}
       <Select
+        aria-label="Active environment"
         value={value ?? none}
         disabled={disabled || loading}
-        onValueChange={(environmentId) => onChange(environmentId === none ? null : environmentId as string)}
+        onChange={(event) => onChange(event.target.value === none ? null : event.target.value)}
       >
-        <SelectTrigger className="w-full">
-          <SelectValue>
-            {(environmentId: string) => {
-              if (environmentId === none) return "No active environment";
-              const environment = environments.find((candidate) => candidate.environmentId === environmentId);
-              return environment ? environmentLabel(environment) : `${environmentId} (unavailable)`;
-            }}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={none}>No active environment</SelectItem>
-          {ids.map((environmentId) => {
-            const environment = environments.find((candidate) => candidate.environmentId === environmentId);
-            return (
-              <SelectItem
-                key={environmentId}
-                value={environmentId}
-                disabled={!environment
-                  || (!isActivatableEnvironmentStatus(environment.status) && environmentId !== value)}
-              >
-                {environment
-                  ? `${environmentLabel(environment)}${environment.status === "ready" ? "" : ` — ${environment.status}`}`
-                  : `${environmentId} (unavailable)`}
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
+        <option value={none}>No active environment</option>
+        {ids.map((environmentId) => {
+          const environment = environments.find((candidate) => candidate.environmentId === environmentId);
+          return (
+            <option
+              key={environmentId}
+              value={environmentId}
+              disabled={!environment
+                || (!isActivatableEnvironmentStatus(environment.status) && environmentId !== value)}
+            >
+              {environment
+                ? `${environmentLabel(environment)}${environment.status === "ready" ? "" : ` — ${environment.status}`}`
+                : `${environmentId} (unavailable)`}
+            </option>
+          );
+        })}
       </Select>
     </>
   );

@@ -33,13 +33,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
 import { Switch } from "@/components/ui/switch";
 import { supportsOpenAiProcessingTier } from "@/lib/sessions/run-options";
@@ -1193,32 +1187,26 @@ function GenerationFields({ config, change }: { config: RecordValue; change: (fn
       </Field>
       <Field>
         <FieldLabel>Parallel tool use</FieldLabel>
-        <Select disabled={readOnly} value={parallel} onValueChange={(value) => update("parallelToolUse", value === "default" ? undefined : value === "true")}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="default">Provider default</SelectItem>
-            <SelectItem value="true">Allow</SelectItem>
-            <SelectItem value="false">Disallow</SelectItem>
-          </SelectContent>
+        <Select aria-label="Parallel tool use" disabled={readOnly} value={parallel} onChange={(event) => update("parallelToolUse", event.target.value === "default" ? undefined : event.target.value === "true")}>
+          <option value="default">Provider default</option>
+          <option value="true">Allow</option>
+          <option value="false">Disallow</option>
         </Select>
       </Field>
       {supportsProcessingTier && (
         <Field>
           <FieldLabel>Processing tier</FieldLabel>
-          <Select disabled={readOnly}
+          <Select aria-label="Processing tier" disabled={readOnly}
             value={processingTier}
-            onValueChange={(value) => update(
+            onChange={(event) => update(
               "processingTier",
-              value === "providerDefault" ? undefined : value,
+              event.target.value === "providerDefault" ? undefined : event.target.value,
             )}
           >
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="providerDefault">Provider default</SelectItem>
-              <SelectItem value="standard">Standard</SelectItem>
-              <SelectItem value="fast">Fast</SelectItem>
-              <SelectItem value="flex">Flex</SelectItem>
-            </SelectContent>
+            <option value="providerDefault">Provider default</option>
+            <option value="standard">Standard</option>
+            <option value="fast">Fast</option>
+            <option value="flex">Flex</option>
           </Select>
           <FieldDescription className="text-xs">
             Applied to every run. Fast prioritizes latency; Flex uses lower-priority processing.
@@ -1227,15 +1215,12 @@ function GenerationFields({ config, change }: { config: RecordValue; change: (fn
       )}
       <Field>
         <FieldLabel>Tool choice</FieldLabel>
-        <Select disabled={readOnly} value={toolChoiceType} onValueChange={(value) => update("toolChoice", value === "default" ? undefined : { type: value })}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="default">Provider default</SelectItem>
-            <SelectItem value="auto">Auto</SelectItem>
-            <SelectItem value="none">None</SelectItem>
-            <SelectItem value="requiredAny">Require a tool</SelectItem>
-            <SelectItem value="specific">Specific tool</SelectItem>
-          </SelectContent>
+        <Select aria-label="Tool choice" disabled={readOnly} value={toolChoiceType} onChange={(event) => update("toolChoice", event.target.value === "default" ? undefined : { type: event.target.value })}>
+          <option value="default">Provider default</option>
+          <option value="auto">Auto</option>
+          <option value="none">None</option>
+          <option value="requiredAny">Require a tool</option>
+          <option value="specific">Specific tool</option>
         </Select>
       </Field>
       {toolChoiceType === "specific" && (
@@ -1281,7 +1266,7 @@ function ContextFields({ config, change }: { config: RecordValue; change: (fn: (
     if (Object.keys(compact).length) context.compaction = compact; else delete context.compaction;
     if (Object.keys(context).length) next.context = context; else delete next.context;
   });
-  return <div className="grid gap-3 sm:grid-cols-2"><Field><FieldLabel>Mode</FieldLabel><Select disabled={readOnly} value={mode} onValueChange={(value) => update("mode", value === "default" ? undefined : value)}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">Engine default</SelectItem><SelectItem value="disabled">Disabled</SelectItem><SelectItem value="providerTriggered">Provider triggered</SelectItem><SelectItem value="providerStandalone">Engine managed standalone</SelectItem></SelectContent></Select><FieldDescription>Engine default uses standalone compaction. Unknown context limits recover when the provider reports a full context window.</FieldDescription></Field><Field><FieldLabel>Input limit tokens</FieldLabel><Input readOnly={readOnly} type="number" min="1" value={numberString(context.inputLimitTokens)} onChange={(e) => change((next) => { const updated = record(next.context); const value = parseNumber(e.target.value); if (value === undefined) delete updated.inputLimitTokens; else updated.inputLimitTokens = value; if (Object.keys(updated).length) next.context = updated; else delete next.context; })} /><FieldDescription>Override the usable input capacity. Leave blank to use reported capacity or error-driven recovery.</FieldDescription></Field>{mode === "providerTriggered" || mode === "providerStandalone" ? <Field><FieldLabel>Compact threshold tokens</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(compaction.compactThresholdTokens)} onChange={(e) => update("compactThresholdTokens", parseNumber(e.target.value))} /></Field> : null}{mode === "providerStandalone" ? <Field><FieldLabel>Target tokens</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(compaction.targetTokens)} onChange={(e) => update("targetTokens", parseNumber(e.target.value))} /></Field> : null}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2"><Field><FieldLabel>Mode</FieldLabel><Select aria-label="Mode" disabled={readOnly} value={mode} onChange={(event) => update("mode", event.target.value === "default" ? undefined : event.target.value)}><option value="default">Engine default</option><option value="disabled">Disabled</option><option value="providerTriggered">Provider triggered</option><option value="providerStandalone">Engine managed standalone</option></Select><FieldDescription>Engine default uses standalone compaction. Unknown context limits recover when the provider reports a full context window.</FieldDescription></Field><Field><FieldLabel>Input limit tokens</FieldLabel><Input readOnly={readOnly} type="number" min="1" value={numberString(context.inputLimitTokens)} onChange={(e) => change((next) => { const updated = record(next.context); const value = parseNumber(e.target.value); if (value === undefined) delete updated.inputLimitTokens; else updated.inputLimitTokens = value; if (Object.keys(updated).length) next.context = updated; else delete next.context; })} /><FieldDescription>Override the usable input capacity. Leave blank to use reported capacity or error-driven recovery.</FieldDescription></Field>{mode === "providerTriggered" || mode === "providerStandalone" ? <Field><FieldLabel>Compact threshold tokens</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(compaction.compactThresholdTokens)} onChange={(e) => update("compactThresholdTokens", parseNumber(e.target.value))} /></Field> : null}{mode === "providerStandalone" ? <Field><FieldLabel>Target tokens</FieldLabel><Input readOnly={readOnly} type="number" min="0" value={numberString(compaction.targetTokens)} onChange={(e) => update("targetTokens", parseNumber(e.target.value))} /></Field> : null}</div>;
 }
 
 function FeaturePanel({
@@ -1451,29 +1436,29 @@ function VfsFields({
                     <FieldLabel>Workspace</FieldLabel>
                     {options.length || workspacesLoading ? (
                       <Select
+                        aria-label="Workspace"
                         value={string(attachment.workspaceId)}
                         disabled={readOnly || workspacesLoading}
-                        onValueChange={(workspaceId) => updateAttachment(index, (next) => {
-                          next.workspaceId = workspaceId;
-                        })}
+                        onChange={(event) => {
+                          const workspaceId = event.target.value;
+                          updateAttachment(index, (next) => {
+                            next.workspaceId = workspaceId;
+                          });
+                        }}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={workspacesLoading ? "Loading…" : "Select workspace"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {options.map((workspace) => (
-                            <SelectItem
-                              key={workspace.workspaceId}
-                              value={workspace.workspaceId}
-                            >
-                              {workspace.displayName
-                                ? `${workspace.displayName} (${workspace.workspaceId})`
-                                : workspaces.some((item) => item.workspaceId === workspace.workspaceId)
-                                  ? workspace.workspaceId
-                                  : `${workspace.workspaceId} (unavailable)`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
+                        <option value="" disabled>{workspacesLoading ? "Loading…" : "Select workspace"}</option>
+                        {options.map((workspace) => (
+                          <option
+                            key={workspace.workspaceId}
+                            value={workspace.workspaceId}
+                          >
+                            {workspace.displayName
+                              ? `${workspace.displayName} (${workspace.workspaceId})`
+                              : workspaces.some((item) => item.workspaceId === workspace.workspaceId)
+                                ? workspace.workspaceId
+                                : `${workspace.workspaceId} (unavailable)`}
+                          </option>
+                        ))}
                       </Select>
                     ) : (
                       <Input readOnly={readOnly}
@@ -1500,17 +1485,18 @@ function VfsFields({
                 <Field>
                   <FieldLabel>Access</FieldLabel>
                   <Select
+                    aria-label="Access"
                     value={string(attachment.access) || "edit"}
                     disabled={readOnly || snapshot}
-                    onValueChange={(access) => updateAttachment(index, (next) => {
-                      next.access = access;
-                    })}
+                    onChange={(event) => {
+                      const access = event.target.value;
+                      updateAttachment(index, (next) => {
+                        next.access = access;
+                      });
+                    }}
                   >
-                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="edit">Read and write</SelectItem>
-                      <SelectItem value="read">Read only</SelectItem>
-                    </SelectContent>
+                    <option value="edit">Read and write</option>
+                    <option value="read">Read only</option>
                   </Select>
                 </Field>
               </div>
@@ -1986,8 +1972,10 @@ function EnvironmentFields({
               <Field>
                 <FieldLabel>Environment</FieldLabel>
                 <Select disabled={readOnly}
+                  aria-label={`Environment ${index + 1}`}
                   value={inherited ? "__inherit__" : id}
-                  onValueChange={(value) =>
+                  onChange={(event) => {
+                    const value = event.target.value;
                     update(index, (next) => {
                       if (value === "__inherit__") {
                         next.inherit = true;
@@ -1996,34 +1984,30 @@ function EnvironmentFields({
                         next.environmentId = value;
                         delete next.inherit;
                       }
-                    })
-                  }
+                    });
+                  }}
                 >
-                  <SelectTrigger className="w-full" aria-label={`Environment ${index + 1}`}>
-                    <SelectValue placeholder="Select environment" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allowInherit && (
-                      <SelectItem
-                        value="__inherit__"
-                        disabled={!inherited && attachments.some((item) => item.inherit === true)}
-                      >
-                        Inherit parent environment
-                      </SelectItem>
-                    )}
-                    {options.map((environment) => (
-                      <SelectItem
-                        key={environment.environmentId}
-                        value={environment.environmentId}
-                      >
-                        {`${environment.displayName
-                          ? `${environment.displayName} (${environment.environmentId})`
-                          : environment.environmentId}${environment.status && environment.status !== "ready"
-                          ? ` (${environment.status})`
-                          : ""}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                  <option value="" disabled>Select environment</option>
+                  {allowInherit && (
+                    <option
+                      value="__inherit__"
+                      disabled={!inherited && attachments.some((item) => item.inherit === true)}
+                    >
+                      Inherit parent environment
+                    </option>
+                  )}
+                  {options.map((environment) => (
+                    <option
+                      key={environment.environmentId}
+                      value={environment.environmentId}
+                    >
+                      {`${environment.displayName
+                        ? `${environment.displayName} (${environment.environmentId})`
+                        : environment.environmentId}${environment.status && environment.status !== "ready"
+                        ? ` (${environment.status})`
+                        : ""}`}
+                    </option>
+                  ))}
                 </Select>
                 {inherited && (
                   <FieldDescription className="text-xs">
@@ -2034,22 +2018,19 @@ function EnvironmentFields({
               <Field>
                 <FieldLabel>Access</FieldLabel>
                 <Select disabled={readOnly}
+                  aria-label={`Environment ${index + 1} access`}
                   value={string(attachment.access)}
-                  onValueChange={(access) =>
+                  onChange={(event) => {
+                    const access = event.target.value;
                     update(index, (next) => {
                       next.access = access;
-                    })
-                  }
+                    });
+                  }}
                 >
-                  <SelectTrigger className="w-full" aria-label={`Environment ${index + 1} access`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="read">Read files</SelectItem>
-                    <SelectItem value="edit">Edit files</SelectItem>
-                    <SelectItem value="exec">Run commands</SelectItem>
-                    <SelectItem value="jobs">Run durable jobs</SelectItem>
-                  </SelectContent>
+                  <option value="read">Read files</option>
+                  <option value="edit">Edit files</option>
+                  <option value="exec">Run commands</option>
+                  <option value="jobs">Run durable jobs</option>
                 </Select>
                 <FieldDescription className="text-xs">
                   {environmentAccessDescriptions[string(attachment.access)]}
@@ -2184,21 +2165,22 @@ function McpFields({
               <FieldLabel>Server</FieldLabel>
               {serverOptions.length ? (
                 <Select disabled={readOnly}
+                  aria-label="Server"
                   value={string(attachment.serverId)}
-                  onValueChange={(value) => updateAttachment(index, (next) => { next.serverId = value as string; delete next.tools; })}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    updateAttachment(index, (next) => { next.serverId = value; delete next.tools; });
+                  }}
                 >
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {serverOptions.map((server) => (
-                      <SelectItem
-                        key={server.serverId}
-                        value={server.serverId}
-                        disabled={server.status !== undefined && server.status !== "active"}
-                      >
-                        {mcpServerOptionLabel(server)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                  {serverOptions.map((server) => (
+                    <option
+                      key={server.serverId}
+                      value={server.serverId}
+                      disabled={server.status !== undefined && server.status !== "active"}
+                    >
+                      {mcpServerOptionLabel(server)}
+                    </option>
+                  ))}
                 </Select>
               ) : (
                 <Input readOnly={readOnly}

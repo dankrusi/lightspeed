@@ -1,38 +1,14 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { api, type Member } from "@/api";
 import { UNIVERSE_ROLES, type UniverseRole } from "@lightspeed-ai/platform-shared";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { FieldDescription, FieldLabel } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableActionsCell,
@@ -72,9 +48,9 @@ const ROLE_SUMMARY: Record<UniverseRole, string> = {
   admin: "Also manages members, and reads and shares all work",
 };
 
-function roleSelectItems() {
+function roleOptions() {
   return UNIVERSE_ROLES.map((role) => (
-    <SelectItem key={role} value={role}>{role}</SelectItem>
+    <option key={role} value={role}>{role}</option>
   ));
 }
 
@@ -82,6 +58,7 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
+  const [removing, setRemoving] = useState<Member | null>(null);
   const members = useQuery({
     queryKey: ["members", universeId],
     queryFn: () => api<Member[]>("GET", `/api/v1/universes/${universeId}/members`),
@@ -147,36 +124,14 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
                       >
                         <Pencil />
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="text-destructive"
-                            />
-                          }
-                        >
-                          <Trash2 />
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remove {member.email}?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              They lose access to this universe on their next request. Their sessions stay.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-white hover:bg-destructive/90"
-                              onClick={() => remove.mutate(member.id)}
-                            >
-                              Remove
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-destructive"
+                        onClick={() => setRemoving(member)}
+                      >
+                        <Trash2 />
+                      </Button>
                     </TableActionsCell>
                   )}
                 </TableRow>
@@ -185,6 +140,29 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
           </Table>
         </TableCard>
       )}
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={removing !== null}
+        onClose={() => setRemoving(null)}
+        title={`Remove ${removing?.email ?? ""}?`}
+        description="They lose access to this universe on their next request. Their sessions stay."
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setRemoving(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (removing) remove.mutate(removing.id);
+              setRemoving(null);
+            }}
+          >
+            Remove
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
       {writable && (
         <AddMemberDialog
           universeId={universeId}
@@ -213,6 +191,7 @@ function EditMemberRoleDialog({ universeId, member, onClose, onDone }: {
   onDone: () => Promise<unknown>;
 }) {
   const [role, setRole] = useState<UniverseRole>(member.role);
+  const formId = useId();
   const edit = useMutation({
     mutationFn: () => api("PATCH", `/api/v1/universes/${universeId}/members/${member.id}`, { role }),
     onSuccess: async () => {
@@ -223,32 +202,32 @@ function EditMemberRoleDialog({ universeId, member, onClose, onDone }: {
   });
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit universe role</DialogTitle>
-          <DialogDescription>
-            Change the role of {member.name || member.email} in this universe. A universe keeps at
-            least one admin.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="grid gap-3" onSubmit={(event) => { event.preventDefault(); edit.mutate(); }}>
-          <FieldLabel htmlFor="edit-member-role">Role</FieldLabel>
-          <Select value={role} onValueChange={(value) => setRole(value as UniverseRole)} disabled={edit.isPending}>
-            <SelectTrigger id="edit-member-role"><SelectValue /></SelectTrigger>
-            <SelectContent>{roleSelectItems()}</SelectContent>
-          </Select>
-          <FieldDescription>{ROLE_SUMMARY[role]}</FieldDescription>
-          {edit.error && <p role="alert" className="text-sm text-destructive">{edit.error.message}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={edit.isPending || role === member.role}>
-              {edit.isPending ? "Saving…" : "Save role"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open
+      onClose={onClose}
+      title="Edit universe role"
+      description={`Change the role of ${member.name || member.email} in this universe. A universe keeps at least one admin.`}
+      footer={<>
+        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+        <Button type="submit" form={formId} disabled={edit.isPending || role === member.role}>
+          {edit.isPending ? "Saving…" : "Save role"}
+        </Button>
+      </>}
+    >
+      <form id={formId} className="grid gap-3" onSubmit={(event) => { event.preventDefault(); edit.mutate(); }}>
+        <FieldLabel htmlFor="edit-member-role">Role</FieldLabel>
+        <Select
+          id="edit-member-role"
+          value={role}
+          onChange={(event) => setRole(event.target.value as UniverseRole)}
+          disabled={edit.isPending}
+        >
+          {roleOptions()}
+        </Select>
+        <FieldDescription>{ROLE_SUMMARY[role]}</FieldDescription>
+        {edit.error && <p role="alert" className="text-sm text-destructive">{edit.error.message}</p>}
+      </form>
+    </Modal>
   );
 }
 
@@ -266,6 +245,7 @@ function AddMemberDialog({
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState<UniverseRole>("contributor");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const users = useQuery({
     queryKey: ["users"],
@@ -303,62 +283,54 @@ function AddMemberDialog({
     user.name ? `${user.name} (${user.email})` : user.email;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add member</DialogTitle>
-          <DialogDescription>
-            Give an account access to this universe.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-3">
-          <FieldLabel htmlFor="member-user">Account</FieldLabel>
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-            <Select value={userId} onValueChange={(value) => setUserId((value as string) ?? "")}>
-              <SelectTrigger id="member-user" className="w-full">
-                <SelectValue>
-                  {(value: string) => {
-                    if (!value) {
-                      return candidates.length === 0
-                        ? "No accounts left to add"
-                        : "Pick a user…";
-                    }
-                    const user = candidates.find((u) => u.id === value);
-                    return user ? userLabel(user) : value;
-                  }}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {candidates.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {userLabel(user)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={role} onValueChange={(value) => setRole(value as UniverseRole)}>
-              <SelectTrigger aria-label="Role" className="w-full sm:w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>{roleSelectItems()}</SelectContent>
-            </Select>
-          </div>
-          <FieldDescription>{ROLE_SUMMARY[role]}</FieldDescription>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <FieldDescription>
-            Accounts are created by platform admins under Admin → Users.
-          </FieldDescription>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={add.isPending || !userId}>
-              Add member
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="Add member"
+      description="Give an account access to this universe."
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={add.isPending || !userId}>
+          Add member
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-3">
+        <FieldLabel htmlFor="member-user">Account</FieldLabel>
+        <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+          <Select
+            id="member-user"
+            className="w-full"
+            value={userId}
+            onChange={(event) => setUserId(event.target.value)}
+          >
+            <option value="" disabled>
+              {candidates.length === 0 ? "No accounts left to add" : "Pick a user…"}
+            </option>
+            {candidates.map((user) => (
+              <option key={user.id} value={user.id}>
+                {userLabel(user)}
+              </option>
+            ))}
+          </Select>
+          <Select
+            aria-label="Role"
+            className="w-full sm:w-32"
+            value={role}
+            onChange={(event) => setRole(event.target.value as UniverseRole)}
+          >
+            {roleOptions()}
+          </Select>
+        </div>
+        <FieldDescription>{ROLE_SUMMARY[role]}</FieldDescription>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <FieldDescription>
+          Accounts are created by platform admins under Admin → Users.
+        </FieldDescription>
+      </form>
+    </Modal>
   );
 }
 

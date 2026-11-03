@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import {
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
+import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 
 export function sessionMenuMetadataEntries(
   metadata: Record<string, string> | undefined,
@@ -28,8 +25,8 @@ export function MenuIdentity({ noun, id }: { noun: string; id: string }) {
     return () => window.clearTimeout(timer);
   }, [copied]);
   return (
-    <DropdownMenuGroup>
-      <DropdownMenuLabel>{capitalized(noun)} ID</DropdownMenuLabel>
+    <>
+      <MenuLabel>{capitalized(noun)} ID</MenuLabel>
       <div className="flex min-w-0 items-center gap-2 px-2 pb-1.5">
         <code
           className="block min-w-0 flex-1 truncate text-xs text-foreground"
@@ -52,7 +49,7 @@ export function MenuIdentity({ noun, id }: { noun: string; id: string }) {
           {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
         </button>
       </div>
-    </DropdownMenuGroup>
+    </>
   );
 }
 
@@ -66,25 +63,23 @@ export function SessionMenuMetadata({ metadata }: { metadata?: Record<string, st
   if (entries.length === 0) return null;
   return (
     <>
-      <DropdownMenuSeparator />
-      <DropdownMenuGroup>
-        <DropdownMenuLabel>Metadata</DropdownMenuLabel>
-        <div className="grid min-w-0 gap-1 px-2 pb-1.5">
-          {entries.map(([key, value]) => (
-            <div
-              key={key}
-              className="grid min-w-0 grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-baseline gap-2 text-xs"
-            >
-              <code className="min-w-0 truncate text-muted-foreground" title={key}>
-                {key}
-              </code>
-              <span className="min-w-0 truncate text-foreground" title={value}>
-                {value}
-              </span>
-            </div>
-          ))}
-        </div>
-      </DropdownMenuGroup>
+      <MenuSeparator />
+      <MenuLabel>Metadata</MenuLabel>
+      <div className="grid min-w-0 gap-1 px-2 pb-1.5">
+        {entries.map(([key, value]) => (
+          <div
+            key={key}
+            className="grid min-w-0 grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-baseline gap-2 text-xs"
+          >
+            <code className="min-w-0 truncate text-muted-foreground" title={key}>
+              {key}
+            </code>
+            <span className="min-w-0 truncate text-foreground" title={value}>
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
     </>
   );
 }

@@ -1,13 +1,8 @@
 import { Ellipsis, LoaderCircle, Pause, Play, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 import { MenuIdentity } from "@/components/session/session-menu-details";
 
 /**
@@ -26,41 +21,41 @@ export function BotActionsMenu({
   pause?: { enabled: boolean; pending: boolean; onToggle: () => void };
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="shrink-0 text-muted-foreground"
-            aria-label="Bot actions"
-            title="Bot actions"
-          />
-        }
-      >
-        {pause?.pending ? <LoaderCircle className="size-3.5 animate-spin" /> : <Ellipsis />}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-1rem)]">
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={onSettings}>
-            <SlidersHorizontal /> Bot settings
-          </DropdownMenuItem>
-          {pause && (
-            <DropdownMenuItem
-              disabled={pause.pending}
-              onClick={pause.onToggle}
-              title={pause.enabled
-                ? "Schedules stop and events wait; nothing is lost."
-                : "Schedules and delivery resume."}
-            >
-              {pause.enabled ? <Pause /> : <Play />}
-              {pause.enabled ? "Pause bot" : "Resume bot"}
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <MenuIdentity noun="bot" id={botId} />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Menu
+      align="end"
+      className="w-80 max-w-[calc(100vw-1rem)]"
+      trigger={({ open, toggle }) => (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0 text-muted-foreground"
+          aria-label="Bot actions"
+          title="Bot actions"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onClick={toggle}
+        >
+          {pause?.pending ? <LoaderCircle className="size-3.5 animate-spin" /> : <Ellipsis />}
+        </Button>
+      )}
+    >
+      <MenuItem icon={<SlidersHorizontal />} onClick={onSettings}>
+        Bot settings
+      </MenuItem>
+      {pause && (
+        <MenuItem
+          icon={pause.enabled ? <Pause /> : <Play />}
+          disabled={pause.pending}
+          onClick={pause.onToggle}
+          title={pause.enabled
+            ? "Schedules stop and events wait; nothing is lost."
+            : "Schedules and delivery resume."}
+        >
+          {pause.enabled ? "Pause bot" : "Resume bot"}
+        </MenuItem>
+      )}
+      <MenuSeparator />
+      <MenuIdentity noun="bot" id={botId} />
+    </Menu>
   );
 }

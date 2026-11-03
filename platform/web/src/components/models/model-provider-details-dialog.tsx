@@ -4,7 +4,6 @@ import { ResourceStatus } from "@/components/resource-table";
 import { resourceTimestamp } from "@/lib/resource-status";
 import { formatExpiry } from "@/lib/integrations";
 import { subscriptionAccountLabel, subscriptionBinding } from "@/lib/subscriptions";
-import { modelProviderDefinition } from "./catalog";
 import { ModelApiKeyDetails, OpenAiCompatibleDetails } from "./model-api-key";
 import { SubscriptionDetails } from "./subscription";
 import type { ConnectedModelProvider } from "./use-model-providers";
@@ -24,11 +23,10 @@ export function ModelProviderDetailsDialog({
   onChanged: () => void;
   finalFocus?: RefObject<HTMLElement | null>;
 }) {
-  const definition = provider ? modelProviderDefinition(provider.kind) : null;
   return (
     <ResourceDetailsDialog open={provider !== null} onOpenChange={onOpenChange}
       title={provider?.title ?? "Model provider"} description={provider?.connection === "Subscription" ? "Account access for coding agents running in environments." : "Connection settings and available models."}
-      icon={definition && <definition.Logo size={18} />} finalFocus={finalFocus}>
+      finalFocus={finalFocus}>
       {provider && (
         <>
           <ResourceDetailsGrid>

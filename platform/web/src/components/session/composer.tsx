@@ -14,7 +14,8 @@ import {
   type RunChoice,
 } from "@/lib/composer-model";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { readSessionDraft, writeSessionDraft } from "@/lib/sessions/draft";
 import { cn } from "@/lib/utils";
 import { AttachmentStrip } from "./composer-attachments";
@@ -406,31 +407,26 @@ export function SessionComposer({
                     {pendingSubmit ? <LoaderCircle className="animate-spin" /> : <ArrowUp />}
                   </Button>
                   {runActive && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger render={
-                        <Button type="button" size="icon-sm" aria-label="Queue or steer" disabled={!hasContent && !voiceCanSubmit}
-                          className="w-5 rounded-l-none border-l border-l-primary-foreground/20" />
-                      }>
+                    <Menu side="top" align="end" className="w-72" trigger={({ open, toggle }) => (
+                      <Button type="button" size="icon-sm" aria-label="Queue or steer" disabled={!hasContent && !voiceCanSubmit}
+                        className="w-5 rounded-l-none border-l border-l-primary-foreground/20"
+                        aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
                         <ChevronDown className="size-3" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent side="top" align="end" className="w-72">
-                        <DropdownMenuItem disabled={!hasContent && !voiceCanSubmit} onClick={() => submit(false)}>
-                          <ListPlus />
-                          <span>Queue as the next run</span>
-                          <DropdownMenuShortcut>↵</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem disabled={(!hasContent && !voiceCanSubmit) || !canSteer} onClick={() => submit(true)}>
-                          <CornerDownRight />
-                          <span className="flex flex-col">
-                            <span>Steer the current run</span>
-                            <span className="text-xs text-muted-foreground">
-                              {canSteer ? "Read at its next turn, without interrupting it" : "Nothing can be steered right now"}
-                            </span>
+                      </Button>
+                    )}>
+                      <MenuItem icon={<ListPlus />} shortcut="↵" disabled={!hasContent && !voiceCanSubmit} onClick={() => submit(false)}>
+                        Queue as the next run
+                      </MenuItem>
+                      <MenuItem icon={<CornerDownRight />} shortcut={steerKeyLabel} className="h-auto py-1.5"
+                        disabled={(!hasContent && !voiceCanSubmit) || !canSteer} onClick={() => submit(true)}>
+                        <span className="flex flex-col">
+                          <span>Steer the current run</span>
+                          <span className="text-xs text-muted-foreground">
+                            {canSteer ? "Read at its next turn, without interrupting it" : "Nothing can be steered right now"}
                           </span>
-                          <DropdownMenuShortcut>{steerKeyLabel}</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        </span>
+                      </MenuItem>
+                    </Menu>
                   )}
                 </div>
               )}

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode, type ReactElement } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider, notifyManager } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
@@ -40,60 +40,6 @@ vi.mock("@/lib/universes", () => ({
     isLoading: false,
   }),
 }));
-// Exercise our menu actions without Floating UI's popup geometry in jsdom.
-vi.mock("@/components/ui/dropdown-menu", async () => {
-  const { createContext, useContext, useState, cloneElement } =
-    await import("react");
-  const Menu = createContext({ open: false, setOpen: (_open: boolean) => {} });
-  return {
-    DropdownMenu: ({ children }: { children: ReactNode }) => {
-      const [open, setOpen] = useState(false);
-      return (
-        <Menu.Provider value={{ open, setOpen }}>{children}</Menu.Provider>
-      );
-    },
-    DropdownMenuTrigger: ({
-      render,
-      children,
-    }: {
-      render: ReactElement;
-      children: ReactNode;
-    }) => {
-      const { open, setOpen } = useContext(Menu);
-      return cloneElement(
-        render as ReactElement<{ onClick: () => void }>,
-        { onClick: () => setOpen(!open) },
-        children,
-      );
-    },
-    DropdownMenuContent: ({ children }: { children: ReactNode }) =>
-      useContext(Menu).open ? <div role="menu">{children}</div> : null,
-    DropdownMenuItem: ({
-      children,
-      onClick,
-      disabled,
-    }: {
-      children: ReactNode;
-      onClick: () => void;
-      disabled?: boolean;
-    }) => {
-      const { setOpen } = useContext(Menu);
-      return (
-        <button
-          role="menuitem"
-          disabled={disabled}
-          onClick={() => {
-            setOpen(false);
-            onClick();
-          }}
-        >
-          {children}
-        </button>
-      );
-    },
-    DropdownMenuSeparator: () => <hr />,
-  };
-});
 let root: Root;
 let container: HTMLDivElement;
 let entries: Record<string, VfsTreeEntry>;
@@ -1013,8 +959,10 @@ it("places the open file’s actions in the tree, not its detail header", async 
   const workspacePicker = container.querySelector('[aria-label="Workspace"]')!;
   const actions = container.querySelector('[aria-label="Workspace actions"]')!;
   expect(actions.textContent).toBe("");
-  expect(workspacePicker.parentElement!.parentElement).toBe(
-    actions.parentElement,
+  // One header row holds both: the select inside its control wrapper and
+  // flexible slot, the button inside its menu anchor.
+  expect(workspacePicker.parentElement!.parentElement!.parentElement).toBe(
+    actions.parentElement!.parentElement,
   );
   expect(
     container.querySelector('[aria-label="Workspace information"]'),

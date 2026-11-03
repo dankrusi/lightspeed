@@ -1,64 +1,9 @@
 // @vitest-environment jsdom
-import { act, useRef, type ReactElement, type ReactNode } from "react";
+import { act, useRef } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ReplyCopyMenu } from "./reply-copy-menu";
 import { MarkdownContent } from "./markdown-content";
-
-// Exercise our menu actions without Floating UI's popup geometry in jsdom.
-vi.mock("@/components/ui/dropdown-menu", async () => {
-  const { createContext, useContext, useState, cloneElement } =
-    await import("react");
-  const Menu = createContext({ open: false, setOpen: (_open: boolean) => {} });
-  return {
-    DropdownMenu: ({ children }: { children: ReactNode }) => {
-      const [open, setOpen] = useState(false);
-      return (
-        <Menu.Provider value={{ open, setOpen }}>{children}</Menu.Provider>
-      );
-    },
-    DropdownMenuTrigger: ({
-      render,
-      children,
-    }: {
-      render: ReactElement;
-      children: ReactNode;
-    }) => {
-      const { open, setOpen } = useContext(Menu);
-      return cloneElement(
-        render as ReactElement<{ onClick: () => void }>,
-        { onClick: () => setOpen(!open) },
-        children,
-      );
-    },
-    DropdownMenuContent: ({ children }: { children: ReactNode }) =>
-      useContext(Menu).open ? <div role="menu">{children}</div> : null,
-    DropdownMenuItem: ({
-      children,
-      onClick,
-      disabled,
-    }: {
-      children: ReactNode;
-      onClick: () => void;
-      disabled?: boolean;
-    }) => {
-      const { setOpen } = useContext(Menu);
-      return (
-        <button
-          role="menuitem"
-          disabled={disabled}
-          onClick={() => {
-            setOpen(false);
-            onClick();
-          }}
-        >
-          {children}
-        </button>
-      );
-    },
-    DropdownMenuSeparator: () => <hr />,
-  };
-});
 
 let root: Root;
 let container: HTMLDivElement;

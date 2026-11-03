@@ -16,13 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { cn } from "@/lib/utils";
 import { SendEventDialog } from "./send-event-dialog";
 
@@ -141,17 +135,18 @@ export function BotActivity({
       <div className="mx-auto grid w-full min-w-0 max-w-5xl gap-5 px-4 py-5 text-sm md:px-8">
         <NowStrip bot={bot} controller={controller} stateError={stateError} sessionHref={sessionHref} />
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={outcomeFilter} onValueChange={(value) => value && setOutcomeFilter(value as OutcomeFilter)}>
-            <SelectTrigger size="sm" className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {OUTCOME_FILTERS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
+          <Select
+            size="sm"
+            className="w-48"
+            aria-label="Filter by outcome"
+            value={outcomeFilter}
+            onChange={(event) => setOutcomeFilter(event.target.value as OutcomeFilter)}
+          >
+            {OUTCOME_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Select>
           <Input
             value={search}

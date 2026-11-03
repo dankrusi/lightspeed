@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -12,34 +12,6 @@ vi.mock("@/api", async (original) => ({ ...await original<typeof import("@/api")
 vi.mock("@/lib/universes", () => ({ useActiveUniverse: () => ({ universe: { id: "universe", role: "operator" }, slug: "universe", isLoading: false }) }));
 vi.mock("@/lib/sessions/editor-options", () => ({ useSessionConfigEditorOptions: () => ({}) }));
 vi.mock("@/components/session/session-config-editor", () => ({ SessionConfigEditor: () => null }));
-// Every select becomes a native control named by its trigger; jsdom cannot lay out the popup.
-vi.mock("@/components/ui/select", async () => {
-  const React = await import("react");
-  function SelectTrigger(_props: { id?: string; children?: ReactNode }) {
-    return null;
-  }
-  function Select({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: ReactNode }) {
-    const options: { value: string; label: ReactNode }[] = [];
-    let id: string | undefined;
-    const visit = (nodes: ReactNode) =>
-      React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const props = child.props as { value?: string; children?: ReactNode; id?: string };
-        if (child.type === SelectTrigger) id = props.id;
-        else if (props.value !== undefined) options.push({ value: props.value, label: props.children });
-        else if (props.children) visit(props.children);
-      });
-    visit(children);
-    return (
-      <select id={id} value={value} onChange={(event) => onValueChange(event.target.value)}>
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-    );
-  }
-  const Part = () => null;
-  return { Select, SelectTrigger, SelectContent: ({ children }: { children?: ReactNode }) => <>{children}</>, SelectItem: Part, SelectValue: Part };
-});
-
 const profiles = [
   { profileId: "own", displayName: "Own", revision: 1 },
   { profileId: "support", displayName: "Support desk", revision: 3, config: { model: { model: "internal-model" } } },

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -10,28 +10,6 @@ vi.mock("@/api", async (original) => ({ ...await original<typeof import("@/api")
 vi.mock("@/lib/universes", () => ({
   useUniverses: () => ({ data: [{ id: "platform-universe", lightspeedUniverseId: "core-universe", name: "Factory", slug: "factory" }] }),
 }));
-// JSDOM has no popup layout; a native select stands in for the scope picker.
-vi.mock("@/components/ui/select", async () => {
-  const React = await import("react");
-  const Part = () => null;
-  return {
-    Select: ({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: ReactNode }) => {
-      const options: string[] = [];
-      const visit = (nodes: ReactNode) => React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const props = child.props as { value?: string; children?: ReactNode };
-        if (props.value !== undefined) options.push(props.value);
-        else if (props.children) visit(props.children);
-      });
-      visit(children);
-      return <select aria-label="Reaches" value={value} onChange={(event) => onValueChange(event.target.value)}>
-        {options.map((option) => <option key={option} value={option}>{option}</option>)}
-      </select>;
-    },
-    SelectContent: ({ children }: { children?: ReactNode }) => <>{children}</>, SelectItem: Part, SelectTrigger: ({ children }: { children?: ReactNode }) => <>{children}</>, SelectValue: Part,
-  };
-});
-
 let root: Root;
 let container: HTMLDivElement;
 let client: QueryClient;
@@ -79,7 +57,9 @@ it("mints a universe key with only universe groups, then shows its secret once",
   await act(async () => button("Create key")!.click());
   await settle();
   expect(dialogText()).toContain("Universes");
-  const scope = document.querySelector<HTMLSelectElement>('[role="dialog"] select[aria-label="Reaches"]')!;
+  const reaches = [...document.querySelectorAll<HTMLLabelElement>('[role="dialog"] label')].find((label) => label.textContent === "Reaches")!;
+  const scope = document.getElementById(reaches.htmlFor) as HTMLSelectElement;
+  expect(scope.tagName).toBe("SELECT");
   await act(async () => { scope.value = "platform-universe"; scope.dispatchEvent(new Event("change", { bubbles: true })); });
   await settle();
   expect(dialogText()).not.toContain("Universes");

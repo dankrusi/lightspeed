@@ -17,17 +17,6 @@ import {
   type EnvironmentTemplate,
   type SecretsInventory,
 } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,23 +25,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@/components/ui/switch";
 import { EmptyState, LoadingNote, PageHeader, SectionHeader, ShowHiddenToggle, UniverseNotFound } from "@/components/page";
 import type { EnvironmentIdlePolicyView } from "@lightspeed-ai/sdk";
@@ -478,6 +454,7 @@ function EnvironmentCredentials({
         queryKey: ["environment-credentials", universeId, environment.environmentId],
       }),
   });
+  const [unassigning, setUnassigning] = useState<string | null>(null);
   const rows = (credentials.data ?? []).slice().sort((a, b) => a.envName.localeCompare(b.envName));
   const canAssign = environment.state !== "closed" && environment.state !== "closing";
 
@@ -536,45 +513,44 @@ function EnvironmentCredentials({
                   </Badge>
                 )}
                 {writable && (
-                  <AlertDialog>
-                    <AlertDialogTrigger
-                      render={
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="text-destructive"
-                          aria-label={`Unassign ${credential.envName}`}
-                        />
-                      }
-                    >
-                      <Trash2 />
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Unassign this environment variable?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          New processes and jobs in this environment will no longer receive{" "}
-                          <span className="font-mono text-xs">{credential.envName}</span>. The stored
-                          access credential itself will not be deleted.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-white hover:bg-destructive/90"
-                          onClick={() => unbind.mutate(credential.envName)}
-                        >
-                          Unassign variable
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-destructive"
+                    aria-label={`Unassign ${credential.envName}`}
+                    onClick={() => setUnassigning(credential.envName)}
+                  >
+                    <Trash2 />
+                  </Button>
                 )}
               </div>
             );
           })}
         </div>
       )}
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={unassigning !== null}
+        onClose={() => setUnassigning(null)}
+        title="Unassign this environment variable?"
+        description={`New processes and jobs in this environment will no longer receive ${unassigning ?? ""}. The stored access credential itself will not be deleted.`}
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setUnassigning(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              // Its outcome shows on the list itself: the row goes, or the error line appears.
+              if (unassigning) unbind.mutate(unassigning, { onSettled: () => setUnassigning(null) });
+            }}
+          >
+            Unassign variable
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
     </div>
   );
 }
@@ -645,21 +621,21 @@ function AssignCredentialDialog({
         <Plus data-icon="inline-start" />
         Assign credential
       </Button>
-      <Dialog
+      <Modal
         open={open}
-        onOpenChange={(nextOpen) => {
-          setOpen(nextOpen);
-          if (!nextOpen) setError(null);
+        onClose={() => {
+          setOpen(false);
+          setError(null);
         }}
+        title="Assign secret"
+        description="Map a stored secret to an environment variable. Assigning an existing variable name replaces its current source."
+        footer={<>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button disabled={bind.isPending} onClick={submit}>
+            {bind.isPending ? "Assigning…" : "Assign"}
+          </Button>
+        </>}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Assign secret</DialogTitle>
-            <DialogDescription>
-              Map a stored secret to an environment variable. Assigning an existing variable
-              name replaces its current source.
-            </DialogDescription>
-          </DialogHeader>
           <div className="grid gap-4">
             <Field>
               <FieldLabel htmlFor="credential-env-name">Environment variable</FieldLabel>
@@ -681,24 +657,24 @@ function AssignCredentialDialog({
               </FieldDescription>
             </Field>
             <Field>
-              <FieldLabel>Secret source</FieldLabel>
+              <FieldLabel htmlFor="credential-source">Secret source</FieldLabel>
               <Select
+                id="credential-source"
+                className="w-full"
                 value={selectedSource}
-                onValueChange={(value) => {
-                  setSourceValue(value as string);
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setSourceValue(value);
                   setError(null);
                   const suggested = sources.find((s) => s.value === value)?.suggestedEnvName;
                   if (suggested && !envName.trim()) setEnvName(suggested);
                 }}
               >
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {sources.map((source) => (
-                    <SelectItem key={source.value} value={source.value}>
-                      {source.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                {sources.map((source) => (
+                  <option key={source.value} value={source.value}>
+                    {source.label}
+                  </option>
+                ))}
               </Select>
               <FieldDescription>
                 Environment secrets and access grants are resolved at runtime; provider API keys
@@ -707,14 +683,7 @@ function AssignCredentialDialog({
             </Field>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button disabled={bind.isPending} onClick={submit}>
-              {bind.isPending ? "Assigning…" : "Assign"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </Modal>
       {!secrets && (
         <span className="sr-only">Access credentials are still loading</span>
       )}
@@ -824,6 +793,7 @@ function RevokeRegistrationKeyButton({
   registrationKey: EnvironmentRegistrationKey;
 }) {
   const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
   const [closeEnvironments, setCloseEnvironments] = useState(false);
   const revoke = useMutation({
     mutationFn: () =>
@@ -840,18 +810,29 @@ function RevokeRegistrationKeyButton({
     },
   });
   return (
-    <AlertDialog>
-      <AlertDialogTrigger render={<Button variant="outline" size="xs" />}>
+    <>
+      <Button variant="outline" size="xs" onClick={() => setOpen(true)}>
         Revoke
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Revoke “{registrationKey.displayName}”?</AlertDialogTitle>
-          <AlertDialogDescription>
-            New daemons presenting this key are refused from now on. Daemons that already registered
-            keep reconnecting by their own identity unless you also close their environments.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+      </Button>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Revoke “${registrationKey.displayName}”?`}
+        description="New daemons presenting this key are refused from now on. Daemons that already registered keep reconnecting by their own identity unless you also close their environments."
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>Keep</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => revoke.mutate(undefined, { onSuccess: () => setOpen(false) })}
+            disabled={revoke.isPending}
+          >
+            {revoke.isPending ? "Revoking…" : "Revoke key"}
+          </Button>
+        </>}
+      >
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -862,14 +843,8 @@ function RevokeRegistrationKeyButton({
           {registrationKey.activeEnvironmentCount === 1 ? "" : "s"}
         </label>
         {revoke.error && <p className="text-sm text-destructive">{revoke.error.message}</p>}
-        <AlertDialogFooter>
-          <AlertDialogCancel>Keep</AlertDialogCancel>
-          <AlertDialogAction onClick={() => revoke.mutate()} disabled={revoke.isPending}>
-            {revoke.isPending ? "Revoking…" : "Revoke key"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      </Modal>
+    </>
   );
 }
 
@@ -901,30 +876,23 @@ function RotateRegistrationKeyButton({
         <RotateCw data-icon="inline-start" />
         Rotate
       </Button>
-      <AlertDialog open={confirming} onOpenChange={setConfirming}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Rotate “{registrationKey.displayName}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The current secret stops admitting new daemons at once; give the new one to the
-              machines that should still register. Daemons that already registered keep
-              reconnecting by their own identity.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {rotate.error && <p className="text-sm text-destructive">{rotate.error.message}</p>}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep</AlertDialogCancel>
-            <AlertDialogAction onClick={() => rotate.mutate()} disabled={rotate.isPending}>
-              {rotate.isPending ? "Rotating…" : "Rotate key"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <Dialog open={rotate.data !== undefined} onOpenChange={(next) => { if (!next) rotate.reset(); }}>
-        <DialogContent showCloseButton={false}>
-          {rotate.data && <RegistrationSecret created={rotate.data} onDone={() => rotate.reset()} />}
-        </DialogContent>
-      </Dialog>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title={`Rotate “${registrationKey.displayName}”?`}
+        description="The current secret stops admitting new daemons at once; give the new one to the machines that should still register. Daemons that already registered keep reconnecting by their own identity."
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Keep</Button>
+          <Button type="button" variant="destructive" onClick={() => rotate.mutate()} disabled={rotate.isPending}>
+            {rotate.isPending ? "Rotating…" : "Rotate key"}
+          </Button>
+        </>}
+      >
+        {rotate.error && <p className="text-sm text-destructive">{rotate.error.message}</p>}
+      </Modal>
+      {rotate.data && <RegistrationSecret created={rotate.data} onDone={() => rotate.reset()} />}
     </>
   );
 }
@@ -1052,7 +1020,7 @@ function RegistrationKeyFields({
 }
 
 /// The one-time view of a registration secret, with the two variables a
-/// daemon needs to dial in.
+/// daemon needs to dial in. It stays open until the key is acknowledged.
 function RegistrationSecret({
   created,
   onDone,
@@ -1067,15 +1035,14 @@ function RegistrationSecret({
     "lightspeed-envd",
   ].join("\n");
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>Copy the registration key</DialogTitle>
-        <DialogDescription>
-          Shown once. Give it to the machines that should register under
-          “{created.registrationKey.displayName}”; in a sandbox, mount it as a file and delete
-          it after the daemon's receipt appears.
-        </DialogDescription>
-      </DialogHeader>
+    <Modal
+      open
+      onClose={onDone}
+      dismissible={false}
+      title="Copy the registration key"
+      description={`Shown once. Give it to the machines that should register under “${created.registrationKey.displayName}”; in a sandbox, mount it as a file and delete it after the daemon's receipt appears.`}
+      footer={<Button type="button" onClick={onDone}>I saved the key</Button>}
+    >
       <div className="grid gap-2">
         <FieldLabel htmlFor="registration-key-secret">Registration key</FieldLabel>
         <div className="flex gap-2">
@@ -1106,10 +1073,7 @@ function RegistrationSecret({
           onFocus={(event) => event.currentTarget.select()}
         />
       </div>
-      <DialogFooter>
-        <Button type="button" onClick={onDone}>I saved the key</Button>
-      </DialogFooter>
-    </>
+    </Modal>
   );
 }
 
@@ -1147,34 +1111,36 @@ function CreateRegistrationKeyDialog({ universeId }: { universeId: string }) {
         <KeyRound data-icon="inline-start" />
         Registration key
       </Button>
-      <Dialog open={open} onOpenChange={(next) => { if (!next) reset(); }}>
-        <DialogContent showCloseButton={!created}>
-          {created ? (
-            <RegistrationSecret created={created} onDone={reset} />
-          ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle>Mint a registration key</DialogTitle>
-                <DialogDescription>
-                  Machines, VMs, containers, or pods start <span className="font-mono">lightspeed-envd</span> with
-                  this key and become environments of this universe. The key's name is their group.
-                </DialogDescription>
-              </DialogHeader>
+      {created ? (
+        <RegistrationSecret created={created} onDone={reset} />
+      ) : (
+        <Modal
+          open={open}
+          onClose={reset}
+          title="Mint a registration key"
+          description="Machines, VMs, containers, or pods start lightspeed-envd with this key and become environments of this universe. The key's name is their group."
+          footer={<>
+            <Button type="button" variant="outline" onClick={reset}>Cancel</Button>
+            <Button
+              type="button"
+              disabled={create.isPending || formError !== null}
+              onClick={() => create.mutate()}
+            >
+              {create.isPending ? "Minting…" : "Mint key"}
+            </Button>
+          </>}
+        >
               <div className="grid gap-4">
                 <Field>
-                  <FieldLabel>Identity</FieldLabel>
-                  <Select value={identityMode} onValueChange={(next) => setIdentityMode(next as "persistent" | "ephemeral")}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue>
-                        {(value: string) => value === "ephemeral"
-                          ? "Ephemeral · close after the daemon stays away"
-                          : "Persistent · wait for the daemon to reconnect"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="persistent">Persistent · wait for the daemon to reconnect</SelectItem>
-                      <SelectItem value="ephemeral">Ephemeral · close after the daemon stays away</SelectItem>
-                    </SelectContent>
+                  <FieldLabel htmlFor="registration-key-identity">Identity</FieldLabel>
+                  <Select
+                    id="registration-key-identity"
+                    className="w-full"
+                    value={identityMode}
+                    onChange={(event) => setIdentityMode(event.target.value as "persistent" | "ephemeral")}
+                  >
+                    <option value="persistent">Persistent · wait for the daemon to reconnect</option>
+                    <option value="ephemeral">Ephemeral · close after the daemon stays away</option>
                   </Select>
                   <FieldDescription>
                     Persistent suits VMs and stateful pods whose daemon state survives restarts.
@@ -1183,21 +1149,9 @@ function CreateRegistrationKeyDialog({ universeId }: { universeId: string }) {
                 </Field>
                 <RegistrationKeyFields form={form} identityMode={identityMode} onChange={setForm} />
                 {create.error && <p className="text-sm text-destructive">{create.error.message}</p>}
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={reset}>Cancel</Button>
-                  <Button
-                    type="button"
-                    disabled={create.isPending || formError !== null}
-                    onClick={() => create.mutate()}
-                  >
-                    {create.isPending ? "Minting…" : "Mint key"}
-                  </Button>
-                </DialogFooter>
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        </Modal>
+      )}
     </>
   );
 }
@@ -1229,34 +1183,29 @@ function EditRegistrationKeyDialog({
   });
   const formError = registrationKeyFormError(form);
   return (
-    <Dialog open={registrationKey !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit “{registrationKey?.displayName}”</DialogTitle>
-          <DialogDescription>
-            {registrationKey?.identityMode === "ephemeral" ? "Ephemeral" : "Persistent"} key. The active limit
-            and expiry apply to later admissions; a changed disconnect grace or offline close-after applies to
-            admitted environments whose daemon is away.
-          </DialogDescription>
-        </DialogHeader>
-        {registrationKey && (
-          <div className="grid gap-4">
-            <RegistrationKeyFields form={form} identityMode={registrationKey.identityMode} onChange={setForm} />
-            {save.error && <p className="text-sm text-destructive">{save.error.message}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button
-                type="button"
-                disabled={save.isPending || formError !== null}
-                onClick={() => save.mutate(registrationKey)}
-              >
-                {save.isPending ? "Saving…" : "Save"}
-              </Button>
-            </DialogFooter>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={registrationKey !== null}
+      onClose={() => onOpenChange(false)}
+      title={`Edit “${registrationKey?.displayName ?? ""}”`}
+      description={`${registrationKey?.identityMode === "ephemeral" ? "Ephemeral" : "Persistent"} key. The active limit and expiry apply to later admissions; a changed disconnect grace or offline close-after applies to admitted environments whose daemon is away.`}
+      footer={registrationKey && <>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+        <Button
+          type="button"
+          disabled={save.isPending || formError !== null}
+          onClick={() => save.mutate(registrationKey)}
+        >
+          {save.isPending ? "Saving…" : "Save"}
+        </Button>
+      </>}
+    >
+      {registrationKey && (
+        <div className="grid gap-4">
+          <RegistrationKeyFields form={form} identityMode={registrationKey.identityMode} onChange={setForm} />
+          {save.error && <p className="text-sm text-destructive">{save.error.message}</p>}
+        </div>
+      )}
+    </Modal>
   );
 }
 
@@ -1428,15 +1377,18 @@ function EditEnvironmentDialog({
     },
   });
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Rename {environmentName(environment)}</DialogTitle>
-          <DialogDescription>
-            The name shown throughout Lightspeed, and labels for finding the environment.
-            Neither changes how it runs.
-          </DialogDescription>
-        </DialogHeader>
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={`Rename ${environmentName(environment)}`}
+      description="The name shown throughout Lightspeed, and labels for finding the environment. Neither changes how it runs."
+      footer={<>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+        <Button disabled={save.isPending} onClick={() => save.mutate()}>
+          {save.isPending ? "Saving…" : "Save"}
+        </Button>
+      </>}
+    >
         <div className="grid gap-4">
           <Field>
             <FieldLabel htmlFor="environment-rename">Display name</FieldLabel>
@@ -1455,14 +1407,7 @@ function EditEnvironmentDialog({
           </Field>
           {save.error && <p className="text-sm text-destructive">{save.error.message}</p>}
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={save.isPending} onClick={() => save.mutate()}>
-            {save.isPending ? "Saving…" : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }
 
@@ -1530,32 +1475,39 @@ function CreateEnvironmentDialog({
         <Plus data-icon="inline-start" />
         New environment
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>New universe environment</DialogTitle>
-            <DialogDescription>
-              Provision a universe-owned resource. Sessions may select it independently.
-            </DialogDescription>
-          </DialogHeader>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="New universe environment"
+        description="Provision a universe-owned resource. Sessions may select it independently."
+        footer={<>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button
+            disabled={!selectedTemplate || create.isPending || idleProblem !== null}
+            onClick={() => create.mutate()}
+          >
+            {create.isPending ? "Provisioning…" : "Provision"}
+          </Button>
+        </>}
+      >
           <div className="grid gap-4">
             <Field>
-              <FieldLabel>Template</FieldLabel>
+              <FieldLabel htmlFor="environment-template">Template</FieldLabel>
               <Select
+                id="environment-template"
+                className="w-full"
                 value={selectedTemplateKey}
-                onValueChange={(value) => {
-                  setTemplateKey(value as string);
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setTemplateKey(value);
                   resetIdle(templates.find((template) => templateValue(template) === value));
                 }}
               >
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {templates.map((template) => (
-                    <SelectItem key={templateValue(template)} value={templateValue(template)}>
-                      {template.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                {templates.map((template) => (
+                  <option key={templateValue(template)} value={templateValue(template)}>
+                    {template.displayName}
+                  </option>
+                ))}
               </Select>
               {selectedTemplate && (
                 <FieldDescription>
@@ -1607,17 +1559,7 @@ function CreateEnvironmentDialog({
             )}
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button
-              disabled={!selectedTemplate || create.isPending || idleProblem !== null}
-              onClick={() => create.mutate()}
-            >
-              {create.isPending ? "Provisioning…" : "Provision"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </Modal>
     </>
   );
 }
@@ -1692,15 +1634,21 @@ function RegisterExternalEnvironmentDialog({
       >
         {suggestedEndpoint && !alreadyRegistered ? "Attach local daemon" : "Register external"}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Register external environment</DialogTitle>
-            <DialogDescription>
-              Attach a running <span className="font-mono">lightspeed-envd</span> that Lightspeed can
-              reach directly, without a provider. Reachability is checked when it is used.
-            </DialogDescription>
-          </DialogHeader>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Register external environment"
+        description="Attach a running lightspeed-envd that Lightspeed can reach directly, without a provider. Reachability is checked when it is used."
+        footer={<>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button
+            disabled={!/^wss?:\/\/\S+$/.test(endpoint.trim()) || register.isPending}
+            onClick={() => register.mutate()}
+          >
+            {register.isPending ? "Registering…" : "Register"}
+          </Button>
+        </>}
+      >
           <div className="grid gap-4">
             <Field>
               <FieldLabel htmlFor="external-endpoint">Daemon endpoint</FieldLabel>
@@ -1733,17 +1681,7 @@ function RegisterExternalEnvironmentDialog({
             </Field>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button
-              disabled={!/^wss?:\/\/\S+$/.test(endpoint.trim()) || register.isPending}
-              onClick={() => register.mutate()}
-            >
-              {register.isPending ? "Registering…" : "Register"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </Modal>
     </>
   );
 }

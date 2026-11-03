@@ -1,37 +1,19 @@
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyRound, Plus, RotateCw, ShieldOff } from "lucide-react";
 import type { DeploymentApiKeyCreateResponse, DeploymentApiKeyView, MethodGroup } from "@lightspeed-ai/sdk";
 import { api, type Universe } from "@/api";
 import { GroupSummary, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
 import { RotateKeyDialog } from "@/components/api-keys/rotate-key-dialog";
-import { ApiKeySecret } from "@/components/api-keys/secret-once";
+import { API_KEY_SECRET_DESCRIPTION, API_KEY_SECRET_TITLE, ApiKeySecret, ApiKeySecretDone } from "@/components/api-keys/secret-once";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { ReadError } from "@/components/read-error";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -56,6 +38,7 @@ export function AdminApiKeysPage() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [rotatingKey, setRotatingKey] = useState<DeploymentApiKeyView | null>(null);
+  const [revokingKey, setRevokingKey] = useState<DeploymentApiKeyView | null>(null);
   const keys = useQuery({
     queryKey: ["admin-api-keys"],
     queryFn: () => api<DeploymentApiKeyView[]>("GET", "/api/v1/admin/api-keys"),
@@ -137,38 +120,15 @@ export function AdminApiKeysPage() {
                         </Button>
                       )}
                       {!revoked && (
-                        <AlertDialog>
-                          <AlertDialogTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                className="text-destructive"
-                                aria-label={`Revoke ${key.displayName ?? key.keyPrefix}`}
-                              />
-                            }
-                          >
-                            <ShieldOff />
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Revoke this API key?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {key.displayName ?? key.keyPrefix} stops working immediately. This
-                                cannot be undone; mint a replacement if needed.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-destructive text-white hover:bg-destructive/90"
-                                onClick={() => revoke.mutate(key.keyPrefix)}
-                              >
-                                Revoke key
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-destructive"
+                          aria-label={`Revoke ${key.displayName ?? key.keyPrefix}`}
+                          onClick={() => setRevokingKey(key)}
+                        >
+                          <ShieldOff />
+                        </Button>
                       )}
                     </TableActionsCell>
                   </TableRow>
@@ -189,6 +149,29 @@ export function AdminApiKeysPage() {
           onCheckedChange={setShowRevoked}
         />
       </div>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={revokingKey !== null}
+        onClose={() => setRevokingKey(null)}
+        title="Revoke this API key?"
+        description={`${revokingKey?.displayName ?? revokingKey?.keyPrefix ?? ""} stops working immediately. This cannot be undone; mint a replacement if needed.`}
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setRevokingKey(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (revokingKey) revoke.mutate(revokingKey.keyPrefix);
+              setRevokingKey(null);
+            }}
+          >
+            Revoke key
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
       {rotatingKey && <RotateKeyDialog
         apiKey={rotatingKey}
         basePath={"/api/v1/admin/api-keys"}
@@ -221,6 +204,7 @@ function CreateKeyDialog({
   const [groups, setGroups] = useState<Set<MethodGroup> | null>(null);
   const [assertActor, setAssertActor] = useState(false);
   const [created, setCreated] = useState<DeploymentApiKeyCreateResponse | null>(null);
+  const formId = useId();
   const kind = scope === DEPLOYMENT ? "deployment" : "universe";
   const allowed = groupsFor(kind);
   // Null means every group the scope allows, which a new key starts with.
@@ -255,78 +239,71 @@ function CreateKeyDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { if (!next) close(); }}>
-      <DialogContent showCloseButton={!created} className="sm:max-w-lg">
-        {created ? (
-          <ApiKeySecret secret={created.secret} keyPrefix={created.apiKey.keyPrefix} onDone={close} />
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle>Create API key</DialogTitle>
-              <DialogDescription>
-                Choose what the key reaches and which methods it may call. A key never changes;
-                revoke it and mint another to change it.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={submit} className="grid gap-4">
-              <Field>
-                <FieldLabel htmlFor="admin-key-name">Name</FieldLabel>
-                <Input
-                  id="admin-key-name"
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  placeholder="Telegram connector"
-                  maxLength={120}
-                  autoFocus
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="admin-key-scope">Reaches</FieldLabel>
-                <Select value={scope} onValueChange={(value) => { setScope(value as string); setGroups(null); }}>
-                  <SelectTrigger id="admin-key-scope" className="w-full">
-                    <SelectValue>
-                      {(value: string) => value === DEPLOYMENT
-                        ? "The deployment"
-                        : universes.find((universe) => universe.id === value)?.name ?? value}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={DEPLOYMENT}>The deployment</SelectItem>
-                    {universes.map((universe) => (
-                      <SelectItem key={universe.id} value={universe.id}>{universe.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldDescription>
-                  {kind === "deployment"
-                    ? "A deployment key names the universe of each call and may hold deployment groups."
-                    : "A universe key reaches only this universe."}
-                </FieldDescription>
-              </Field>
-              <MethodGroupPicker idPrefix="admin-key" allowed={allowed} chosen={chosen} onChange={setGroups} />
-              <div className="flex items-center justify-between gap-3 rounded-md border p-3">
-                <Label htmlFor="admin-key-assert-actor" className="min-w-0 text-sm">
-                  Speaks for people
-                  <span className="block text-xs font-normal text-muted-foreground">
-                    May name the person a call is for. Give it only to a gate that signs people in,
-                    like this Platform.
-                  </span>
-                </Label>
-                <Switch id="admin-key-assert-actor" checked={assertActor} onCheckedChange={setAssertActor} />
-              </div>
-              {create.error && <p className="text-sm text-destructive">{create.error.message}</p>}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={close}>Cancel</Button>
-                <Button type="submit" disabled={create.isPending || !displayName.trim() || chosen.size === 0}>
-                  {create.isPending ? "Creating…" : "Create key"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={close}
+      dismissible={!created}
+      title={created ? API_KEY_SECRET_TITLE : "Create API key"}
+      description={created
+        ? API_KEY_SECRET_DESCRIPTION
+        : "Choose what the key reaches and which methods it may call. A key never changes; revoke it and mint another to change it."}
+      footer={created ? <ApiKeySecretDone onDone={close} /> : <>
+        <Button type="button" variant="outline" onClick={close}>Cancel</Button>
+        <Button type="submit" form={formId} disabled={create.isPending || !displayName.trim() || chosen.size === 0}>
+          {create.isPending ? "Creating…" : "Create key"}
+        </Button>
+      </>}
+    >
+      {created ? (
+        <ApiKeySecret secret={created.secret} keyPrefix={created.apiKey.keyPrefix} />
+      ) : (
+        <form id={formId} onSubmit={submit} className="grid gap-4">
+          <Field>
+            <FieldLabel htmlFor="admin-key-name">Name</FieldLabel>
+            <Input
+              id="admin-key-name"
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              placeholder="Telegram connector"
+              maxLength={120}
+              autoFocus
+              required
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="admin-key-scope">Reaches</FieldLabel>
+            <Select
+              id="admin-key-scope"
+              className="w-full"
+              value={scope}
+              onChange={(event) => { setScope(event.target.value); setGroups(null); }}
+            >
+              <option value={DEPLOYMENT}>The deployment</option>
+              {universes.map((universe) => (
+                <option key={universe.id} value={universe.id}>{universe.name}</option>
+              ))}
+            </Select>
+            <FieldDescription>
+              {kind === "deployment"
+                ? "A deployment key names the universe of each call and may hold deployment groups."
+                : "A universe key reaches only this universe."}
+            </FieldDescription>
+          </Field>
+          <MethodGroupPicker idPrefix="admin-key" allowed={allowed} chosen={chosen} onChange={setGroups} />
+          <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+            <Label htmlFor="admin-key-assert-actor" className="min-w-0 text-sm">
+              Speaks for people
+              <span className="block text-xs font-normal text-muted-foreground">
+                May name the person a call is for. Give it only to a gate that signs people in,
+                like this Platform.
+              </span>
+            </Label>
+            <Switch id="admin-key-assert-actor" checked={assertActor} onCheckedChange={setAssertActor} />
+          </div>
+          {create.error && <p className="text-sm text-destructive">{create.error.message}</p>}
+        </form>
+      )}
+    </Modal>
   );
 }
 

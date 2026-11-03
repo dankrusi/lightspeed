@@ -2,14 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { SecretProvider, SubscriptionImportResult } from "@/api";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { subscriptionBinding } from "@/lib/subscriptions";
 import {
   MODEL_PROVIDER_CATALOG,
@@ -63,41 +56,38 @@ export function AddModelProviderDialog({
   const definition = selected ? modelProviderDefinition(selected) : null;
 
   return (
-    <Dialog
+    <Modal
       open={open}
-      onOpenChange={(next) => {
-        if (!next) close();
-        else onOpenChange(true);
-      }}
+      onClose={close}
+      title={definition ? definition.name : "Add model provider"}
+      description={
+        definition
+          ? undefined
+          : "Connect a model provider to this universe. Keys and logins are encrypted by Lightspeed and never returned."
+      }
+      footer={
+        definition &&
+        done && (
+          <>
+            {done.type === "modelKey" && onChooseDefault && <Button variant="outline" onClick={() => { close(); onChooseDefault(); }}>Choose default model</Button>}
+            <Button onClick={close}>Done</Button>
+          </>
+        )
+      }
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {definition && !done && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Back to catalog"
-                onClick={() => setSelected(null)}
-              >
-                <ArrowLeft />
-              </Button>
-            )}
-            {definition ? (
-              <>
-                <definition.Logo size={18} /> {definition.name}
-              </>
-            ) : (
-              "Add model provider"
-            )}
-          </DialogTitle>
-          {!definition && (
-            <DialogDescription>
-              Connect a model provider to this universe. Keys and logins are
-              encrypted by Lightspeed and never returned.
-            </DialogDescription>
-          )}
-        </DialogHeader>
+      <div className="grid gap-4">
+        {definition && !done && (
+          <div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Back to catalog"
+              onClick={() => setSelected(null)}
+            >
+              <ArrowLeft />
+            </Button>
+          </div>
+        )}
 
         {!definition && (
           <div className="grid gap-2 sm:grid-cols-2">
@@ -168,10 +158,6 @@ export function AddModelProviderDialog({
                 </p>
               </>
             )}
-            <DialogFooter>
-              {done.type === "modelKey" && onChooseDefault && <Button variant="outline" onClick={() => { close(); onChooseDefault(); }}>Choose default model</Button>}
-              <Button onClick={close}>Done</Button>
-            </DialogFooter>
           </div>
         )}
 
@@ -215,7 +201,7 @@ export function AddModelProviderDialog({
               onCancel={() => setSelected(null)}
             />
           )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }

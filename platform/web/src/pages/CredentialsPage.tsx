@@ -1,6 +1,6 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, KeyRound, LockKeyhole, Plus, ShieldOff } from "lucide-react";
@@ -11,45 +11,17 @@ import {
   type SecretGrant,
   type SecretsInventory,
 } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   IdText,
   Table,
@@ -109,6 +81,7 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
   const [pasteOpen, setPasteOpen] = useState(false);
   const [gitHubOpen, setGitHubOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState<string | null>(null);
+  const [revokingGrant, setRevokingGrant] = useState<SecretGrant | null>(null);
   const inventory = useQuery({
     queryKey: ["secrets", universeId],
     queryFn: () =>
@@ -154,22 +127,19 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
         title="Credentials"
         description="Reusable tokens and secrets owned by this universe. Environments, MCP servers and bot triggers reference them without exposing their values; retrievable credentials may be leased by trusted services."
         actions={
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button />}>
+          <Menu align="end" trigger={({ open, toggle }) => (
+            <Button aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
               <Plus data-icon="inline-start" />
               Add credential
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setPasteOpen(true)}>
-                <KeyRound />
-                Paste a token or secret
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setGitHubOpen(true)}>
-                <GitHubLogo />
-                Connect a GitHub App
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Button>
+          )}>
+            <MenuItem icon={<KeyRound />} onClick={() => setPasteOpen(true)}>
+              Paste a token or secret
+            </MenuItem>
+            <MenuItem icon={<GitHubLogo />} onClick={() => setGitHubOpen(true)}>
+              Connect a GitHub App
+            </MenuItem>
+          </Menu>
         }
       />
       <p className="mb-4 text-sm text-muted-foreground">
@@ -239,39 +209,15 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                   </TableCell>
                   <TableActionsCell>
                     {grant.status !== "revoked" && (
-                      <AlertDialog>
-                        <AlertDialogTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="text-destructive"
-                              aria-label={`Revoke ${grant.displayName ?? grant.grantId}`}
-                            />
-                          }
-                        >
-                          <ShieldOff />
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Revoke this credential?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Anything referencing{" "}
-                              <span className="font-mono text-xs">{grant.grantId}</span>{" "}
-                              will stop receiving its token. This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-white hover:bg-destructive/90"
-                              onClick={() => revokeGrant.mutate(grant.grantId)}
-                            >
-                              Revoke credential
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-destructive"
+                        aria-label={`Revoke ${grant.displayName ?? grant.grantId}`}
+                        onClick={() => setRevokingGrant(grant)}
+                      >
+                        <ShieldOff />
+                      </Button>
                     )}
                   </TableActionsCell>
                 </TableRow>
@@ -364,35 +310,48 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
         onOpenChange={setGitHubOpen}
         onCreated={invalidate}
       />
-      <Dialog
-        open={openApp !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedApp(null);
-        }}
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={revokingGrant !== null}
+        onClose={() => setRevokingGrant(null)}
+        title="Revoke this credential?"
+        description={`Anything referencing ${revokingGrant?.grantId ?? ""} will stop receiving its token. This cannot be undone.`}
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setRevokingGrant(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (revokingGrant) revokeGrant.mutate(revokingGrant.grantId);
+              setRevokingGrant(null);
+            }}
+          >
+            Revoke credential
+          </Button>
+        </>}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-          {openApp && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <GitHubLogo size={18} />
-                  {openApp.displayName ?? `GitHub App ${openApp.config.appId}`}
-                </DialogTitle>
-              </DialogHeader>
-              <GitHubAppDetails
-                universeId={universeId}
-                app={openApp}
-                grants={appGrants(openApp)}
-                onChanged={() => void invalidate()}
-                onRemoved={() => {
-                  void invalidate();
-                  setSelectedApp(null);
-                }}
-              />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        {null}
+      </Modal>
+      <Modal
+        open={openApp !== null}
+        onClose={() => setSelectedApp(null)}
+        size="lg"
+        title={openApp ? openApp.displayName ?? `GitHub App ${openApp.config.appId}` : ""}
+      >
+        {openApp && (
+          <GitHubAppDetails
+            universeId={universeId}
+            app={openApp}
+            grants={appGrants(openApp)}
+            onChanged={() => void invalidate()}
+            onRemoved={() => {
+              void invalidate();
+              setSelectedApp(null);
+            }}
+          />
+        )}
+      </Modal>
     </>
   );
 }
@@ -415,41 +374,28 @@ function AddGitHubAppDialog({
     setDone(false);
   };
   return (
-    <Dialog
+    <Modal
       open={open}
-      onOpenChange={(next) => {
-        if (!next) close();
-        else onOpenChange(true);
-      }}
+      onClose={close}
+      title="GitHub App"
+      footer={done ? <Button onClick={close}>Done</Button> : undefined}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <GitHubLogo size={18} /> GitHub App
-          </DialogTitle>
-        </DialogHeader>
-        {done ? (
-          <div className="grid gap-3 text-sm">
-            <p>
-              GitHub App added. Open it under GitHub Apps to grant installations once the App is
-              installed on your GitHub accounts.
-            </p>
-            <DialogFooter>
-              <Button onClick={close}>Done</Button>
-            </DialogFooter>
-          </div>
-        ) : (
-          <GitHubAppForm
-            universeId={universeId}
-            onCreated={() => {
-              onCreated();
-              setDone(true);
-            }}
-            onCancel={close}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+      {done ? (
+        <p className="text-sm">
+          GitHub App added. Open it under GitHub Apps to grant installations once the App is
+          installed on your GitHub accounts.
+        </p>
+      ) : (
+        <GitHubAppForm
+          universeId={universeId}
+          onCreated={() => {
+            onCreated();
+            setDone(true);
+          }}
+          onCancel={close}
+        />
+      )}
+    </Modal>
   );
 }
 
@@ -472,6 +418,7 @@ function PasteCredentialDialog({
   const [secret, setSecret] = useState("");
   const [retrievable, setRetrievable] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const reset = () => {
     setKind("environment");
@@ -540,144 +487,131 @@ function PasteCredentialDialog({
     create.mutate();
   };
 
+  const close = () => {
+    onOpenChange(false);
+    reset();
+  };
+
   return (
-    <Dialog
+    <Modal
       open={open}
-      onOpenChange={(nextOpen) => {
-        onOpenChange(nextOpen);
-        if (!nextOpen) {
-          reset();
-        }
-      }}
+      onClose={close}
+      title="Paste a token or secret"
+      description="The value is sent once to Lightspeed, encrypted, and never returned to this browser."
+      footer={<>
+        <Button type="button" variant="outline" onClick={close}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={create.isPending}>
+          {create.isPending ? "Encrypting…" : "Add credential"}
+        </Button>
+      </>}
     >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Paste a token or secret</DialogTitle>
-          <DialogDescription>
-            The value is sent once to Lightspeed, encrypted, and never returned to this browser.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel>Secret type</FieldLabel>
-            <Select value={kind} onValueChange={(value) => changeKind(value as SecretKind)}>
-              <SelectTrigger className="w-full" aria-label="Secret type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="environment">Environment secret</SelectItem>
-                <SelectItem value="bearer">Bearer token</SelectItem>
-              </SelectContent>
-            </Select>
-            <FieldDescription>
-              {kind === "environment"
-                ? "Stores an opaque value for injection into an environment variable. Multiline values such as SSH private keys are preserved."
-                : "Creates a revocable access credential that MCP servers or environments can reference."}
-            </FieldDescription>
-          </Field>
-          {kind === "bearer" && (
-            <Field className="rounded-lg border bg-muted/15 p-3">
-              <label className="flex items-start gap-3">
-                <Checkbox
-                  checked={retrievable}
-                  onCheckedChange={(checked) => setRetrievable(checked === true)}
-                  aria-label="Allow trusted services to retrieve this credential"
-                />
-                <span className="grid gap-1">
-                  <span className="text-sm font-medium">Retrievable by trusted services</span>
-                  <span className="text-xs text-muted-foreground">
-                    Required for Bot webhook signatures and authenticated HTTP polls. Trusted
-                    service workers can lease the plaintext into memory; every lease is audited.
-                    This choice cannot be changed later.
-                  </span>
-                </span>
-              </label>
-            </Field>
-          )}
-          <Field>
-            <FieldLabel htmlFor="secret-name">Display name</FieldLabel>
-            <Input
-              id="secret-name"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder={kind === "environment" ? "px-dev SSH private key" : "GitHub deploy token"}
-              autoFocus
-            />
-          </Field>
-          {/* Keyed by type: changing the type clears the ID and closes its field. */}
-          <SettingsDisclosure
-            key={kind}
-            summary={grantId.trim() ? `Credential ID ${grantId.trim()}` : "Generated credential ID"}
-            action="Change"
-            label="Change credential ID"
-            forceOpen={Boolean(error) && idConflict !== undefined}
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel>Secret type</FieldLabel>
+          <Select
+            className="w-full"
+            aria-label="Secret type"
+            value={kind}
+            onChange={(event) => changeKind(event.target.value as SecretKind)}
           >
-            <Field>
-              <FieldLabel htmlFor="secret-grant-id">Custom credential ID</FieldLabel>
-              <Input
-                id="secret-grant-id"
-                value={grantId}
-                onChange={(event) => {
-                  setGrantId(event.target.value);
-                  setError(null);
-                }}
-                placeholder="Generated automatically when blank"
-                className="font-mono"
+            <option value="environment">Environment secret</option>
+            <option value="bearer">Bearer token</option>
+          </Select>
+          <FieldDescription>
+            {kind === "environment"
+              ? "Stores an opaque value for injection into an environment variable. Multiline values such as SSH private keys are preserved."
+              : "Creates a revocable access credential that MCP servers or environments can reference."}
+          </FieldDescription>
+        </Field>
+        {kind === "bearer" && (
+          <Field className="rounded-lg border bg-muted/15 p-3">
+            <label className="flex items-start gap-3">
+              <Checkbox
+                checked={retrievable}
+                onCheckedChange={(checked) => setRetrievable(checked === true)}
+                aria-label="Allow trusted services to retrieve this credential"
               />
-              <FieldDescription>
-                Useful for automation and stable references. It must be unique and cannot be
-                changed or reused after this credential is revoked.
-              </FieldDescription>
-            </Field>
-          </SettingsDisclosure>
+              <span className="grid gap-1">
+                <span className="text-sm font-medium">Retrievable by trusted services</span>
+                <span className="text-xs text-muted-foreground">
+                  Required for Bot webhook signatures and authenticated HTTP polls. Trusted
+                  service workers can lease the plaintext into memory; every lease is audited.
+                  This choice cannot be changed later.
+                </span>
+              </span>
+            </label>
+          </Field>
+        )}
+        <Field>
+          <FieldLabel htmlFor="secret-name">Display name</FieldLabel>
+          <Input
+            id="secret-name"
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder={kind === "environment" ? "px-dev SSH private key" : "GitHub deploy token"}
+            autoFocus
+          />
+        </Field>
+        {/* Keyed by type: changing the type clears the ID and closes its field. */}
+        <SettingsDisclosure
+          key={kind}
+          summary={grantId.trim() ? `Credential ID ${grantId.trim()}` : "Generated credential ID"}
+          action="Change"
+          label="Change credential ID"
+          forceOpen={Boolean(error) && idConflict !== undefined}
+        >
           <Field>
-            <FieldLabel htmlFor="secret-value">Secret value</FieldLabel>
-            {kind === "environment" ? (
-              <Textarea
-                id="secret-value"
-                value={secret}
-                onChange={(event) => setSecret(event.target.value)}
-                autoComplete="off"
-                spellCheck={false}
-                className="min-h-36 resize-y font-mono"
-                placeholder="Paste the value exactly, including any line breaks"
-              />
-            ) : (
-              <Input
-                id="secret-value"
-                type="password"
-                value={secret}
-                onChange={(event) => setSecret(event.target.value)}
-                autoComplete="new-password"
-                spellCheck={false}
-                className="font-mono"
-              />
-            )}
+            <FieldLabel htmlFor="secret-grant-id">Custom credential ID</FieldLabel>
+            <Input
+              id="secret-grant-id"
+              value={grantId}
+              onChange={(event) => {
+                setGrantId(event.target.value);
+                setError(null);
+              }}
+              placeholder="Generated automatically when blank"
+              className="font-mono"
+            />
             <FieldDescription>
-              {kind === "environment"
-                ? "Line breaks and surrounding whitespace are preserved exactly. The value is cleared from this form after creation."
-                : "Whitespace is preserved. Paste the value exactly as issued."}
+              Useful for automation and stable references. It must be unique and cannot be
+              changed or reused after this credential is revoked.
             </FieldDescription>
           </Field>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-                reset();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Encrypting…" : "Add credential"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </SettingsDisclosure>
+        <Field>
+          <FieldLabel htmlFor="secret-value">Secret value</FieldLabel>
+          {kind === "environment" ? (
+            <Textarea
+              id="secret-value"
+              value={secret}
+              onChange={(event) => setSecret(event.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              className="min-h-36 resize-y font-mono"
+              placeholder="Paste the value exactly, including any line breaks"
+            />
+          ) : (
+            <Input
+              id="secret-value"
+              type="password"
+              value={secret}
+              onChange={(event) => setSecret(event.target.value)}
+              autoComplete="new-password"
+              spellCheck={false}
+              className="font-mono"
+            />
+          )}
+          <FieldDescription>
+            {kind === "environment"
+              ? "Line breaks and surrounding whitespace are preserved exactly. The value is cleared from this form after creation."
+              : "Whitespace is preserved. Paste the value exactly as issued."}
+          </FieldDescription>
+        </Field>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 

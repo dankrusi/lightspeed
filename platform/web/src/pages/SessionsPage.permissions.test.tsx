@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, Children, isValidElement, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -12,18 +12,6 @@ const mocks = vi.hoisted(() => ({ api: vi.fn(), role: "contributor" }));
 vi.mock("@/api", async (original) => ({ ...await original<typeof import("@/api")>(), api: mocks.api }));
 vi.mock("@/lib/universes", () => ({ useActiveUniverse: () => ({ universe: { id: "universe", role: mocks.role }, slug: "universe", isLoading: false }) }));
 vi.mock("@/components/provider-readiness-banner", () => ({ ProviderReadinessBanner: () => null }));
-vi.mock("@/components/ui/select", () => {
-  // Exercise the page's selection behavior without popup positioning in jsdom.
-  const SelectItem = () => null;
-  const Select = ({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: ReactNode }) => {
-    const options = (nodes: ReactNode): ReactNode => Children.map(nodes, (node) => {
-      if (!isValidElement<{ value?: string; children?: ReactNode }>(node)) return null;
-      return node.type === SelectItem ? <option value={node.props.value}>{node.props.children}</option> : options(node.props.children);
-    });
-    return <select value={value} onChange={(event) => onValueChange(event.target.value)}>{options(children)}</select>;
-  };
-  return { Select, SelectItem, SelectContent: () => null, SelectTrigger: () => null, SelectValue: () => null };
-});
 let root: Root;
 let container: HTMLDivElement;
 let client: QueryClient;
@@ -99,6 +87,12 @@ async function openCreate() {
   return document.body.querySelector<HTMLElement>('[role="dialog"]')!;
 }
 
+/** The new-session dialog's profile select, found through its visible label. */
+function profileSelect(dialog: HTMLElement): HTMLSelectElement {
+  const label = [...dialog.querySelectorAll("label")].find((candidate) => candidate.textContent === "Profile")!;
+  return document.getElementById(label.htmlFor) as HTMLSelectElement;
+}
+
 it("previews the universe route while leaving default resolution to session creation", async () => {
   const dialog = await openCreate();
   expect(dialog.textContent).toContain("Universe default: OpenAI · gpt-6-sol");
@@ -114,7 +108,7 @@ it("blocks creation without a default but allows a profile's own model", async (
   expect(dialog.textContent).toContain("Universe default: Not selected");
   expect(create().disabled).toBe(true);
   await act(async () => {
-    const select = dialog.querySelector("select")!;
+    const select = profileSelect(dialog);
     select.value = "custom";
     select.dispatchEvent(new Event("change", { bubbles: true }));
   });
@@ -167,7 +161,7 @@ it.each([true, false])("shows the selected profile's resolved model while retain
   const dialog = await openCreate();
   const selectProfile = async (value: string) => {
     await act(async () => {
-      const select = dialog.querySelector("select")!;
+      const select = profileSelect(dialog);
       select.value = value;
       select.dispatchEvent(new Event("change", { bubbles: true }));
     });

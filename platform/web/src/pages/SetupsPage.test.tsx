@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -11,29 +11,6 @@ vi.mock("@/lib/universes", () => ({
   useActiveUniverse: () => ({ universe: { id: "platform-universe" }, slug: "factory", isLoading: false }),
 }));
 vi.mock("@/lib/permissions", () => ({ useActionPermissions: () => ({ can: () => true }) }));
-// JSDOM has no popup layout; a native select stands in for the key picker.
-vi.mock("@/components/ui/select", async () => {
-  const React = await import("react");
-  const Part = () => null;
-  return {
-    Select: ({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: ReactNode }) => {
-      const options: string[] = [];
-      const visit = (nodes: ReactNode) => React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const props = child.props as { value?: string; children?: ReactNode };
-        if (props.value !== undefined) options.push(props.value);
-        else if (props.children) visit(props.children);
-      });
-      visit(children);
-      return <select aria-label="Key" value={value} onChange={(event) => onValueChange(event.target.value)}>
-        <option value="" />
-        {options.map((option) => <option key={option} value={option}>{option}</option>)}
-      </select>;
-    },
-    SelectContent: ({ children }: { children?: ReactNode }) => <>{children}</>, SelectItem: Part, SelectTrigger: ({ children }: { children?: ReactNode }) => <>{children}</>, SelectValue: Part,
-  };
-});
-
 let root: Root;
 let container: HTMLDivElement;
 let client: QueryClient;
@@ -90,7 +67,9 @@ it("switches to an existing active key with its pasted secret", async () => {
   await openDialog();
   await act(async () => button("Use an existing key")!.click());
   await settle();
-  const select = document.querySelector<HTMLSelectElement>('[role="dialog"] select[aria-label="Key"]')!;
+  const label = [...document.querySelectorAll<HTMLLabelElement>('[role="dialog"] label')].find((node) => node.textContent === "Key")!;
+  const select = document.getElementById(label.htmlFor) as HTMLSelectElement;
+  expect(select.tagName).toBe("SELECT");
   expect([...select.options].map((option) => option.value)).toEqual(["", "lsk_cfg", "lsk_mine"]);
   await act(async () => { select.value = "lsk_mine"; select.dispatchEvent(new Event("change", { bubbles: true })); });
   const secret = document.querySelector<HTMLInputElement>("#configurator-existing-secret")!;

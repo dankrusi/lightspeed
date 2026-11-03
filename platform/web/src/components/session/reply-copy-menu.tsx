@@ -1,7 +1,8 @@
 import { useEffect, useState, type RefObject } from "react";
 import { Check, ChevronDown, Copy, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { replyFormatted, replyMarkdown } from "./reply-copy";
 
 export function ReplyCopyMenu({ contentRef, text, citations }: {
@@ -43,19 +44,18 @@ export function ReplyCopyMenu({ contentRef, text, citations }: {
 
   return (
     <div className="absolute right-0 top-0 z-10">
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="ghost" size="xs" aria-label="Copy reply" title={feedback || "Copy reply"}
+      <Menu align="end" className="w-44" trigger={({ open, toggle }) => (
+        <Button variant="ghost" size="xs" aria-label="Copy reply" title={feedback || "Copy reply"}
           className="h-6 gap-1 px-1.5 text-muted-foreground opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100 aria-expanded:opacity-100 hover:text-foreground focus-visible:text-foreground aria-expanded:text-foreground"
-          disabled={copying} />}>
+          disabled={copying} aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
           {feedback === "Copied" ? <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
             : feedback ? <TriangleAlert className="size-3.5 text-destructive" /> : <Copy className="size-3.5" />}
           <ChevronDown className="size-3" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-44">
-          <DropdownMenuItem onClick={() => void copy(false)}>Copy as Markdown</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => void copy(true)}>Copy formatted</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </Button>
+      )}>
+        <MenuItem onClick={() => void copy(false)}>Copy as Markdown</MenuItem>
+        <MenuItem onClick={() => void copy(true)}>Copy formatted</MenuItem>
+      </Menu>
       <span role="status" className={feedback && feedback !== "Copied"
         ? "absolute right-0 top-7 w-56 rounded-md border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md"
         : "sr-only"}>{feedback}</span>

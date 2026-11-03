@@ -12,16 +12,9 @@ import {
 } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDangerButton } from "@/components/confirm-danger-button";
 import { providerEndpoint } from "./use-model-providers";
@@ -214,7 +207,7 @@ export function ModelApiKeyForm({
         </FieldDescription>
       </Field>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <DialogFooter>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel}>
           {cancelLabel}
         </Button>
@@ -225,7 +218,7 @@ export function ModelApiKeyForm({
               ? "Replace key"
               : "Save key"}
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   );
 }
@@ -428,23 +421,19 @@ export function OpenAiCompatibleForm({
       <Field>
         <FieldLabel htmlFor="compatible-provider">Provider</FieldLabel>
         <Select
+          id="compatible-provider"
           value={providerChoice}
-          onValueChange={(value) =>
-            changeProvider(value as CompatibleProviderChoice)
+          onChange={(event) =>
+            changeProvider(event.target.value as CompatibleProviderChoice)
           }
           disabled={replace}
         >
-          <SelectTrigger id="compatible-provider">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {COMPATIBLE_PROVIDER_PRESETS.map((preset) => (
-              <SelectItem key={preset.id} value={preset.id}>
-                {preset.label}
-              </SelectItem>
-            ))}
-            <SelectItem value="custom">Custom provider</SelectItem>
-          </SelectContent>
+          {COMPATIBLE_PROVIDER_PRESETS.map((preset) => (
+            <option key={preset.id} value={preset.id}>
+              {preset.label}
+            </option>
+          ))}
+          <option value="custom">Custom provider</option>
         </Select>
         <FieldDescription>
           {providerChoice === "custom"
@@ -534,14 +523,14 @@ export function OpenAiCompatibleForm({
         </FieldDescription>
       </Field>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <DialogFooter>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" disabled={save.isPending}>
           {save.isPending ? "Saving…" : "Save provider"}
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   );
 }

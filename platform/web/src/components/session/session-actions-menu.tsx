@@ -2,14 +2,9 @@ import type { ReactNode } from "react";
 import { ChevronDown, Minimize2, Ellipsis, LoaderCircle, Share2, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
+import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
+import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 import { SessionMenuIdentity, SessionMenuMetadata } from "@/components/session/session-menu-details";
 import { SessionMenuPreferences } from "@/components/session/session-menu-preferences";
 
@@ -45,73 +40,74 @@ export function SessionActionsMenu({
 }) {
   const navigate = useNavigate();
   const compactItem = onCompact && (
-    <DropdownMenuItem onClick={onCompact} disabled={Boolean(compactionLabel)}>
-      {compactionLabel ? <LoaderCircle className="animate-spin" /> : <Minimize2 />}
+    <MenuItem
+      icon={compactionLabel ? <LoaderCircle className="animate-spin" /> : <Minimize2 />}
+      onClick={onCompact}
+      disabled={Boolean(compactionLabel)}
+    >
       {compactionLabel ?? "Compact context"}
-    </DropdownMenuItem>
+    </MenuItem>
   );
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          variant === "more" ? (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 text-muted-foreground"
-              aria-label="Session actions"
-              title="Session actions"
-            />
-          ) : (
-            <button
-              type="button"
-              aria-label="Conversation menu"
-              title="Conversation menu"
-              className="flex items-center rounded-sm pr-2 pl-0.5 text-muted-foreground hover:text-foreground"
-            />
-          )
-        }
-      >
-        {variant === "more" ? (
-          <Ellipsis />
+    <Menu
+      align={variant === "more" ? "end" : "start"}
+      className="max-h-[min(28rem,calc(100vh-1rem))] w-80 max-w-[calc(100vw-1rem)]"
+      trigger={({ open: menuOpen, toggle }) =>
+        variant === "more" ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="shrink-0 text-muted-foreground"
+            aria-label="Session actions"
+            title="Session actions"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={toggle}
+          >
+            <Ellipsis />
+          </Button>
         ) : (
-          <ChevronDown className="size-3.5" />
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align={variant === "more" ? "end" : "start"}
-        className="max-h-[min(28rem,calc(100vh-1rem))] w-80 max-w-[calc(100vw-1rem)]"
-      >
-        {(onSettings || onShare || open || lifecycle || onCompact) && (
-          <>
-            <DropdownMenuGroup>
-              {onSettings && (
-                <DropdownMenuItem onClick={onSettings}>
-                  <SlidersHorizontal /> Session settings
-                </DropdownMenuItem>
-              )}
-              {onShare && (
-                <DropdownMenuItem onClick={onShare}>
-                  <Share2 /> Share with universe…
-                </DropdownMenuItem>
-              )}
-              {open && (
-                <DropdownMenuItem onClick={() => navigate(open.href)}>
-                  {open.icon} {open.label}
-                </DropdownMenuItem>
-              )}
-              {variant === "tab" && lifecycle}
-              {compactItem}
-              {variant === "more" && lifecycle}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-          </>
-        )}
-        <SessionMenuPreferences />
-        <DropdownMenuSeparator />
-        <SessionMenuIdentity sessionId={sessionId} />
-        <SessionMenuMetadata metadata={metadata} />
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <button
+            type="button"
+            aria-label="Conversation menu"
+            title="Conversation menu"
+            className="flex items-center rounded-sm pr-2 pl-0.5 text-muted-foreground hover:text-foreground"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={toggle}
+          >
+            <ChevronDown className="size-3.5" />
+          </button>
+        )
+      }
+    >
+      {(onSettings || onShare || open || lifecycle || onCompact) && (
+        <>
+          {onSettings && (
+            <MenuItem icon={<SlidersHorizontal />} onClick={onSettings}>
+              Session settings
+            </MenuItem>
+          )}
+          {onShare && (
+            <MenuItem icon={<Share2 />} onClick={onShare}>
+              Share with universe…
+            </MenuItem>
+          )}
+          {open && (
+            <MenuItem icon={open.icon} onClick={() => navigate(open.href)}>
+              {open.label}
+            </MenuItem>
+          )}
+          {variant === "tab" && lifecycle}
+          {compactItem}
+          {variant === "more" && lifecycle}
+          <MenuSeparator />
+        </>
+      )}
+      <SessionMenuPreferences />
+      <MenuSeparator />
+      <SessionMenuIdentity sessionId={sessionId} />
+      <SessionMenuMetadata metadata={metadata} />
+    </Menu>
   );
 }

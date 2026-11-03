@@ -1,6 +1,6 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
-import { useMemo, useState, type FormEvent } from "react";
+import { useId, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, RadioTower, Unplug } from "lucide-react";
@@ -14,17 +14,8 @@ import {
   type ChannelPairingView,
   type UniverseChannelStatus,
 } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,23 +26,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableActionsCell,
@@ -77,6 +53,7 @@ export function ChannelsPage({ admin: _admin }: { admin: boolean }) {
 function Channels({ universeId, slug }: { universeId: string; slug: string }) {
   const queryClient = useQueryClient();
   const [connectOpen, setConnectOpen] = useState(false);
+  const [unpairing, setUnpairing] = useState<ChannelPairingView | null>(null);
   const accounts = useQuery({
     queryKey: ["channel-accounts", universeId],
     queryFn: () => api<ChannelAccountListResponse>(
@@ -141,6 +118,29 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
           </Button>
         }
       />
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={unpairing !== null}
+        onClose={() => setUnpairing(null)}
+        title="Unpair this conversation?"
+        description={`It stops routing to ${unpairing?.botId ?? ""}. The conversation must connect or present a pairing code again.`}
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setUnpairing(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (unpairing) unpair.mutate(unpairing);
+              setUnpairing(null);
+            }}
+          >
+            Unpair
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
       <ConnectChannelDialog
         universeId={universeId}
         open={connectOpen}
@@ -266,37 +266,15 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
                             {new Date(pairing.pairedAtMs).toLocaleString()}
                           </TableCell>
                           <TableActionsCell>
-                            <AlertDialog>
-                              <AlertDialogTrigger
-                                render={
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    className="text-destructive"
-                                    aria-label={`Unpair conversation ${pairing.chatId}`}
-                                  />
-                                }
-                              >
-                                <Unplug />
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Unpair this conversation?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    It stops routing to {pairing.botId}. The conversation must connect or present a pairing code again.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-white hover:bg-destructive/90"
-                                    onClick={() => unpair.mutate(pairing)}
-                                  >
-                                    Unpair
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="text-destructive"
+                              aria-label={`Unpair conversation ${pairing.chatId}`}
+                              onClick={() => setUnpairing(pairing)}
+                            >
+                              <Unplug />
+                            </Button>
                           </TableActionsCell>
                         </TableRow>
                       ))}
@@ -327,6 +305,7 @@ function ConnectChannelDialog({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [printQr, setPrintQr] = useState(true);
+  const formId = useId();
 
   const connect = useMutation({
     mutationFn: () => api(
@@ -372,117 +351,108 @@ function ConnectChannelDialog({
   const incomplete = provider === "telegram" ? !token.trim() : !phoneNumber.trim();
 
   return (
-    <Dialog
+    <Modal
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) reset();
+      onClose={() => {
+        onOpenChange(false);
+        reset();
       }}
+      title="Connect a channel"
+      description="Add the provider credential here. Lightspeed creates and manages the encrypted access grant automatically."
+      footer={<>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            onOpenChange(false);
+            reset();
+          }}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={connect.isPending || incomplete}>
+          {connect.isPending
+            ? "Connecting…"
+            : provider === "telegram"
+              ? "Connect Telegram"
+              : "Connect WhatsApp"}
+        </Button>
+      </>}
     >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Connect a channel</DialogTitle>
-          <DialogDescription>
-            Add the provider credential here. Lightspeed creates and manages the encrypted access grant automatically.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel>Provider</FieldLabel>
-            <Select
-              value={provider}
-              onValueChange={(value) => value && setProvider(value as typeof provider)}
-            >
-              <SelectTrigger className="w-full" aria-label="Channel provider">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="telegram">Telegram</SelectItem>
-                <SelectItem value="whatsapp">WhatsApp</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel>Provider</FieldLabel>
+          <Select
+            className="w-full"
+            aria-label="Channel provider"
+            value={provider}
+            onChange={(event) => setProvider(event.target.value as typeof provider)}
+          >
+            <option value="telegram">Telegram</option>
+            <option value="whatsapp">WhatsApp</option>
+          </Select>
+        </Field>
 
-          {provider === "telegram" ? (
+        {provider === "telegram" ? (
+          <Field>
+            <FieldLabel htmlFor="telegram-bot-token">Bot token</FieldLabel>
+            <Input
+              id="telegram-bot-token"
+              type="password"
+              value={token}
+              onChange={(event) => setToken(event.target.value)}
+              autoComplete="new-password"
+              spellCheck={false}
+              className="font-mono"
+              placeholder="Paste the token from BotFather"
+              autoFocus
+            />
+            <FieldDescription>
+              Lightspeed checks the token with Telegram and fills in the bot username for you. The token is encrypted and never shown again.
+            </FieldDescription>
+          </Field>
+        ) : (
+          <>
             <Field>
-              <FieldLabel htmlFor="telegram-bot-token">Bot token</FieldLabel>
+              <FieldLabel htmlFor="whatsapp-phone">Phone number</FieldLabel>
               <Input
-                id="telegram-bot-token"
-                type="password"
-                value={token}
-                onChange={(event) => setToken(event.target.value)}
-                autoComplete="new-password"
-                spellCheck={false}
-                className="font-mono"
-                placeholder="Paste the token from BotFather"
+                id="whatsapp-phone"
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value)}
+                placeholder="+41 79 123 45 67"
                 autoFocus
               />
               <FieldDescription>
-                Lightspeed checks the token with Telegram and fills in the bot username for you. The token is encrypted and never shown again.
+                After connecting, scan the QR code printed by the connector host.
               </FieldDescription>
             </Field>
-          ) : (
-            <>
-              <Field>
-                <FieldLabel htmlFor="whatsapp-phone">Phone number</FieldLabel>
-                <Input
-                  id="whatsapp-phone"
-                  value={phoneNumber}
-                  onChange={(event) => setPhoneNumber(event.target.value)}
-                  placeholder="+41 79 123 45 67"
-                  autoFocus
-                />
-                <FieldDescription>
-                  After connecting, scan the QR code printed by the connector host.
-                </FieldDescription>
-              </Field>
-              <label className="flex items-start gap-3 rounded-lg border bg-muted/15 p-3">
-                <Checkbox
-                  checked={printQr}
-                  onCheckedChange={(checked) => setPrintQr(checked === true)}
-                />
-                <span className="grid gap-1">
-                  <span className="text-sm font-medium">Print pairing QR code</span>
-                  <span className="text-xs text-muted-foreground">
-                    Show the QR code in the connector process output until this account is paired.
-                  </span>
+            <label className="flex items-start gap-3 rounded-lg border bg-muted/15 p-3">
+              <Checkbox
+                checked={printQr}
+                onCheckedChange={(checked) => setPrintQr(checked === true)}
+              />
+              <span className="grid gap-1">
+                <span className="text-sm font-medium">Print pairing QR code</span>
+                <span className="text-xs text-muted-foreground">
+                  Show the QR code in the connector process output until this account is paired.
                 </span>
-              </label>
-            </>
-          )}
+              </span>
+            </label>
+          </>
+        )}
 
-          <Field>
-            <FieldLabel htmlFor="channel-display-name">Display name (optional)</FieldLabel>
-            <Input
-              id="channel-display-name"
-              value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
-              placeholder={provider === "telegram" ? "Defaults to the Telegram bot name" : "Support WhatsApp"}
-            />
-          </Field>
-          {connect.error && <p className="text-sm text-destructive">{connect.error.message}</p>}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-                reset();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={connect.isPending || incomplete}>
-              {connect.isPending
-                ? "Connecting…"
-                : provider === "telegram"
-                  ? "Connect Telegram"
-                  : "Connect WhatsApp"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <Field>
+          <FieldLabel htmlFor="channel-display-name">Display name (optional)</FieldLabel>
+          <Input
+            id="channel-display-name"
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder={provider === "telegram" ? "Defaults to the Telegram bot name" : "Support WhatsApp"}
+          />
+        </Field>
+        {connect.error && <p className="text-sm text-destructive">{connect.error.message}</p>}
+      </form>
+    </Modal>
   );
 }
 

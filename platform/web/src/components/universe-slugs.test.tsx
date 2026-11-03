@@ -11,10 +11,6 @@ import type { Universe } from "@/api";
 
 const api = vi.hoisted(() => vi.fn());
 vi.mock("@/api", async original => ({ ...await original<typeof import("@/api")>(), api }));
-vi.mock("@/components/ui/dialog", () => {
-  const Box = ({ children }: { children: ReactNode }) => <div>{children}</div>;
-  return { Dialog: Box, DialogContent: Box, DialogDescription: Box, DialogFooter: Box, DialogHeader: Box, DialogTitle: Box, DialogTrigger: Box };
-});
 let root: Root;
 let container: HTMLDivElement;
 let client: QueryClient;
@@ -34,19 +30,19 @@ async function render(node: ReactNode) {
   await act(async () => root.render(<QueryClientProvider client={client}><MemoryRouter>{node}</MemoryRouter></QueryClientProvider>));
 }
 async function input(id: string, value: string) {
-  const field = container.querySelector<HTMLInputElement>(`#${id}`)!;
+  const field = document.querySelector<HTMLInputElement>(`#${id}`)!;
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(field, value);
     field.dispatchEvent(new Event("input", { bubbles: true }));
   });
 }
 async function submit() {
-  await act(async () => { container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+  await act(async () => { document.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
 }
 it("submits a requested slug independently from the display name", async () => {
   await render(<NewUniverseDialog open onOpenChange={() => {}} />);
   await input("new-universe-name", "Display Name");
-  expect(container.querySelector<HTMLInputElement>("#new-universe-slug")!.value).toBe("display-name");
+  expect(document.querySelector<HTMLInputElement>("#new-universe-slug")!.value).toBe("display-name");
   await input("new-universe-slug", "chosen");
   await input("new-universe-name", "Different Name");
   await submit();
@@ -56,7 +52,7 @@ it.each(["runtime-slug", undefined])("adopts with the runtime slug or an explici
   const orphan = { universeId: "id", slug, sessions: 0, workspaces: 0, profiles: 0, blobBytes: 0, createdAtMs: 0 };
   await render(<AdoptDialog orphan={orphan} onOpenChange={() => {}} onAdopted={() => {}} />);
   await input("adopt-name", "My display name");
-  const field = container.querySelector<HTMLInputElement>("#adopt-slug")!;
+  const field = document.querySelector<HTMLInputElement>("#adopt-slug")!;
   if (slug) { expect(field.readOnly).toBe(true); expect(field.value).toBe(slug); }
   else {
     await submit(); expect(api).not.toHaveBeenCalled();

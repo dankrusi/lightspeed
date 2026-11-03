@@ -4,7 +4,6 @@ import { RefreshCw } from "lucide-react";
 import { api, type GitHubApp, type GitHubInstallation, type SecretGrant } from "@/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
@@ -180,14 +179,14 @@ export function GitHubAppForm({
         </Field>
       </SettingsDisclosure>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <DialogFooter>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Back
         </Button>
         <Button type="submit" disabled={create.isPending}>
           {create.isPending ? "Encrypting…" : "Add GitHub App"}
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   );
 }
@@ -335,7 +334,7 @@ export function GitHubAppDetails({
       </div>
 
       {remove.error && <p className="text-sm text-destructive">{remove.error.message}</p>}
-      <DialogFooter>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <ConfirmDangerButton
           label="Remove GitHub App"
           title="Remove this GitHub App?"
@@ -349,7 +348,7 @@ export function GitHubAppDetails({
           pending={remove.isPending}
           onConfirm={() => remove.mutate()}
         />
-      </DialogFooter>
+      </div>
     </div>
   );
 }

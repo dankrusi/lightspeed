@@ -1,25 +1,9 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { SessionActionsMenu } from "./session-actions-menu";
-
-// The menu's contents are what is under test, not the popup: render every
-// primitive in place, separators as <hr>.
-vi.mock("@/components/ui/dropdown-menu", () => {
-  const pass = ({ children }: { children?: ReactNode }) => <div>{children}</div>;
-  return {
-    DropdownMenu: pass,
-    DropdownMenuTrigger: ({ children }: { children?: ReactNode }) => <div data-testid="menu-trigger">{children}</div>,
-    DropdownMenuContent: pass,
-    DropdownMenuGroup: pass,
-    DropdownMenuLabel: pass,
-    DropdownMenuItem: ({ children, onClick, disabled }: { children?: ReactNode; onClick?: () => void; disabled?: boolean }) => <button onClick={onClick} disabled={disabled}>{children}</button>,
-    DropdownMenuCheckboxItem: pass,
-    DropdownMenuSeparator: () => <hr />,
-  };
-});
 
 let root: Root;
 let container: HTMLDivElement;
@@ -35,20 +19,26 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-/** The menu as its groups, each the text of what it holds. */
+/** The menu, opened, as its groups, each the text of what it holds. */
 async function groups(props: Partial<Parameters<typeof SessionActionsMenu>[0]>): Promise<string[]> {
   await act(async () => root.render(
     <MemoryRouter>
       <SessionActionsMenu variant="more" sessionId="session-1" metadata={{ team: "core" }} {...props} />
     </MemoryRouter>,
   ));
-  return container.innerHTML
-    .split("<hr>")
-    .map((html) => {
-      const part = document.createElement("div");
-      part.innerHTML = html;
-      return part.textContent?.trim() ?? "";
-    });
+  const trigger = menuTrigger();
+  if (trigger.getAttribute("aria-expanded") !== "true") await act(async () => trigger.click());
+  const menu = container.querySelector('[role="menu"]')!;
+  const parts = [""];
+  for (const child of menu.children) {
+    if (child.getAttribute("role") === "separator") parts.push("");
+    else parts[parts.length - 1] += child.textContent ?? "";
+  }
+  return parts.map((part) => part.trim());
+}
+
+function menuTrigger(): HTMLButtonElement {
+  return container.querySelector<HTMLButtonElement>('[aria-haspopup="menu"]')!;
 }
 
 it("keeps compaction directly above close in the action group", async () => {
@@ -93,7 +83,7 @@ it.each(["more", "tab"] as const)("offers compaction in the %s menu and prevents
     await groups({ variant, onCompact: compact, compactionLabel });
     const busy = [...container.querySelectorAll("button")].find((item) => item.textContent === compactionLabel)!;
     expect(busy.disabled).toBe(true);
-    const trigger = container.querySelector('[data-testid="menu-trigger"]')!;
+    const trigger = menuTrigger();
     expect(trigger.querySelector(".animate-spin")).toBeNull();
     expect(trigger.querySelector(variant === "more" ? ".lucide-ellipsis" : ".lucide-chevron-down")).not.toBeNull();
     await act(async () => busy.click());

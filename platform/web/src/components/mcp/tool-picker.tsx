@@ -7,13 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import {
   mcpDiscoveryFailureAction,
   useMcpToolDiscovery,
@@ -105,27 +99,22 @@ function ToolPicker({
   const title = scope === "server" ? "Allowed tools" : "Tools";
   const settings = (
     <>
-      <Select disabled={readOnly}
+      <Select
+        id={`${id}-mode`}
+        aria-label={
+          scope === "server" ? "Allowed tools" : "Session tools"
+        }
+        disabled={readOnly}
         value={limited ? "selected" : "all"}
-        onValueChange={(mode) => {
-          if (mode === "all") {
+        onChange={(event) => {
+          if (event.target.value === "all") {
             if (value !== undefined) setSelectionDraft(value);
             onChange(undefined);
           } else onChange(selectionDraft);
         }}
       >
-        <SelectTrigger
-          id={`${id}-mode`}
-          aria-label={
-            scope === "server" ? "Allowed tools" : "Session tools"
-          }
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{allLabel}</SelectItem>
-          <SelectItem value="selected">Selected tools</SelectItem>
-        </SelectContent>
+        <option value="all">{allLabel}</option>
+        <option value="selected">Selected tools</option>
       </Select>
       <p className="text-xs text-muted-foreground">
         {limited

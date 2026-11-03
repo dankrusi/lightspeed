@@ -5,54 +5,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { McpToolDiscovery } from "@/api";
 import { McpToolPicker } from "./tool-picker";
 
-// Exercise selection behavior with a native control; jsdom cannot lay out the floating popup.
-vi.mock("@/components/ui/select", async () => {
-  const React = await import("react");
-  const Part = () => null;
-  return {
-    Select: ({
-      value,
-      onValueChange,
-      children,
-    }: {
-      value: string;
-      onValueChange: (value: string) => void;
-      children: React.ReactNode;
-    }) => {
-      const options: { value: string; label: React.ReactNode }[] = [];
-      const visit = (children: React.ReactNode) =>
-        React.Children.forEach(children, (child) => {
-          if (!React.isValidElement(child)) return;
-          const props = child.props as {
-            value?: string;
-            children?: React.ReactNode;
-          };
-          if (props.value !== undefined)
-            options.push({ value: props.value, label: props.children });
-          else if (props.children) visit(props.children);
-        });
-      visit(children);
-      return (
-        <select
-          aria-label="Tool selection mode"
-          value={value}
-          onChange={(event) => onValueChange(event.target.value)}
-        >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      );
-    },
-    SelectContent: Part,
-    SelectItem: Part,
-    SelectTrigger: Part,
-    SelectValue: Part,
-  };
-});
-
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 Object.assign(window, { PointerEvent: MouseEvent });
 let root: ReturnType<typeof createRoot>;
@@ -86,7 +38,10 @@ async function button(name: string) {
 }
 
 async function mode(label: string) {
-  const select = container.querySelector<HTMLSelectElement>("select")!;
+  const select = container.querySelector<HTMLSelectElement>(
+    'select[aria-label="Allowed tools"], select[aria-label="Session tools"]',
+  )!;
+  expect(select).not.toBeNull();
   const option = [...select.options].find(
     (option) => option.textContent === label,
   )!;

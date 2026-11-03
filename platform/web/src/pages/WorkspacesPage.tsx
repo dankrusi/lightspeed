@@ -1,6 +1,6 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { slugify, workspaceCreateSchema, validWorkspaceTransferPath } from "@lightspeed-ai/platform-shared";
@@ -19,25 +19,12 @@ import {
   type WorkspaceRow,
   type WorkspaceTree,
 } from "@/api";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { SettingsDisclosure } from "@/components/ui/settings-disclosure";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DetailPrompt, LoadingNote, UniverseNotFound } from "@/components/page";
 import { useCreateParam } from "@/lib/create-param";
 import { useActiveUniverse } from "@/lib/universes";
@@ -219,26 +206,17 @@ function WorkspacePane({
         <div className="min-w-0 flex-1">
         {workspaces.data && workspaces.data.length > 0 ? (
           <Select
+            className="w-full"
+            aria-label="Workspace"
+            title={workspaces.data.find((w) => w.workspaceId === workspaceId)?.displayName ?? workspaceId}
             value={workspaceId ?? ""}
-            onValueChange={(value) => navigate(`/u/${slug}/workspaces/${value}`)}
+            onChange={(event) => navigate(`/u/${slug}/workspaces/${event.target.value}`)}
           >
-            <SelectTrigger className="w-full" aria-label="Workspace">
-              <FolderGit2 className="size-4 shrink-0 text-muted-foreground" />
-              <SelectValue>
-                {(value: string) => {
-                  const label = workspaces.data?.find((w) => w.workspaceId === value)?.displayName ?? value;
-                  // Text directly inside the flex value cannot ellipsize.
-                  return <span className="min-w-0 truncate" title={label}>{label}</span>;
-                }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {workspaces.data.map((workspace) => (
-                <SelectItem key={workspace.workspaceId} value={workspace.workspaceId}>
-                  <span className="truncate">{workspace.displayName ?? workspace.workspaceId}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
+            {workspaces.data.map((workspace) => (
+              <option key={workspace.workspaceId} value={workspace.workspaceId}>
+                {workspace.displayName ?? workspace.workspaceId}
+              </option>
+            ))}
           </Select>
         ) : (
           <p className="text-sm text-muted-foreground">
@@ -613,6 +591,7 @@ function NewWorkspaceDialog({
   // resumes tracking.
   const [idTouched, setIdTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const create = useMutation({
     mutationFn: (input: unknown) =>
@@ -648,69 +627,66 @@ function NewWorkspaceDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New workspace</DialogTitle>
-          <DialogDescription>
-            Starts empty; profiles link it by workspace id.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="new-workspace-name">Display name</FieldLabel>
-            <Input
-              id="new-workspace-name"
-              value={displayName}
-              onChange={(e) => {
-                setDisplayName(e.target.value);
-                if (!idTouched) {
-                  setWorkspaceId(e.target.value ? slugify(e.target.value) : "");
-                }
-              }}
-              placeholder="Notes"
-              autoFocus
-            />
-            {/* The id follows the name until it is edited; it opens on its own
-                when it is missing, invalid or already taken. */}
-            <SettingsDisclosure
-              summary={workspaceId
-                ? <>Id: <code className="font-mono">{workspaceId}</code></>
-                : "Id derived from the display name"}
-              action="Change"
-              label="Change workspace id"
-              forceOpen={Boolean(error) && (!workspaceId || /workspaceId|already exists/.test(error ?? ""))}
-            >
-              <Field>
-                <FieldLabel htmlFor="new-workspace-id">Workspace id</FieldLabel>
-                <Input
-                  id="new-workspace-id"
-                  value={workspaceId}
-                  onChange={(e) => {
-                    setWorkspaceId(e.target.value);
-                    setIdTouched(e.target.value.length > 0);
-                  }}
-                  placeholder="notes"
-                  className="font-mono"
-                />
-                <FieldDescription>
-                  What profile workspace attachments reference — cannot be changed later.
-                </FieldDescription>
-              </Field>
-            </SettingsDisclosure>
-          </Field>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Creating…" : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="New workspace"
+      description="Starts empty; profiles link it by workspace id."
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={create.isPending}>
+          {create.isPending ? "Creating…" : "Create"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="new-workspace-name">Display name</FieldLabel>
+          <Input
+            id="new-workspace-name"
+            value={displayName}
+            onChange={(e) => {
+              setDisplayName(e.target.value);
+              if (!idTouched) {
+                setWorkspaceId(e.target.value ? slugify(e.target.value) : "");
+              }
+            }}
+            placeholder="Notes"
+            autoFocus
+          />
+          {/* The id follows the name until it is edited; it opens on its own
+              when it is missing, invalid or already taken. */}
+          <SettingsDisclosure
+            summary={workspaceId
+              ? <>Id: <code className="font-mono">{workspaceId}</code></>
+              : "Id derived from the display name"}
+            action="Change"
+            label="Change workspace id"
+            forceOpen={Boolean(error) && (!workspaceId || /workspaceId|already exists/.test(error ?? ""))}
+          >
+            <Field>
+              <FieldLabel htmlFor="new-workspace-id">Workspace id</FieldLabel>
+              <Input
+                id="new-workspace-id"
+                value={workspaceId}
+                onChange={(e) => {
+                  setWorkspaceId(e.target.value);
+                  setIdTouched(e.target.value.length > 0);
+                }}
+                placeholder="notes"
+                className="font-mono"
+              />
+              <FieldDescription>
+                What profile workspace attachments reference — cannot be changed later.
+              </FieldDescription>
+            </Field>
+          </SettingsDisclosure>
+        </Field>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 
@@ -735,6 +711,7 @@ function NewFileDialog({
   const navigate = useNavigate();
   const [path, setPath] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const formId = useId();
 
   const create = useMutation({
     mutationFn: (target: string) =>
@@ -775,41 +752,37 @@ function NewFileDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New file</DialogTitle>
-          <DialogDescription>
-            Create a file in {parent || "the workspace root"}.
-            Directories in the path are created as needed.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
-          <Field>
-            <FieldLabel htmlFor="new-file-path">Path</FieldLabel>
-            <Input
-              id="new-file-path"
-              value={path}
-              disabled={create.isPending}
-              onChange={(e) => { setPath(e.target.value); setError(null); }}
-              placeholder="notes/todo.md"
-              className="font-mono"
-              autoFocus
-              required
-            />
-          </Field>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Creating…" : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="New file"
+      description={`Create a file in ${parent || "the workspace root"}. Directories in the path are created as needed.`}
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={create.isPending}>
+          {create.isPending ? "Creating…" : "Create"}
+        </Button>
+      </>}
+    >
+      <form id={formId} onSubmit={submit} className="grid gap-4">
+        <Field>
+          <FieldLabel htmlFor="new-file-path">Path</FieldLabel>
+          <Input
+            id="new-file-path"
+            value={path}
+            disabled={create.isPending}
+            onChange={(e) => { setPath(e.target.value); setError(null); }}
+            placeholder="notes/todo.md"
+            className="font-mono"
+            autoFocus
+            required
+          />
+        </Field>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </form>
+    </Modal>
   );
 }
 

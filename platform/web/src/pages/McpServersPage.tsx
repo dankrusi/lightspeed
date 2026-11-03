@@ -6,7 +6,7 @@ import { mcpServerStatus, resourceTimestamp } from "@/lib/resource-status";
 import { ReadError } from "@/components/read-error";
 import { McpToolPicker } from "@/components/mcp/tool-picker";
 import { useMcpToolDiscoverySource } from "@/lib/mcp/tool-discovery";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { slugify } from "@lightspeed-ai/platform-shared";
 import { CheckCircle2, ExternalLink, Loader2, LogIn, Plus, RotateCcw, Server } from "lucide-react";
@@ -20,26 +20,13 @@ import {
 } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { SettingsDisclosure, SettingsGroup } from "@/components/ui/settings-disclosure";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { TableCell } from "@/components/ui/table";
 import { EmptyState, LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";
 import { ProgressSteps } from "@/components/ui/progress-steps";
@@ -255,6 +242,7 @@ function ServerDialog({
   onDone: (server: McpServer, connectOAuth: boolean) => void;
 }) {
   const editing = server !== null;
+  const formId = useId();
   const [step, setStep] = useState<1 | 2>(editing ? 2 : 1);
   const [displayName, setDisplayName] = useState(server?.displayName ?? "");
   const [serverId, setServerId] = useState(server?.serverId ?? "");
@@ -575,15 +563,10 @@ function ServerDialog({
             OAuth sign-in detected from the server
           </div>
         )}
-        <Select value={authKind} onValueChange={(value) => chooseAuth(value as McpAuthKind)}>
-          <SelectTrigger className="w-full" aria-label="Authentication">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No authentication</SelectItem>
-            <SelectItem value="bearer">Bearer token</SelectItem>
-            <SelectItem value="oauth">OAuth sign-in</SelectItem>
-          </SelectContent>
+        <Select className="w-full" aria-label="Authentication" value={authKind} onChange={(event) => chooseAuth(event.target.value as McpAuthKind)}>
+          <option value="none">No authentication</option>
+          <option value="bearer">Bearer token</option>
+          <option value="oauth">OAuth sign-in</option>
         </Select>
         <FieldDescription>
           {authKind === "oauth"
@@ -655,19 +638,17 @@ function ServerDialog({
           <Field>
             <FieldLabel>Execution</FieldLabel>
             <Select
+              className="w-full"
+              aria-label="MCP execution"
               value={execution}
-              onValueChange={(value) => {
+              onChange={(event) => {
+                const value = event.target.value;
                 setExecution(value as McpServer["execution"]);
                 if (value === "provider") setExposure("inject");
               }}
             >
-              <SelectTrigger className="w-full" aria-label="MCP execution">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="provider">Model provider connects directly</SelectItem>
-                <SelectItem value="native">Lightspeed connects</SelectItem>
-              </SelectContent>
+              <option value="provider">Model provider connects directly</option>
+              <option value="native">Lightspeed connects</option>
             </Select>
             <FieldDescription>
               {execution === "native"
@@ -679,16 +660,13 @@ function ServerDialog({
             <Field>
               <FieldLabel>Tool exposure</FieldLabel>
               <Select
+                className="w-full"
+                aria-label="MCP tool exposure"
                 value={exposure}
-                onValueChange={(value) => setExposure(value as McpServer["exposure"])}
+                onChange={(event) => setExposure(event.target.value as McpServer["exposure"])}
               >
-                <SelectTrigger className="w-full" aria-label="MCP tool exposure">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="inject">Show tools to the model up front</SelectItem>
-                  <SelectItem value="search">Let the model search on demand</SelectItem>
-                </SelectContent>
+                <option value="inject">Show tools to the model up front</option>
+                <option value="search">Let the model search on demand</option>
               </Select>
               <FieldDescription>
                 {exposure === "search"
@@ -699,15 +677,10 @@ function ServerDialog({
           )}
           <Field>
             <FieldLabel>Tool approval</FieldLabel>
-            <Select value={approval} onValueChange={(value) => setApproval(value as string)}>
-              <SelectTrigger className="w-full" aria-label="Tool approval">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {APPROVALS.map((value) => (
-                  <SelectItem key={value} value={value}>{approvalLabel(value)}</SelectItem>
-                ))}
-              </SelectContent>
+            <Select className="w-full" aria-label="Tool approval" value={approval} onChange={(event) => setApproval(event.target.value)}>
+              {APPROVALS.map((value) => (
+                <option key={value} value={value}>{approvalLabel(value)}</option>
+              ))}
             </Select>
           </Field>
         </SettingsGroup>
@@ -781,21 +754,34 @@ function ServerDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={`max-h-[min(92dvh,860px)] gap-0 p-0 sm:max-w-xl ${editing ? "grid-rows-[auto_minmax(0,1fr)_auto]" : "grid-rows-[auto_auto_minmax(0,1fr)_auto]"}`}
-      >
-        <DialogHeader className="border-b p-6 pr-14">
-          <DialogTitle>{editing ? `Edit ${server.displayName || server.serverId}` : "Add MCP server"}</DialogTitle>
-          <DialogDescription>
-            {editing
-              ? "Update how Lightspeed connects to this server."
-              : step === 1
-                ? "Start with the server address. Lightspeed will check how it expects you to connect."
-                : "Confirm the connection. Everything else is optional."}
-          </DialogDescription>
-        </DialogHeader>
-
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={editing ? `Edit ${server.displayName || server.serverId}` : "Add MCP server"}
+      description={editing
+        ? "Update how Lightspeed connects to this server."
+        : step === 1
+          ? "Start with the server address. Lightspeed will check how it expects you to connect."
+          : "Confirm the connection. Everything else is optional."}
+      footer={<>
+        {!editing && step === 2 && (
+          <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button>
+        )}
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={save.isPending || probe.isPending}>
+          {save.isPending
+            ? "Saving…"
+            : !editing && step === 1
+              ? probe.isPending ? "Checking…" : "Continue"
+              : !credentialGrantId && authKind === "oauth"
+                ? editing ? "Save and connect" : "Add and connect"
+                : editing ? "Save" : "Add server"}
+        </Button>
+      </>}
+    >
+      <div className="grid gap-5">
         {!editing && (
           <ProgressSteps
             steps={MCP_CREATE_STEPS}
@@ -805,8 +791,8 @@ function ServerDialog({
           />
         )}
 
-        <form onSubmit={submit} className="contents">
-          <div className="grid min-h-0 content-start gap-5 overflow-y-auto p-6">
+        <form id={formId} onSubmit={submit} className="grid gap-5">
+          <div className="grid content-start gap-5">
           {editing ? (
             <>
               <div className="flex items-start justify-between gap-4">
@@ -845,29 +831,10 @@ function ServerDialog({
           )}
           </div>
 
-          <div className="grid gap-2 border-t p-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            {!editing && step === 2 && (
-              <Button type="button" variant="outline" onClick={() => setStep(1)}>Back</Button>
-            )}
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={save.isPending || probe.isPending}>
-              {save.isPending
-                ? "Saving…"
-                : !editing && step === 1
-                  ? probe.isPending ? "Checking…" : "Continue"
-                  : !credentialGrantId && authKind === "oauth"
-                    ? editing ? "Save and connect" : "Add and connect"
-                    : editing ? "Save" : "Add server"}
-            </Button>
-          </DialogFooter>
-          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }
 
@@ -929,23 +896,20 @@ function CredentialSelect({
     <Field>
       <FieldLabel>Credential</FieldLabel>
       <Select
+        className="w-full"
+        aria-label="Credential"
         value={value || "none"}
-        onValueChange={(next) => onChange(next === "none" ? "" : next as string)}
+        onChange={(event) => onChange(event.target.value === "none" ? "" : event.target.value)}
       >
-        <SelectTrigger className="w-full" aria-label="Credential">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="none">{optional ? "Start a new sign-in" : "Choose a credential"}</SelectItem>
-          {value && !boundAvailable && (
-            <SelectItem value={value}>{value} (unavailable)</SelectItem>
-          )}
-          {grants.map((grant) => (
-            <SelectItem key={grant.grantId} value={grant.grantId}>
-              {authGrantLabel(grant)}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        <option value="none">{optional ? "Start a new sign-in" : "Choose a credential"}</option>
+        {value && !boundAvailable && (
+          <option value={value}>{`${value} (unavailable)`}</option>
+        )}
+        {grants.map((grant) => (
+          <option key={grant.grantId} value={grant.grantId}>
+            {authGrantLabel(grant)}
+          </option>
+        ))}
       </Select>
       <FieldDescription>
         {loading
@@ -1037,15 +1001,18 @@ function OAuthDialog({
       : null;
 
   return (
-    <Dialog open={server !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Connect {server?.displayName ?? server?.serverId} with OAuth</DialogTitle>
-          <DialogDescription>
-            Sign in with the provider once; Lightspeed keeps the connection for this universe and
-            every session that uses the server.
-          </DialogDescription>
-        </DialogHeader>
+    <Modal
+      open={server !== null}
+      onClose={() => onOpenChange(false)}
+      title={`Connect ${server?.displayName ?? server?.serverId} with OAuth`}
+      description="Sign in with the provider once; Lightspeed keeps the connection for this universe and every session that uses the server."
+      footer={
+        <Button type="button" variant={complete.data ? "default" : "outline"} onClick={() => onOpenChange(false)}>
+          {complete.data ? "Done" : "Close"}
+        </Button>
+      }
+    >
+      <div className="grid gap-4">
 
         {(start.isPending || (attempt && flow.isLoading)) && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1099,13 +1066,8 @@ function OAuthDialog({
             </Button>
           </div>
         )}
-        <DialogFooter>
-          <Button type="button" variant={complete.data ? "default" : "outline"} onClick={() => onOpenChange(false)}>
-            {complete.data ? "Done" : "Close"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }
 

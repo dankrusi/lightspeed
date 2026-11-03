@@ -5,7 +5,6 @@ import { useMutation } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
 import { api, type SecretGrant, type SubscriptionImportResult } from "@/api";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,14 +126,14 @@ export function SubscriptionForm({
       </Field>
       <p className="text-xs text-muted-foreground">{copy.apiKeyNote}</p>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <DialogFooter>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel}>
           Back
         </Button>
         <Button type="submit" disabled={connect.isPending}>
           {connect.isPending ? "Encrypting…" : "Connect"}
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   );
 }

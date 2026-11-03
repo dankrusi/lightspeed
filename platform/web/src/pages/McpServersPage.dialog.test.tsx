@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, type ReactNode } from "react";
+import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -10,33 +10,6 @@ import { McpServersPage, mcpConnectionSummary } from "./McpServersPage";
 const mocks = vi.hoisted(() => ({ api: vi.fn(), role: "operator" }));
 vi.mock("@/api", async (original) => ({ ...await original<typeof import("@/api")>(), api: mocks.api }));
 vi.mock("@/lib/universes", () => ({ useActiveUniverse: () => ({ universe: { id: "universe", role: mocks.role, slug: "test", name: "Test" }, slug: "test", isLoading: false }) }));
-// Every select becomes a native control named by its trigger; jsdom cannot lay out the popup.
-vi.mock("@/components/ui/select", async () => {
-  const React = await import("react");
-  function SelectTrigger(_props: { "aria-label"?: string; children?: ReactNode }) {
-    return null;
-  }
-  function Select({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: ReactNode }) {
-    const options: { value: string; label: ReactNode }[] = [];
-    let label: string | undefined;
-    const visit = (nodes: ReactNode) =>
-      React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const props = child.props as { value?: string; children?: ReactNode; "aria-label"?: string };
-        if (child.type === SelectTrigger) label = props["aria-label"];
-        else if (props.value !== undefined) options.push({ value: props.value, label: props.children });
-        else if (props.children) visit(props.children);
-      });
-    visit(children);
-    return (
-      <select aria-label={label} value={value} onChange={(event) => onValueChange(event.target.value)}>
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-    );
-  }
-  const Part = () => null;
-  return { Select, SelectTrigger, SelectContent: ({ children }: { children?: ReactNode }) => <>{children}</>, SelectItem: Part, SelectValue: Part };
-});
 const saved = {
   serverId: "tools", displayName: "Research tools", serverUrl: "https://example.test/mcp", defaultServerLabel: "tools",
   execution: "native", exposure: "search", approval: "never", allowPrivateNetwork: false, revision: 4,

@@ -1,5 +1,5 @@
 import { ReadError } from "@/components/read-error";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import type {
@@ -7,36 +7,12 @@ import type {
   DeploymentEnvironmentProviderView,
 } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -75,6 +51,7 @@ export function AdminEnvironmentProvidersPage() {
   const [registerOpen, setRegisterOpen] = useState(false);
   const [editing, setEditing] = useState<Provider | null>(null);
   const [bindingFor, setBindingFor] = useState<Provider | null>(null);
+  const [deleting, setDeleting] = useState<Provider | null>(null);
 
   const providers = useQuery({
     queryKey: ["admin-environment-providers"],
@@ -196,43 +173,15 @@ export function AdminEnvironmentProvidersPage() {
                     <Plus data-icon="inline-start" />
                     Bind universe
                   </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger
-                      render={
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          disabled={removeProvider.isPending}
-                        />
-                      }
-                    >
-                      <Trash2 />
-                      Delete
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Delete provider {provider.displayName ?? provider.providerId}?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Removes the registration from this deployment. The engine
-                          refuses the delete while any universe binding or any
-                          non-closed environment of this provider exists; delete
-                          those bindings and close those environments first.
-                          Provider-side machines are not touched.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-white hover:bg-destructive/90"
-                          onClick={() => removeProvider.mutate(provider.providerId)}
-                        >
-                          Delete provider
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={removeProvider.isPending}
+                    onClick={() => setDeleting(provider)}
+                  >
+                    <Trash2 />
+                    Delete
+                  </Button>
                 </div>
               </div>
               <div className="px-4 py-3 md:px-5">
@@ -268,6 +217,29 @@ export function AdminEnvironmentProvidersPage() {
           );
         })}
       </div>
+      <Modal
+        role="alertdialog"
+        size="sm"
+        open={deleting !== null}
+        onClose={() => setDeleting(null)}
+        title={`Delete provider ${deleting?.displayName ?? deleting?.providerId ?? ""}?`}
+        description="Removes the registration from this deployment. The engine refuses the delete while any universe binding or any non-closed environment of this provider exists; delete those bindings and close those environments first. Provider-side machines are not touched."
+        footer={<>
+          <Button type="button" variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              // Its outcome shows on the page: the provider goes, or the error line appears.
+              if (deleting) removeProvider.mutate(deleting.providerId, { onSettled: () => setDeleting(null) });
+            }}
+          >
+            Delete provider
+          </Button>
+        </>}
+      >
+        {null}
+      </Modal>
       {universes.some((universe) => universe.error) && (
         <p className="mt-6 text-xs text-muted-foreground">
           Bindings could not be read for:{" "}
@@ -301,6 +273,7 @@ function BindingRow({
     onSuccess: onChanged,
   });
   const error = setEnabled.error ?? remove.error;
+  const [confirming, setConfirming] = useState(false);
   return (
     <TableRow>
       <TableTitleCell title={universe.name} subtitle={universe.lightspeedUniverseId} />
@@ -313,33 +286,30 @@ function BindingRow({
         />
       </TableCell>
       <TableActionsCell>
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={<Button variant="ghost" size="sm" className="text-destructive" disabled={remove.isPending} />}
-          >
-            Delete
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Unbind {universe.name}?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {universe.name} will no longer be able to provision from{" "}
-                <span className="font-mono text-xs">{binding.providerId}</span>. The engine
-                rejects the delete while a non-closed environment of this provider is still
-                open in the universe; disable the binding instead to stop new provisioning.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-white hover:bg-destructive/90"
-                onClick={() => remove.mutate()}
-              >
-                Delete binding
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button variant="ghost" size="sm" className="text-destructive" disabled={remove.isPending} onClick={() => setConfirming(true)}>
+          Delete
+        </Button>
+        <Modal
+          role="alertdialog"
+          size="sm"
+          open={confirming}
+          onClose={() => setConfirming(false)}
+          title={`Unbind ${universe.name}?`}
+          description={`${universe.name} will no longer be able to provision from ${binding.providerId}. The engine rejects the delete while a non-closed environment of this provider is still open in the universe; disable the binding instead to stop new provisioning.`}
+          footer={<>
+            <Button type="button" variant="outline" onClick={() => setConfirming(false)}>Cancel</Button>
+            <Button
+              type="button"
+              variant="destructive"
+              // Its outcome shows in the row: the binding goes, or the error line appears.
+              onClick={() => remove.mutate(undefined, { onSettled: () => setConfirming(false) })}
+            >
+              Delete binding
+            </Button>
+          </>}
+        >
+          {null}
+        </Modal>
         {error && <div className="mt-1 text-xs text-destructive">{error.message}</div>}
       </TableActionsCell>
     </TableRow>
@@ -367,6 +337,7 @@ function ProviderDialog({
   const [clearCredential, setClearCredential] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const editing = provider !== null;
+  const formId = useId();
 
   const save = useMutation({
     mutationFn: () =>
@@ -401,19 +372,21 @@ function ProviderDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {editing ? `Edit ${provider.displayName ?? provider.providerId}` : "Register environment provider"}
-          </DialogTitle>
-          <DialogDescription>
-            Records how Lightspeed reaches the provider's controller and data routes, and the
-            optional bearer credential it presents there. The provider never self-registers.
-            Universes get access through bindings.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
+    <Modal
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={editing ? `Edit ${provider.displayName ?? provider.providerId}` : "Register environment provider"}
+      description="Records how Lightspeed reaches the provider's controller and data routes, and the optional bearer credential it presents there. The provider never self-registers. Universes get access through bindings."
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={save.isPending}>
+          {save.isPending ? "Saving…" : editing ? "Save" : "Register"}
+        </Button>
+      </>}
+    >
+        <form id={formId} onSubmit={submit} className="grid gap-4">
           <Field>
             <FieldLabel htmlFor="provider-id">Provider id</FieldLabel>
             <Input
@@ -492,17 +465,8 @@ function ProviderDialog({
             )}
           </Field>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={save.isPending}>
-              {save.isPending ? "Saving…" : editing ? "Save" : "Register"}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }
 
@@ -532,6 +496,7 @@ function BindUniverseDialog({
       && !universe.bindings.some((binding) => binding.providerId === provider?.providerId),
   );
   const selected = universes.find((universe) => universe.lightspeedUniverseId === universeId);
+  const formId = useId();
 
   const reset = () => {
     setUniverseId("");
@@ -560,39 +525,35 @@ function BindUniverseDialog({
   };
 
   return (
-    <Dialog open={provider !== null} onOpenChange={(next) => { onOpenChange(next); if (!next) reset(); }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Bind a universe to {provider?.displayName ?? provider?.providerId}</DialogTitle>
-          <DialogDescription>
-            An enabled binding lets the universe list this provider's templates and
-            provision environments from it. There is at most one binding per
-            universe and provider.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="grid gap-4">
+    <Modal
+      open={provider !== null}
+      onClose={() => { onOpenChange(false); reset(); }}
+      title={`Bind a universe to ${provider?.displayName ?? provider?.providerId}`}
+      description="An enabled binding lets the universe list this provider's templates and provision environments from it. There is at most one binding per universe and provider."
+      footer={<>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" form={formId} disabled={save.isPending || candidates.length === 0}>
+          {save.isPending ? "Binding…" : "Bind"}
+        </Button>
+      </>}
+    >
+        <form id={formId} onSubmit={submit} className="grid gap-4">
           <Field>
-            <FieldLabel>Universe</FieldLabel>
+            <FieldLabel htmlFor="bind-universe">Universe</FieldLabel>
             <Select
+              id="bind-universe"
+              className="w-full"
               value={universeId || "__none__"}
-              onValueChange={(next) => setUniverseId(next === "__none__" || next == null ? "" : next)}
+              onChange={(event) => setUniverseId(event.target.value === "__none__" ? "" : event.target.value)}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue>
-                  {(value: string) =>
-                    value === "__none__"
-                      ? "Select a universe"
-                      : universes.find((universe) => universe.lightspeedUniverseId === value)?.name ?? value}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">Select a universe</SelectItem>
-                {candidates.map((universe) => (
-                  <SelectItem key={universe.lightspeedUniverseId} value={universe.lightspeedUniverseId}>
-                    {universe.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+              <option value="__none__">Select a universe</option>
+              {candidates.map((universe) => (
+                <option key={universe.lightspeedUniverseId} value={universe.lightspeedUniverseId}>
+                  {universe.name}
+                </option>
+              ))}
             </Select>
             <FieldDescription className="text-xs">
               {candidates.length === 0
@@ -603,16 +564,7 @@ function BindUniverseDialog({
             </FieldDescription>
           </Field>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={save.isPending || candidates.length === 0}>
-              {save.isPending ? "Binding…" : "Bind"}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </Modal>
   );
 }

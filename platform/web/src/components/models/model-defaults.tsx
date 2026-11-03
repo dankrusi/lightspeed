@@ -7,8 +7,8 @@ import { summarizeProviderReadiness } from "@/lib/provider-readiness";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
+import { Select } from "@versavolta/whisperink/components/Select/Select.js";
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/components/ui/combobox";
 
 const apiLabels: Record<string, string> = {
@@ -107,13 +107,16 @@ export function DefaultModelDialog({ universeId, initial, slot, onClose }: { uni
     } catch (error) { setReloadError(error instanceof Error ? error.message : "Could not reload defaults."); }
     finally { setReloading(false); }
   };
-  return <Dialog open onOpenChange={(open) => { if (!open && !save.isPending) onClose(); }}>
-    <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-      <DialogHeader>
-        <DialogTitle>Default model for {slot === "agentRun" ? "agent runs" : "speech-to-text"}</DialogTitle>
-        <DialogDescription>Choose a discovered model or enter your provider and model below.</DialogDescription>
-      </DialogHeader>
-      <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); if (valid && !conflict && !save.isPending) save.mutate(); }}>
+  const formId = `${id}-form`;
+  return <Modal open onClose={() => { if (!save.isPending) onClose(); }}
+    title={`Default model for ${slot === "agentRun" ? "agent runs" : "speech-to-text"}`}
+    description="Choose a discovered model or enter your provider and model below."
+    footer={<>
+      <Button type="button" variant="outline" disabled={save.isPending} onClick={onClose}>Cancel</Button>
+      {conflict ? <Button type="button" disabled={reloading} onClick={() => void reload()}>{reloading ? "Reloading…" : "Reload saved default"}</Button>
+        : <Button type="submit" form={formId} disabled={!valid || save.isPending}>{save.isPending ? "Saving…" : "Save default"}</Button>}
+    </>}>
+      <form id={formId} className="grid gap-4" onSubmit={(event) => { event.preventDefault(); if (valid && !conflict && !save.isPending) save.mutate(); }}>
         <fieldset className="grid gap-4" disabled={save.isPending || reloading}>
         <Field>
           <FieldLabel htmlFor={`${id}-search`}>Find a model</FieldLabel>
@@ -132,21 +135,14 @@ export function DefaultModelDialog({ universeId, initial, slot, onClose }: { uni
         <div className="grid gap-4 sm:grid-cols-2">
           <Field><FieldLabel htmlFor={`${id}-provider`}>Provider</FieldLabel><Input id={`${id}-provider`} value={model.providerId} list={`${id}-providers`} placeholder="Provider ID" onChange={(event) => setModel({ ...model, providerId: event.target.value })} /></Field>
           <datalist id={`${id}-providers`}>{discovery.data?.providers?.map((provider) => <option key={provider.providerId} value={provider.providerId} />)}</datalist>
-          <Field><FieldLabel htmlFor={`${id}-api`}>API</FieldLabel><Select value={model.apiKind} onValueChange={(value) => { if (value) setModel({ ...model, apiKind: value }); }}>
-            <SelectTrigger id={`${id}-api`} className="w-full"><SelectValue>{(value: string) => apiLabels[value] ?? value}</SelectValue></SelectTrigger>
-            <SelectContent>{apiKinds.map((kind) => <SelectItem key={kind} value={kind}>{apiLabels[kind]}</SelectItem>)}</SelectContent>
+          <Field><FieldLabel htmlFor={`${id}-api`}>API</FieldLabel><Select id={`${id}-api`} className="w-full" value={model.apiKind} onChange={(event) => { const value = event.target.value; if (value) setModel({ ...model, apiKind: value }); }}>
+            {apiKinds.map((kind) => <option key={kind} value={kind}>{apiLabels[kind]}</option>)}
           </Select></Field>
         </div>
         <Field><FieldLabel htmlFor={`${id}-model`}>Model</FieldLabel><Input id={`${id}-model`} value={model.model} placeholder="Model name" onChange={(event) => setModel({ ...model, model: event.target.value })} /></Field>
         </fieldset>
         {save.error && <p role="alert" className="text-sm text-destructive">{conflict ? "Defaults changed elsewhere. Reload and review the saved default before making another change." : save.error.message}</p>}
         {reloadError && <p role="alert" className="text-sm text-destructive">{reloadError}</p>}
-        <DialogFooter>
-          <Button type="button" variant="outline" disabled={save.isPending} onClick={onClose}>Cancel</Button>
-          {conflict ? <Button type="button" disabled={reloading} onClick={() => void reload()}>{reloading ? "Reloading…" : "Reload saved default"}</Button>
-            : <Button type="submit" disabled={!valid || save.isPending}>{save.isPending ? "Saving…" : "Save default"}</Button>}
-        </DialogFooter>
       </form>
-    </DialogContent>
-  </Dialog>;
+  </Modal>;
 }
