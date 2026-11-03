@@ -25,11 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
 import { memberships, universeHome, useUniverses } from "@/lib/universes";
 
 /// Top-of-sidebar universe switcher. Lists memberships only; platform
@@ -51,14 +46,13 @@ export function UniverseSwitcher({
   const canCreate = admin;
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
+    <>
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <SidebarMenuButton
-                size="lg"
-                className="data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground"
+              <button
+                type="button"
+                className="focus-ring flex max-w-64 items-center gap-2 rounded px-1 py-1 text-left hover:bg-subtle"
               />
             }
           >
@@ -67,7 +61,7 @@ export function UniverseSwitcher({
               <span className="truncate text-sm font-medium">
                 {active?.name ?? "Select universe"}
               </span>
-              <span className="truncate text-xs text-muted-foreground">
+              <span className="truncate text-xs text-fg-muted">
                 {active
                   ? active.status === "archived"
                     ? "archived"
@@ -106,8 +100,7 @@ export function UniverseSwitcher({
           </DropdownMenuContent>
         </DropdownMenu>
         <NewUniverseDialog open={createOpen} onOpenChange={setCreateOpen} />
-      </SidebarMenuItem>
-    </SidebarMenu>
+    </>
   );
 }
 

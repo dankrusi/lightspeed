@@ -13,7 +13,8 @@
     "isolatedModules": true,
     "useDefineForClassFields": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@versavolta/whisperink/*": ["./vendor/whisperink/src/*"]
     }
   },
   "include": ["src", "vite.config.ts"]

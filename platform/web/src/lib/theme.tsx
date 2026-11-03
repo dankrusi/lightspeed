@@ -20,6 +20,7 @@ function apply(theme: Theme) {
     theme === "dark" ||
     (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   document.documentElement.classList.toggle("dark", dark);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
 }
 
 /// Class-strategy dark mode with a system fallback. index.html applies the

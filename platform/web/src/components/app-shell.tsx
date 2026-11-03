@@ -1,102 +1,70 @@
 import { useActionPermissions } from "@/lib/permissions";
-import { useEffect, type ComponentType, type CSSProperties } from "react";
-import { Link, NavLink, Outlet, useLocation, useMatch } from "react-router-dom";
+import { useEffect, type ComponentType } from "react";
+import { Link, Outlet, useLocation, useMatch, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  ScrollText,
   Globe,
   KeyRound,
   Palette,
   RadioTower,
+  ScrollText,
   ServerCog,
-  UserRound,
-  Users,
   UserCog,
+  UserRound,
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { WebApp } from "@versavolta/whisperink/components/WebApp/WebApp.js";
+import type { NavGroup } from "@versavolta/whisperink/components/Sidebar/Sidebar.js";
 import { UniverseSwitcher } from "@/components/universe-switcher";
 import { UserMenu } from "@/components/user-menu";
-import { UNIVERSE_NAV, navItemVisible } from "@/components/universe-nav";
-import { ResizeHandle, useResizableWidth } from "@/components/resize-handle";
+import { UNIVERSE_NAV, navItemVisible, type UniverseNavItem } from "@/components/universe-nav";
 import { useUserPreferences } from "@/lib/user-preferences";
-import { cn } from "@/lib/utils";
-import { isMobileDetailRoute } from "@/lib/shell-navigation";
 import type { SessionUser } from "@/auth";
 import { rememberUniverse, useUniverses } from "@/lib/universes";
 
-/// The sidebar has three modes. Universe mode is the app's top level:
-/// switcher + universe nav. Admin and account are modes *above* the
-/// universe structure — the header becomes a deliberately generic "Back"
-/// (naming no universe) and the content is the mode's own menu.
 type ShellMode = "universe" | "admin" | "account";
 
-/// Active on the page itself and on detail views nested under it.
-function NavItem({
-  to,
-  icon: Icon,
-  label,
-}: {
-  to: string;
-  icon: ComponentType;
-  label: string;
-}) {
-  const location = useLocation();
-  const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
-  return (
-    <SidebarMenuItem>
-      <SidebarMenuButton isActive={isActive} render={<NavLink to={to} />} tooltip={label}>
-        <Icon />
-        <span>{label}</span>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  );
-}
+const ADMIN_NAV: Array<{ key: string; label: string; icon: ComponentType; href: string }> = [
+  { key: "users", label: "Users", icon: UserCog, href: "/admin/users" },
+  { key: "universes", label: "Universes", icon: Globe, href: "/admin/universes" },
+  { key: "api-keys", label: "API keys", icon: KeyRound, href: "/admin/api-keys" },
+  { key: "channels", label: "Channels", icon: RadioTower, href: "/admin/channels" },
+  { key: "audit", label: "Audit log", icon: ScrollText, href: "/admin/audit" },
+  { key: "environment-providers", label: "Environment providers", icon: ServerCog, href: "/admin/environment-providers" },
+];
 
-/// Header slot for admin/account modes: whole row navigates back to the
-/// app (HomeRedirect resolves the last-visited universe or the empty
-/// state); the mode title marks where you are.
-function ModeHeader({ title }: { title: string }) {
-  return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton size="lg" render={<Link to="/" />} tooltip="Back">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border">
-            <ArrowLeft className="size-4" />
-          </div>
-          <div className="grid flex-1 text-left leading-tight">
-            <span className="truncate text-sm font-medium">{title}</span>
-            <span className="truncate text-xs text-muted-foreground">Back</span>
-          </div>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
-  );
+const ACCOUNT_NAV: Array<{ key: string; label: string; icon: ComponentType }> = [
+  { key: "profile", label: "Profile", icon: UserRound },
+  { key: "security", label: "Security", icon: KeyRound },
+  { key: "appearance", label: "Appearance", icon: Palette },
+];
+
+function initials(name: string): string {
+  return name.split(/\s+/).map((part) => part[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
 }
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function navItems(items: readonly UniverseNavItem[], slug: string): NavGroup["items"] {
+  return items.map((item) => {
+    const Icon = item.icon;
+    return {
+      key: item.path,
+      label: item.label,
+      icon: <Icon />,
+      href: `/u/${slug}/${item.path}`,
+    };
+  });
+}
+
 export function AppShell({ user, admin }: { user: SessionUser; admin: boolean }) {
   const universes = useUniverses();
+  const navigate = useNavigate();
   const match = useMatch("/u/:slug/*");
   const activeSlug = match?.params.slug;
   const active = activeSlug
-    ? universes.data?.find((u) => u.slug === activeSlug)
+    ? universes.data?.find((universe) => universe.slug === activeSlug)
     : undefined;
   const permissions = useActionPermissions(active?.id);
   const location = useLocation();
@@ -105,152 +73,97 @@ export function AppShell({ user, admin }: { user: SessionUser; admin: boolean })
     : location.pathname.startsWith("/account")
       ? "account"
       : "universe";
+  const { sidebarCollapsed, setSidebarCollapsed } = useUserPreferences();
 
   useEffect(() => {
-    if (active) {
-      rememberUniverse(active.slug);
-    }
+    if (active) rememberUniverse(active.slug);
   }, [active]);
 
-  // The main menu's width can be dragged, and dragged narrow enough it
-  // folds to icons; both are kept per account.
-  const { sidebarWidth, setSidebarWidth, sidebarCollapsed, setSidebarCollapsed } = useUserPreferences();
-  const sidebarResize = useResizableWidth({
-    stored: sidebarWidth,
-    fallback: 256,
-    min: 192,
-    max: 384,
-    collapse: {
-      collapsed: sidebarCollapsed,
-      below: 160,
-      collapsedWidth: 48,
-      onCollapse: setSidebarCollapsed,
-    },
-    onCommit: setSidebarWidth,
-  });
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "b" || event.altKey || event.shiftKey || !(event.metaKey || event.ctrlKey)) return;
+      event.preventDefault();
+      setSidebarCollapsed(!sidebarCollapsed);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setSidebarCollapsed, sidebarCollapsed]);
 
-  const mobileTitle =
-    mode === "admin"
-      ? "Platform admin"
-      : mode === "account"
-        ? "Account"
-        : (active?.name ?? "Lightspeed");
+  const navigation: NavGroup[] = mode === "admin"
+    ? [{
+        key: "admin",
+        label: "Platform admin",
+        items: ADMIN_NAV.map((item) => {
+          const Icon = item.icon;
+          return { key: item.key, label: item.label, icon: <Icon />, href: item.href };
+        }),
+      }]
+    : mode === "account"
+      ? [{
+          key: "account",
+          label: "Your account",
+          items: ACCOUNT_NAV.map((item) => {
+            const Icon = item.icon;
+            return { key: item.key, label: item.label, icon: <Icon /> };
+          }),
+        }]
+      : active
+        ? UNIVERSE_NAV.flatMap((group, index) => {
+            const items = group.items.filter((item) => navItemVisible(item, permissions.can, active.features));
+            if (items.length === 0) return [];
+            return [{
+              key: group.label ?? `work-${index}`,
+              label: group.label,
+              items: navItems(items, active.slug),
+            }];
+          })
+        : [];
+
+  const hrefByKey = new Map(navigation.flatMap((group) => group.items.map((item) => [item.key, item.href])));
+  const activeKey = mode === "admin"
+    ? location.pathname.split("/")[2] ?? "users"
+    : mode === "account"
+      ? ""
+      : [...hrefByKey.keys()].filter((key) => {
+          const rest = activeSlug ? location.pathname.slice(`/u/${activeSlug}/`.length) : "";
+          return rest === key || rest.startsWith(`${key}/`);
+        }).sort((left, right) => right.length - left.length)[0] ?? "";
+
+  const bleed = /\/u\/[^/]+\/(sessions|workspaces|profiles|bots)/.test(location.pathname);
 
   return (
-    <SidebarProvider
-      open={!sidebarResize.collapsed}
-      onOpenChange={(open) => setSidebarCollapsed(!open)}
-      style={{ "--sidebar-width": `${sidebarResize.width}px` } as CSSProperties}
-      // A drag moves the menu with the pointer, not behind its animation.
-      className={cn(
-        sidebarResize.resizing
-          && "[&_[data-slot=sidebar-container]]:transition-none [&_[data-slot=sidebar-gap]]:transition-none",
-      )}
+    <WebApp
+      className="h-full"
+      mark={mode === "universe"
+        ? <UniverseSwitcher active={active} admin={admin} />
+        : (
+          <Link to="/" className="focus-ring inline-flex items-center gap-2 rounded px-1 py-1 text-sm font-medium">
+            <ArrowLeft className="size-4" />
+            <span>{mode === "admin" ? "Platform admin" : "Your account"}</span>
+          </Link>
+        )}
+      brand={mode === "universe" ? "Lightspeed" : null}
+      navigation={navigation}
+      active={activeKey}
+      onNavigate={(key) => {
+        if (mode === "account") {
+          scrollToSection(key);
+          return;
+        }
+        const href = hrefByKey.get(key);
+        if (href) navigate(href);
+      }}
+      collapsed={sidebarCollapsed}
+      onCollapsedChange={setSidebarCollapsed}
+      search={false}
+      showNotifications={false}
+      user={{ name: user.name, initials: initials(user.name) }}
+      userMenu={<UserMenu user={user} admin={admin} />}
+      contentClassName={bleed ? "p-0" : "mx-auto w-full max-w-5xl"}
     >
-      <Sidebar collapsible="icon">
-        <SidebarHeader>
-          {mode === "universe" ? (
-            <UniverseSwitcher active={active} admin={admin} />
-          ) : (
-            <ModeHeader title={mode === "admin" ? "Platform admin" : "Your account"} />
-          )}
-        </SidebarHeader>
-        <SidebarContent>
-          {mode === "universe" && active && UNIVERSE_NAV.map((group, index) => {
-            const items = group.items.filter((item) => navItemVisible(item, permissions.can, active.features));
-            if (items.length === 0) return null;
-            return (
-              <SidebarGroup key={group.label ?? index}>
-                {group.label && <SidebarGroupLabel>{group.label}</SidebarGroupLabel>}
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {items.map((item) => (
-                      <NavItem
-                        key={item.path}
-                        to={`/u/${active.slug}/${item.path}`}
-                        icon={item.icon}
-                        label={item.label}
-                      />
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            );
-          })}
-          {mode === "admin" && (
-            <SidebarGroup>
-              <SidebarGroupLabel>Platform admin</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <NavItem to="/admin/users" icon={UserCog} label="Users" />
-                  <NavItem to="/admin/universes" icon={Globe} label="Universes" />
-                  <NavItem to="/admin/api-keys" icon={KeyRound} label="API keys" />
-                  <NavItem to="/admin/channels" icon={RadioTower} label="Channels" />
-                  <NavItem to="/admin/audit" icon={ScrollText} label="Audit log" />
-                  <NavItem
-                    to="/admin/environment-providers"
-                    icon={ServerCog}
-                    label="Environment providers"
-                  />
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          )}
-          {mode === "account" && (
-            <SidebarGroup>
-              <SidebarGroupLabel>Your account</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => scrollToSection("profile")} tooltip="Profile">
-                      <UserRound />
-                      <span>Profile</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => scrollToSection("security")} tooltip="Security">
-                      <KeyRound />
-                      <span>Security</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => scrollToSection("appearance")} tooltip="Appearance">
-                      <Palette />
-                      <span>Appearance</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          )}
-        </SidebarContent>
-        <SidebarFooter>
-          <UserMenu user={user} admin={admin} />
-        </SidebarFooter>
-        <ResizeHandle label="Resize menu" handle={sidebarResize.handle} />
-      </Sidebar>
-      <SidebarInset className="max-h-svh">
-        {!isMobileDetailRoute(location.pathname) && (
-          <header className="flex h-12 shrink-0 items-center gap-2 px-4 md:hidden">
-            <SidebarTrigger />
-            <span className="text-sm font-medium">{mobileTitle}</span>
-          </header>
-        )}
-        {/* Master-detail surfaces (sessions, workspaces, profiles, bots)
-            manage their own panes and scrolling — full-bleed. Everything else
-            gets the centered scrolling column. */}
-        {/\/u\/[^/]+\/(sessions|workspaces|profiles|bots)/.test(location.pathname) ? (
-          <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <Outlet />
-          </main>
-        ) : (
-          <main className="min-h-0 flex-1 overflow-y-auto">
-            <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-10">
-              <Outlet />
-            </div>
-          </main>
-        )}
-      </SidebarInset>
-    </SidebarProvider>
+      <div className={bleed ? "flex h-full min-h-0 flex-col" : undefined}>
+        <Outlet />
+      </div>
+    </WebApp>
   );
 }

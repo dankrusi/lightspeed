@@ -1,0 +1,328 @@
+/* @tailwind directives omitted: the host app is Tailwind 4 and imports this file after its own entry. */
+/* Bundled house font: importing tokens.css is sufficient in packaged/offline apps. */
+@font-face {
+  font-family: "Versavolta Serif";
+  src: url("./fonts/versavolta-serif-regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+/*
+ * Design tokens. Colours are RGB channel triplets consumed by Tailwind through
+ * `rgb(var(--token) / <alpha>)`. Semantic tokens derive from the neutral scale,
+ * so editing one neutral step (see the Foundations editor) flows everywhere.
+ * `data-theme` scopes a theme to any region: `[data-theme="dark"]` inside a
+ * light page, `[data-theme="light"]` inside a dark one.
+ */
+:root,
+[data-theme="light"] {
+  /* Neutral scale – the only ramp of the system. */
+  --neutral-0: 255 255 255;
+  --neutral-50: 250 250 250;
+  --neutral-100: 245 245 245;
+  --neutral-200: 229 229 229;
+  --neutral-300: 212 212 212;
+  --neutral-400: 163 163 163;
+  --neutral-500: 115 115 115;
+  --neutral-600: 82 82 82;
+  --neutral-700: 64 64 64;
+  --neutral-800: 38 38 38;
+  --neutral-900: 23 23 23;
+  --neutral-950: 10 10 10;
+
+  /* Semantic surfaces and text (light). */
+  --canvas: var(--neutral-100);
+  --surface: var(--neutral-0);
+  --subtle: var(--neutral-50);
+  --muted: var(--neutral-200);
+  --overlay: var(--neutral-950);
+  --border: var(--neutral-200);
+  --border-strong: var(--neutral-300);
+  --fg: var(--neutral-900);
+  --fg-muted: var(--neutral-500);
+  --fg-subtle: var(--neutral-400);
+  --fg-inverse: var(--neutral-50);
+  --primary: var(--neutral-900);
+  --primary-hover: var(--neutral-800);
+  --primary-fg: var(--neutral-0);
+  --ring: var(--neutral-900);
+  /* Text and icons on a solid status fill (a danger button, a "today" chip). */
+  --on-status: var(--neutral-0);
+
+  /* Status – shared main hues, with theme-specific soft backgrounds and text. */
+  --success: 74 222 128;  --success-soft: 240 253 244; --success-fg: 21 128 61;
+  --warning: 251 191 36;  --warning-soft: 255 251 235; --warning-fg: 180 83 9;
+  --danger: 248 113 113;  --danger-soft: 254 242 242;  --danger-fg: 185 28 28;
+  --info: 96 165 250;     --info-soft: 239 246 255;    --info-fg: 29 78 216;
+
+  /* Typography scale: size / line height in px. */
+  --fs-2xs: 11px; --lh-2xs: 16px;
+  --fs-xs: 12px;  --lh-xs: 16px;
+  --fs-sm: 13px;  --lh-sm: 20px;
+  --fs-base: 14px; --lh-base: 20px;
+  --fs-lg: 16px;  --lh-lg: 24px;
+  --fs-xl: 18px;  --lh-xl: 28px;
+  --fs-2xl: 22px; --lh-2xl: 28px;
+  --fs-3xl: 28px; --lh-3xl: 34px;
+  --fs-4xl: 36px; --lh-4xl: 40px;
+  --font-sans: "Figtree", "Segoe UI", system-ui, sans-serif;
+  /* Headlines and body text share Figtree by default; either family can be overridden. */
+  --font-heading: "Figtree", "Segoe UI", system-ui, sans-serif;
+  /* Letter-spacing for h1–h3 and .font-heading, in em so it scales with the size. */
+  --heading-tracking: 0em;
+
+  /* Shape: core scales. */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-full: 9999px;
+  --border-none: 0px;
+  --border-hairline: 1px;
+  --border-thick: 2px;
+  --shadow-none: 0 0 0 0 transparent;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.08), 0 1px 3px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.12), 0 2px 6px rgb(0 0 0 / 0.06);
+
+  /* Component aliases: each points at one core value and can be re-pointed in the editor. */
+  --button-radius: var(--radius);
+  --button-border-width: var(--border-none);
+  --button-border-color: var(--border);
+  --button-shadow: var(--shadow-md);
+  --control-radius: var(--radius);
+  --control-border-width: var(--border-hairline);
+  --control-border-color: var(--border);
+  --control-shadow: var(--shadow-xs);
+  --card-radius: var(--radius);
+  --card-border-width: var(--border-none);
+  --card-border-color: var(--border);
+  --card-shadow: var(--shadow-lg);
+  --menu-radius: var(--radius);
+  --menu-border-width: var(--border-none);
+  --menu-border-color: var(--border);
+  --menu-shadow: var(--shadow-lg);
+  --modal-radius: var(--radius);
+  --modal-border-width: var(--border-none);
+  --modal-border-color: var(--border);
+  --modal-shadow: var(--shadow-lg);
+  --badge-radius: var(--radius-sm);
+  --badge-border-width: var(--border-none);
+  --badge-border-color: var(--border);
+  --segmented-radius: var(--radius);
+  --segmented-item-radius: var(--radius);
+  --segmented-shadow: var(--shadow-md);
+  --tab-indicator-width: var(--border-thick);
+  --tooltip-radius: var(--radius-sm);
+  --tooltip-shadow: var(--shadow-lg);
+  --alert-radius: var(--radius);
+  --alert-border-width: var(--border-none);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --canvas: var(--neutral-950);
+  --surface: var(--neutral-900);
+  --subtle: var(--neutral-800);
+  --muted: var(--neutral-700);
+  --overlay: 0 0 0;
+  --border: var(--neutral-800);
+  --border-strong: var(--neutral-700);
+  --fg: var(--neutral-100);
+  --fg-muted: var(--neutral-400);
+  --fg-subtle: var(--neutral-500);
+  --fg-inverse: var(--neutral-900);
+  --primary: var(--neutral-100);
+  --primary-hover: var(--neutral-200);
+  --primary-fg: var(--neutral-900);
+  --ring: var(--neutral-100);
+  --on-status: var(--neutral-950);
+  --success: 74 222 128;  --success-soft: 20 40 28;  --success-fg: 134 239 172;
+  --warning: 251 191 36;  --warning-soft: 45 35 12;  --warning-fg: 252 211 77;
+  --danger: 248 113 113;  --danger-soft: 50 22 22;   --danger-fg: 252 165 165;
+  --info: 96 165 250;     --info-soft: 20 30 50;     --info-fg: 147 197 253;
+  color-scheme: dark;
+}
+
+@layer base {
+  * { border-color: rgb(var(--border)); }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body {
+    margin: 0;
+    background: rgb(var(--canvas));
+    color: rgb(var(--fg));
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    line-height: var(--lh-base);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  /* Headlines never get a synthesised bold: a family without a bold cut (e.g. the local house serif) renders its real glyphs. */
+  h1, h2, h3, .font-heading { font-family: var(--font-heading); letter-spacing: var(--heading-tracking); font-synthesis-weight: none; }
+  ::selection { background: rgb(var(--fg) / 0.12); }
+  /* The fallback for anything focusable that carries no focus style of its own; `.focus-ring` and `.control` replace it. */
+  :focus-visible { outline: 2px solid rgb(var(--ring)); outline-offset: 2px; }
+}
+
+@layer components {
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    box-shadow: 0 0 0 2px rgb(var(--surface)), 0 0 0 4px rgb(var(--ring));
+  }
+  .control {
+    @apply h-9 bg-surface px-3 text-base text-fg outline-none transition-colors placeholder:text-fg-subtle hover:border-border-strong focus:border-fg-muted focus:ring-2 focus:ring-[rgb(var(--ring))]/20 disabled:cursor-not-allowed disabled:bg-subtle disabled:text-fg-subtle;
+    border-style: solid;
+    border-width: var(--control-border-width);
+    border-color: rgb(var(--control-border-color));
+    border-radius: var(--control-radius);
+    box-shadow: var(--control-shadow);
+  }
+  /* `aria-invalid` alone is enough, so a control that is handed `Field`'s props needs no second flag. */
+  .control-invalid, .control[aria-invalid="true"] {
+    @apply border-danger hover:border-danger focus:border-danger focus:ring-danger/20;
+  }
+  /* Attached buttons share one outer shadow; filled neighbours keep only an inset divider. */
+  .button-group { display: inline-flex; align-items: stretch; border-radius: var(--button-radius); }
+  .button-group:has(> .shadow-button, > * > .shadow-button) { box-shadow: var(--button-shadow); }
+  .button-group > :is(button, a),
+  .button-group > * > :is(button, a) {
+    --tw-shadow: 0 0 transparent;
+    --tw-shadow-colored: 0 0 transparent;
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 transparent), var(--tw-ring-shadow, 0 0 transparent), var(--tw-shadow);
+  }
+  .button-group > * { position: relative; }
+  .button-group > :not(:first-child) { margin-left: -1px; }
+  .button-group > :hover, .button-group > :focus-within { z-index: 10; }
+  .button-group > :not(:first-child):is(button, a),
+  .button-group > :not(:first-child) > :is(button, a) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .button-group > :not(:last-child):is(button, a),
+  .button-group > :not(:last-child) > :is(button, a) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .button-group > :not(:first-child):is(.bg-primary, .bg-danger),
+  .button-group > :not(:first-child) > :is(.bg-primary, .bg-danger) { --tw-shadow: inset 1px 0 0 rgb(var(--primary-fg) / 0.25); }
+  /* Children marked data-collapse="md" are hidden below md (via `max-md:hidden`); the first and last *visible* children then keep the outer corners. */
+  @media (max-width: 767.98px) {
+    .button-group > :not([data-collapse]):not(:not([data-collapse]) ~ *):is(button, a),
+    .button-group > :not([data-collapse]):not(:not([data-collapse]) ~ *) > :is(button, a) { border-top-left-radius: var(--button-radius); border-bottom-left-radius: var(--button-radius); --tw-shadow: 0 0 transparent; }
+    .button-group > :not([data-collapse]):not(:has(~ :not([data-collapse]))):is(button, a),
+    .button-group > :not([data-collapse]):not(:has(~ :not([data-collapse]))) > :is(button, a) { border-top-right-radius: var(--button-radius); border-bottom-right-radius: var(--button-radius); }
+  }
+  /*
+   * Menus, popovers and tooltips. They are placed against their anchor in
+   * viewport coordinates and, where the browser has one, promoted to the top
+   * layer, so no scrolling or clipping ancestor can cut them off. `display`
+   * is set because a `popover` element is hidden until it is shown, and these
+   * are only ever mounted while open.
+   */
+  .wi-floating { position: fixed; inset: auto; top: 0; left: 0; margin: 0; max-width: calc(100vw - 16px); }
+  .wi-floating:not([hidden]) { display: block; }
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: rgb(var(--border-strong)); border-radius: 999px; }
+  /* The default size lives here, below the utilities, so a caller's size-8, w-1/3 or rounded-full wins. */
+  .skeleton {
+    background: linear-gradient(90deg, rgb(var(--muted)) 25%, rgb(var(--subtle)) 50%, rgb(var(--muted)) 75%);
+    background-size: 200% 100%;
+    @apply h-4 w-full animate-shimmer rounded;
+  }
+  /* Editable token value in the Foundations editor. */
+  .token-value {
+    @apply inline-flex h-6 cursor-text items-center rounded px-1.5 font-mono text-xs tabular-nums text-fg-muted underline decoration-dotted decoration-fg-subtle underline-offset-4 transition-colors hover:bg-subtle hover:text-fg;
+  }
+}
+
+@layer components {
+  /* Range slider used by SliderField. The knob is as tall as the track and rides
+     inside it, so the fill must stop at the knob centre, not at the raw percentage:
+     the knob travels over (100% - knob), hence ratio * (100% - knob) + knob / 2.
+     Callers set --ratio (0-1); --wi-range-size tunes the height of track and knob. */
+  .wi-range {
+    --wi-range-size: 14px;
+    --wi-range-center: calc(var(--ratio, 0) * (100% - var(--wi-range-size)) + var(--wi-range-size) / 2);
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, rgb(var(--primary)) var(--wi-range-center), rgb(var(--muted)) var(--wi-range-center));
+    border-radius: 999px;
+    height: var(--wi-range-size);
+    margin: 0;
+    outline: none;
+  }
+  .wi-range::-webkit-slider-runnable-track { height: 100%; background: transparent; border-radius: inherit; }
+  .wi-range::-moz-range-track { height: 100%; background: transparent; border-radius: inherit; }
+  .wi-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    width: var(--wi-range-size);
+    height: var(--wi-range-size);
+    border-radius: 999px;
+    background: rgb(var(--surface));
+    border: 1.5px solid rgb(var(--primary));
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+  }
+  .wi-range::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--wi-range-size);
+    height: var(--wi-range-size);
+    border-radius: 999px;
+    background: rgb(var(--surface));
+    border: 1.5px solid rgb(var(--primary));
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+  }
+  .wi-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgb(var(--ring) / 0.2); }
+  .wi-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px rgb(var(--ring) / 0.2); }
+  .wi-range:disabled { cursor: not-allowed; }
+
+  /* A colour field needs the full spectrum rather than a semantic progress
+     fill. It deliberately shares the range geometry and focus treatment. */
+  .wi-hue-range {
+    --wi-range-size: 14px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: var(--wi-range-size);
+    margin: 0;
+    outline: none;
+    border-radius: 999px;
+    background: linear-gradient(to right, hsl(0 100% 50%), hsl(60 100% 50%), hsl(120 100% 50%), hsl(180 100% 50%), hsl(240 100% 50%), hsl(300 100% 50%), hsl(360 100% 50%));
+  }
+  .wi-hue-range::-webkit-slider-runnable-track { height: 100%; background: transparent; border-radius: inherit; }
+  .wi-hue-range::-moz-range-track { height: 100%; background: transparent; border-radius: inherit; }
+  .wi-hue-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    width: var(--wi-range-size);
+    height: var(--wi-range-size);
+    border-radius: 999px;
+    background: rgb(var(--surface));
+    border: 1.5px solid rgb(var(--fg));
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+  }
+  .wi-hue-range::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--wi-range-size);
+    height: var(--wi-range-size);
+    border-radius: 999px;
+    background: rgb(var(--surface));
+    border: 1.5px solid rgb(var(--fg));
+    box-shadow: var(--shadow-xs);
+    cursor: pointer;
+  }
+  .wi-hue-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgb(var(--ring) / 0.2); }
+  .wi-hue-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px rgb(var(--ring) / 0.2); }
+}
+
+/* Entrances and the skeleton shimmer are decoration; a spinner is information and keeps turning. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in, .animate-scale-in, .skeleton { animation: none; }
+}

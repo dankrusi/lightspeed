@@ -28,6 +28,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  Element.prototype.scrollTo = () => {};
   client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   container = document.createElement("div");
   document.body.append(container);
@@ -60,10 +61,11 @@ async function sidebarFor(role: string, features = { bots: true, channels: true 
     </PermissionIdentityProvider></QueryClientProvider>,
   ));
   for (let step = 0; step < 5; step++) await act(async () => { await vi.advanceTimersByTimeAsync(5); });
-  const groups = [...container.querySelectorAll('[data-sidebar="group"]')];
+  const nav = container.querySelector("nav");
+  const groups = [...(nav?.querySelectorAll(":scope > div") ?? [])];
   return Object.fromEntries(groups.map((group) => [
-    group.querySelector('[data-sidebar="group-label"]')?.textContent ?? "",
-    [...group.querySelectorAll("a")].map((link) => link.textContent ?? ""),
+    group.querySelector("p")?.textContent ?? "",
+    [...group.querySelectorAll("a")].map((link) => link.textContent?.trim() ?? ""),
   ]));
 }
 
@@ -109,7 +111,7 @@ it("leaves bots, and the channels they need, out of the menu", async () => {
 
 it("links each page at its flat route", async () => {
   await sidebarFor("admin");
-  expect([...container.querySelectorAll("a")].map((link) => link.getAttribute("href"))).toEqual([
+  expect([...container.querySelectorAll("nav a")].map((link) => link.getAttribute("href"))).toEqual([
     "/u/test/bots", "/u/test/sessions",
     "/u/test/profiles", "/u/test/workspaces", "/u/test/environments", "/u/test/mcp-servers", "/u/test/models",
     "/u/test/credentials", "/u/test/api-keys", "/u/test/members",
@@ -136,11 +138,10 @@ it("keeps the menu folded to icons from the account's preference, and ⌘B unfol
     </PermissionIdentityProvider></UserPreferencesProvider></QueryClientProvider>,
   ));
   for (let step = 0; step < 5; step++) await act(async () => { await vi.advanceTimersByTimeAsync(5); });
-  const sidebar = () => container.querySelector<HTMLElement>('[data-slot="sidebar"]')!;
-  expect(sidebar().dataset.state).toBe("collapsed");
-  expect(sidebar().dataset.collapsible).toBe("icon");
+  const sidebar = () => container.querySelector("aside")!;
+  expect(sidebar().className).toContain("w-14");
   await act(async () => window.dispatchEvent(new KeyboardEvent("keydown", { key: "b", metaKey: true })));
-  expect(sidebar().dataset.state).toBe("expanded");
+  expect(sidebar().className).toContain("w-60");
   expect(JSON.parse(localStorage.getItem(key)!).sidebarCollapsed).toBe(false);
   localStorage.removeItem(key);
 });

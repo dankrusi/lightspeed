@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(import.meta.dirname, "./src"),
+        "@versavolta/whisperink": path.resolve(import.meta.dirname, "./vendor/whisperink/src"),
       },
     },
     build: demo ? { outDir: "dist-demo" } : undefined,
