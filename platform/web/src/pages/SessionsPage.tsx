@@ -13,7 +13,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { NavLink, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Archive, ArrowLeft, ListChecks, ListFilter, LoaderCircle, MessagesSquare, Plus, ShieldCheck, Trash2, X } from "lucide-react";
+import { Archive, ArrowLeft, ChatsCircle, CircleNotch, Funnel, ListChecks, Plus, ShieldCheck, Trash, X } from "@phosphor-icons/react";
 import {
   api,
   botLabel,
@@ -160,7 +160,7 @@ export function SessionsPage({ admin }: { admin: boolean }) {
           />
         ) : (
           <DetailPrompt
-            icon={<MessagesSquare className="size-10 text-muted-foreground/60" />}
+            icon={<ChatsCircle className="size-10 text-muted-foreground/60" />}
             create={canCreate ? { label: "New session", onClick: () => setCreateOpen(true) } : undefined}
           >
             Pick a session{canCreate ? ", or start one" : ""}.
@@ -375,7 +375,7 @@ function SessionList({
               aria-expanded={open}
               onClick={toggle}
             >
-              <ListFilter />
+              <Funnel />
               {activeFilterCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
                   {activeFilterCount}
@@ -587,7 +587,7 @@ function SessionList({
       )}
       {bulkNotice && (
         <p className="flex shrink-0 items-center gap-2 border-b px-4 py-1.5 text-xs text-muted-foreground">
-          {bulk.isPending && <LoaderCircle className="size-3 animate-spin" />}
+          {bulk.isPending && <CircleNotch className="size-3 animate-spin" />}
           {bulkNotice}
           <button
             type="button"
@@ -692,7 +692,7 @@ function BulkActionDialog({
         disabled={count === 0 || pending}
         onClick={() => setOpen(true)}
       >
-        {action === "close" ? <Archive /> : <Trash2 />}
+        {action === "close" ? <Archive /> : <Trash />}
         {verb} {count}
       </Button>
       <Modal
@@ -2021,7 +2021,7 @@ export function SessionDetail({
                 closed ? (
                   <MenuItem
                     danger
-                    icon={<Trash2 />}
+                    icon={<Trash />}
                     onClick={() => setDeleteOpen(true)}
                   >
                     Delete session…
@@ -2607,7 +2607,7 @@ function SessionWelcome({
   }[state];
   return (
     <div className="flex min-h-[45vh] flex-col items-center justify-center gap-3 px-4 text-center">
-      <MessagesSquare className="size-10 text-muted-foreground/50" />
+      <ChatsCircle className="size-10 text-muted-foreground/50" />
       <h2 className="text-lg font-medium tracking-tight">{title}</h2>
       <p className="max-w-md text-sm text-muted-foreground">{body}</p>
       {unshared && state === "open" && (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy } from "@phosphor-icons/react";
 import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
 

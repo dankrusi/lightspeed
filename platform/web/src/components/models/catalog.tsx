@@ -1,5 +1,5 @@
 import type { ComponentType, SVGProps } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkle } from "@phosphor-icons/react";
 import { AnthropicLogo, OpenAiLogo } from "@/components/icons/logos";
 
 /// Every kind of model provider a universe can add on the Models page.
@@ -41,7 +41,7 @@ export const MODEL_PROVIDER_CATALOG: ModelProviderDefinition[] = [
     kind: "openAiCompatible",
     name: "OpenAI-compatible provider",
     tagline: "Connect OpenRouter, vLLM, Ollama, or another compatible endpoint.",
-    Logo: Sparkles,
+    Logo: Sparkle,
     multiple: true,
   },
   {

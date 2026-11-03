@@ -2,12 +2,12 @@ import { useSessionCompaction } from "@/lib/sessions/compaction";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity,
+  ArrowCounterClockwise,
   ArrowUpRight,
-  ChevronDown,
-  ChevronRight,
-  RotateCcw,
-} from "lucide-react";
+  CaretDown,
+  CaretRight,
+  Pulse,
+} from "@phosphor-icons/react";
 import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { api, botLabel, type BotControllerSnapshot, type BotStateView, type BotView, type SessionView } from "@/api";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
@@ -173,7 +173,7 @@ export function BotDetail({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex h-12 shrink-0 items-center gap-2.5 border-b px-4">
         <NavLink to={`/u/${slug}/bots`} className="md:hidden" aria-label="Back to bots">
-          <ChevronRight className="size-4 rotate-180" />
+          <CaretRight className="size-4 rotate-180" />
         </NavLink>
         <BotAvatar botId={bot.botId} size={26} />
         <span className="min-w-0 truncate text-sm font-semibold">{botLabel(bot)}</span>
@@ -253,7 +253,7 @@ export function BotDetail({
         {overflow.length > 0 && <OverflowTabs tabs={overflow} sessionHref={sessionHref} />}
         <span className="my-2.5 mx-1.5 w-px shrink-0 bg-border" aria-hidden />
         <TabLink to={`${base}/activity`} active={view === "activity"}>
-          <Activity className="size-4" />
+          <Pulse className="size-4" />
           Activity
           {pending > 0 && (
             <span className="rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">{pending}</span>
@@ -322,7 +322,7 @@ function OverflowTabs({ tabs, sessionHref }: { tabs: ConversationTab[]; sessionH
           onClick={toggle}
         >
           +{tabs.length}
-          <ChevronDown className="size-3.5" />
+          <CaretDown className="size-3.5" />
         </button>
       )}
     >
@@ -426,7 +426,7 @@ function ConversationMenu({
         }}
         lifecycle={manage && managedHere && bot.closedAtMs == null ? (
           <MenuItem
-            icon={<RotateCcw />}
+            icon={<ArrowCounterClockwise />}
             disabled={reset.isPending}
             onClick={() => {
               reset.reset();

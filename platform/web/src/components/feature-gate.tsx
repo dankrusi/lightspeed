@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { PowerOff } from "lucide-react";
+import { Power } from "@phosphor-icons/react";
 import { FEATURES, type FeatureKey } from "@lightspeed-ai/platform-shared";
 import { EmptyState } from "@/components/page";
 import { useActionPermissions } from "@/lib/permissions";
@@ -19,7 +19,7 @@ export function FeatureGate({ feature, children }: { feature: FeatureKey; childr
   const { label } = FEATURES[feature];
   return (
     <div className="p-6">
-      <EmptyState icon={PowerOff} title={`${label} are turned off in this universe`}>
+      <EmptyState icon={Power} title={`${label} are turned off in this universe`}>
         {permissions.can("manage_access") ? (
           <>
             An admin turned them off.{" "}

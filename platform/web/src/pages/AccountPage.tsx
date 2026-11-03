@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "@phosphor-icons/react";
 import { authClient, useLoginConfig, type SessionUser } from "@/auth";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Card } from "@versavolta/whisperink/components/Card/Card.js";

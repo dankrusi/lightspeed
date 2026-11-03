@@ -4,6 +4,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { TranscriptLinksContext } from "./tool-trace";
 import { TranscriptEntryView, UserBand } from "./transcript-view";
+import { Tray } from "@phosphor-icons/react";
+import { findIcon } from "@/test/icons";
 
 let root: Root;
 let container: HTMLDivElement;
@@ -115,7 +117,7 @@ it("names non-bot event sources by their family and leaves unknown headers alone
   await act(async () => root.render(<TranscriptEntryView entry={{ kind: "message", key: "event", role: "user", text, origin: "event" }} />));
   expect(container.textContent).toContain("github webhook");
   expect(container.textContent).toContain("PR #12 opened.");
-  expect(container.querySelector(".lucide-inbox")?.getAttribute("class")).toContain("text-teal-700 dark:text-teal-300");
+  expect(findIcon(container, Tray)?.getAttribute("class")).toContain("text-teal-700 dark:text-teal-300");
   await act(async () => root.render(<TranscriptEntryView entry={{ kind: "message", key: "plain", role: "user", text: "just text", origin: "event" }} />));
   expect(container.textContent).toBe("just text");
 });

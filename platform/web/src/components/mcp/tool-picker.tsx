@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from "react";
-import { RotateCcw, Search } from "lucide-react";
+import { ArrowCounterClockwise, MagnifyingGlass } from "@phosphor-icons/react";
 import type { McpAdvertisedTool } from "@/api";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
@@ -130,7 +130,7 @@ function ToolPicker({
       )}
       <div className="flex min-w-0 items-center gap-2">
         <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlass className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -151,7 +151,7 @@ function ToolPicker({
             }
             onClick={discovery.refresh}
           >
-            <RotateCcw
+            <ArrowCounterClockwise
               className={discovery.loading ? "animate-spin" : ""}
             />
             {discovery.loading ? "Loading…" : "Refresh tools"}

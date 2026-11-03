@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { NewUniverseDialog } from "@/components/universe-switcher";
 import { CenteredNote } from "@/components/page";

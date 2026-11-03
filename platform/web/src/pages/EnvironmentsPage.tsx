@@ -6,7 +6,7 @@ import { environmentStatus, resourceTimestamp } from "@/lib/resource-status";
 import { ReadError } from "@/components/read-error";
 import { useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Boxes, Check, ChevronDown, Copy, KeyRound, Pencil, Plus, RotateCw, Trash2 } from "lucide-react";
+import { ArrowClockwise, CaretDown, Check, Copy, Cube, Key, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import {
   api,
   type Environment,
@@ -189,7 +189,7 @@ function EnvironmentList({ universeId }: { universeId: string }) {
         <ReadError error={secrets.error} loading={!secrets.data} prefix="Access credentials unavailable" />
       )}
       {environments.data && environmentRows.length === 0 && (
-        <EmptyState icon={Boxes} title={showClosed ? "No environments yet" : "No open environments"}>
+        <EmptyState icon={Cube} title={showClosed ? "No environments yet" : "No open environments"}>
           Machines agents run commands on: created from a provider template, or registered by
           running <span className="font-mono">lightspeed-envd</span> on a machine of your own.
         </EmptyState>
@@ -394,7 +394,7 @@ function EnvironmentDetails({
           <CloseEnvironmentButton universeId={universeId} environment={environment} />
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Pencil data-icon="inline-start" />
+              <PencilSimple data-icon="inline-start" />
               Rename…
             </Button>
             {source.type === "provisioned" && (
@@ -520,7 +520,7 @@ function EnvironmentCredentials({
                     label={`Unassign ${credential.envName}`}
                     onClick={() => setUnassigning(credential.envName)}
                   >
-                    <Trash2 />
+                    <Trash />
                   </IconButton>
                 )}
               </div>
@@ -714,7 +714,7 @@ function RegistrationKeys({
       <section className="rounded-xl border p-4">
         <CollapsibleTrigger className="flex w-full items-center gap-2 text-left text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           Registration keys ({keys.length})
-          <ChevronDown aria-hidden="true" className={`ml-auto size-4 transition-transform ${open ? "rotate-180" : ""}`} />
+          <CaretDown aria-hidden="true" className={`ml-auto size-4 transition-transform ${open ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -749,7 +749,7 @@ function RegistrationKeys({
                 )}
                 {key.status !== "revoked" && (
                   <Button variant="outline" size="xs" onClick={() => setEditing(key)}>
-                    <Pencil data-icon="inline-start" />
+                    <PencilSimple data-icon="inline-start" />
                     Edit
                   </Button>
                 )}
@@ -873,7 +873,7 @@ function RotateRegistrationKeyButton({
   return (
     <>
       <Button variant="outline" size="xs" onClick={() => { rotate.reset(); setConfirming(true); }}>
-        <RotateCw data-icon="inline-start" />
+        <ArrowClockwise data-icon="inline-start" />
         Rotate
       </Button>
       <Modal
@@ -1108,7 +1108,7 @@ function CreateRegistrationKeyDialog({ universeId }: { universeId: string }) {
   return (
     <>
       <Button variant="outline" onClick={() => { reset(); setOpen(true); }}>
-        <KeyRound data-icon="inline-start" />
+        <Key data-icon="inline-start" />
         Registration key
       </Button>
       {created ? (
@@ -1221,7 +1221,7 @@ function ProviderBindings({ bindings }: { bindings: EnvironmentProviderBinding[]
           <span className="text-xs text-muted-foreground">
             {enabled} enabled · {bindings.length} total
           </span>
-          <ChevronDown className={`ml-auto size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+          <CaretDown className={`ml-auto size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="divide-y border-t">

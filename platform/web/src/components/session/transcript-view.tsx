@@ -1,5 +1,5 @@
 import { useContext, useId, useLayoutEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Check, Inbox, Loader2, ShieldQuestion, TriangleAlert, X } from "lucide-react";
+import { CaretDown, CaretUp, Check, CircleNotch, ShieldWarning, Tray, Warning, X } from "@phosphor-icons/react";
 import type { PendingApprovalView } from "@lightspeed-ai/sdk";
 import { BotIcon } from "@/components/icons/bot";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
@@ -56,13 +56,13 @@ export function TranscriptEntryView({
       return entry.tone === "error" ? (
         <Marker className="text-destructive" role="alert">
           <MarkerIcon>
-            <TriangleAlert />
+            <Warning />
           </MarkerIcon>
           <MarkerContent>{entry.text}</MarkerContent>
         </Marker>
       ) : (
         <Marker variant="separator" role={entry.pending ? "status" : undefined}>
-          {entry.pending && <MarkerIcon><Loader2 className="animate-spin" /></MarkerIcon>}
+          {entry.pending && <MarkerIcon><CircleNotch className="animate-spin" /></MarkerIcon>}
           <MarkerContent>{entry.text}</MarkerContent>
         </Marker>
       );
@@ -215,7 +215,7 @@ export function UserBand({
                   <span className="inline-flex min-w-0 items-center gap-1.5 font-medium text-foreground">
                     {event.source?.startsWith("bot:")
                       ? <BotIcon size={14} className="shrink-0 text-teal-700 dark:text-teal-300" />
-                      : <Inbox className="size-3.5 shrink-0 text-teal-700 dark:text-teal-300" />}
+                      : <Tray className="size-3.5 shrink-0 text-teal-700 dark:text-teal-300" />}
                     <span className="[overflow-wrap:anywhere]">{eventSourceLabel(event.source, links.botName)}</span>
                   </span>
                   {event.kind && <><span aria-hidden="true">·</span><span className="font-mono text-[11px] [overflow-wrap:anywhere]">{event.kind}</span></>}
@@ -266,7 +266,7 @@ export function UserBand({
                   )}
                 >
                   {expanded ? "Show less" : "Show more"}
-                  {expanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                  {expanded ? <CaretUp className="size-3.5" /> : <CaretDown className="size-3.5" />}
                 </button>
               </div>
             )}
@@ -356,7 +356,7 @@ export function QueuedRunsBar({
               </Button>
             )}
             {item.cancelling || item.steering ? (
-              <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+              <CircleNotch className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
             ) : onCancel ? (
               <IconButton
                 size="xs"
@@ -399,7 +399,7 @@ export function ApprovalCards({
             className="rounded-lg border border-amber-500/35 bg-amber-500/5 p-4"
           >
             <div className="flex items-start gap-3">
-              <ShieldQuestion className="mt-0.5 size-4 shrink-0 text-amber-600" />
+              <ShieldWarning className="mt-0.5 size-4 shrink-0 text-amber-600" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Approve MCP tool call?</p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -416,7 +416,7 @@ export function ApprovalCards({
                     onClick={() => onDecide(approval.approvalId, "approve")}
                   >
                     {busy && deciding?.decision === "approve" ? (
-                      <Loader2 className="animate-spin" />
+                      <CircleNotch className="animate-spin" />
                     ) : (
                       <Check />
                     )}
@@ -429,7 +429,7 @@ export function ApprovalCards({
                     onClick={() => onDecide(approval.approvalId, "reject")}
                   >
                     {busy && deciding?.decision === "reject" ? (
-                      <Loader2 className="animate-spin" />
+                      <CircleNotch className="animate-spin" />
                     ) : (
                       <X />
                     )}

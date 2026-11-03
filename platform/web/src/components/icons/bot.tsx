@@ -7,8 +7,9 @@ import { forwardRef, type SVGProps } from "react";
 /// reads monochrome; on cards and avatars set `color` per bot.
 type BotMarkProps = SVGProps<SVGSVGElement> & { size?: number | string };
 
-/// Outlined rendition on the lucide 24px grid (stroke 2, round caps) so it
-/// sits flush with lucide icons in the sidebar: `<NavItem icon={BotIcon} />`.
+/// Outlined rendition on a 24px grid with round caps. The stroke matches
+/// Phosphor's light weight (12 on its 256 grid), so it sits flush with the
+/// Phosphor icons around it.
 /// Same anatomy as the mark — fanned streaks, eyes tilted by the same 7°.
 export const BotIcon = forwardRef<SVGSVGElement, BotMarkProps>(
   ({ size = 24, ...props }, ref) => (
@@ -20,7 +21,7 @@ export const BotIcon = forwardRef<SVGSVGElement, BotMarkProps>(
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.125}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -39,9 +40,9 @@ export const BotIcon = forwardRef<SVGSVGElement, BotMarkProps>(
 );
 BotIcon.displayName = "BotIcon";
 
-/// Outlined face without streaks, centered on the lucide grid. The body is
+/// Outlined face without streaks, centered on the 24px grid. The body is
 /// drawn 15% larger than BotIcon's (streaks need no room), so it reads at
-/// the same optical size as neighboring lucide icons.
+/// the same optical size as neighboring Phosphor icons.
 export const BotFaceIcon = forwardRef<SVGSVGElement, BotMarkProps>(
   ({ size = 24, ...props }, ref) => (
     <svg
@@ -52,7 +53,7 @@ export const BotFaceIcon = forwardRef<SVGSVGElement, BotMarkProps>(
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.125}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"

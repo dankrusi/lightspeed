@@ -5,12 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { slugify, workspaceCreateSchema, validWorkspaceTransferPath } from "@lightspeed-ai/platform-shared";
 import {
-  ChevronRight,
+  ArrowSquareOut,
+  CaretRight,
   File,
-  FolderGit2,
+  FolderOpen,
   Plus,
-  ExternalLink,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 import {
   api,
   type BlobContent,
@@ -124,7 +124,7 @@ export function WorkspacesPage({ admin: _admin }: { admin: boolean }) {
             </DetailPrompt>
           ) : (
             <DetailPrompt
-              icon={<FolderGit2 className="size-10 text-muted-foreground/60" />}
+              icon={<FolderOpen className="size-10 text-muted-foreground/60" />}
               create={permissions.can("create_workspace") ? { label: "New workspace", onClick: () => setCreateOpen(true) } : undefined}
             >
               Pick a workspace{permissions.can("create_workspace") ? ", or create one" : ""}.
@@ -486,7 +486,7 @@ function FileDetail({
           to={`/u/${slug}/workspaces/${workspaceId}`}
           className="md:hidden"
         >
-          <ChevronRight className="size-4 rotate-180" />
+          <CaretRight className="size-4 rotate-180" />
         </NavLink>
         <h1 className="min-w-0 flex-1 truncate font-mono text-sm">{filePath}</h1>
         <span className="shrink-0 text-xs text-muted-foreground">
@@ -502,7 +502,7 @@ function FileDetail({
               aria-label="Open in blob viewer (new tab)"
               title={dirty ? "Open saved version in blob viewer (new tab)" : "Open in blob viewer (new tab)"}
             >
-              <ExternalLink />
+              <ArrowSquareOut />
             </a>
           )}
           {decoded?.kind === "text" && (

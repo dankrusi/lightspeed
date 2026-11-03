@@ -1,7 +1,7 @@
 import { ReadError } from "@/components/read-error";
 import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import type {
   EnvironmentProviderBindingView,
   DeploymentEnvironmentProviderView,
@@ -166,7 +166,7 @@ export function AdminEnvironmentProvidersPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setEditing(provider)}>
-                    <Pencil data-icon="inline-start" />
+                    <PencilSimple data-icon="inline-start" />
                     Edit
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setBindingFor(provider)}>
@@ -179,7 +179,7 @@ export function AdminEnvironmentProvidersPage() {
                     disabled={removeProvider.isPending}
                     onClick={() => setDeleting(provider)}
                   >
-                    <Trash2 />
+                    <Trash />
                     Delete
                   </Button>
                 </div>

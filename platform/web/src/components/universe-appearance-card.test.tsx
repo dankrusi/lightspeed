@@ -10,7 +10,8 @@ import { PermissionIdentityProvider } from "@/lib/permissions";
 import { GeneralSettingsPage } from "@/pages/GeneralSettingsPage";
 import { UniverseAppearanceCard } from "./universe-appearance-card";
 import { waitForUi } from "@/test/wait-for-ui";
-import { UniverseIcon } from "./universe-icon";
+import { UNIVERSE_ICON_GLYPHS, UniverseIcon } from "./universe-icon";
+import { findIcon } from "@/test/icons";
 
 const mocks = vi.hoisted(() => ({ api: vi.fn(), universe: {} as Universe }));
 vi.mock("@/api", async original => ({ ...await original<typeof import("@/api")>(), api: mocks.api }));
@@ -61,14 +62,14 @@ it.each(UNIVERSE_ICONS)("previews the %s icon and saves it to the shared univers
   expect(button(iconLabel).getAttribute("aria-pressed")).toBe("true");
   expect(button("Blue color").getAttribute("aria-pressed")).toBe("true");
   const preview = container.querySelector('[aria-label="Universe appearance preview"]')!;
-  expect(preview.querySelector(`.lucide-${icon}`)).not.toBeNull();
+  expect(findIcon(preview, UNIVERSE_ICON_GLYPHS[icon])).not.toBeNull();
   expect(preview.querySelector("span[style]")?.getAttribute("style")).toContain("oklch(0.58 0.11 255)");
   expect(mocks.api).not.toHaveBeenCalled();
   await click("Save appearance");
   await waitForUi(() => expect(client.getQueryData<Universe[]>(["universes"])![0]).toMatchObject({ icon, iconColor: "blue" }));
   expect(mocks.api).toHaveBeenCalledWith("PATCH", "/api/v1/universes/universe", { icon, iconColor: "blue" });
   await render(<CachedIcon />);
-  expect(container.querySelector(`.lucide-${icon}`)).not.toBeNull();
+  expect(findIcon(container, UNIVERSE_ICON_GLYPHS[icon])).not.toBeNull();
   expect(container.querySelector("span[style]")?.getAttribute("style")).toContain("oklch(0.58 0.11 255)");
 });
 
@@ -110,6 +111,6 @@ it.each([false, true])("offers appearance on General settings for an authorized 
 
 it("renders the default badge when appearance is absent", async () => {
   await render(<UniverseIcon />);
-  expect(container.querySelector(".lucide-orbit")).not.toBeNull();
+  expect(findIcon(container, UNIVERSE_ICON_GLYPHS.orbit)).not.toBeNull();
   expect(container.querySelector(".bg-sidebar-primary")).not.toBeNull();
 });

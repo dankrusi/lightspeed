@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Switch } from "@versavolta/whisperink/components/Switch/Switch.js";
 

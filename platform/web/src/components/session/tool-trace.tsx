@@ -4,26 +4,26 @@ import { useContext, useEffect, useState, type ComponentType, type ReactNode, ty
 import { MediaStrip } from "@/components/session/media";
 import { TranscriptLinksContext, type TranscriptLinks } from "@/components/session/transcript-links";
 import {
+  ArrowSquareOut,
   Brain,
   Check,
-  CircleAlert,
-  CircleMinus,
-  Clock3,
+  CircleNotch,
+  Clock,
   Copy,
-  ExternalLink,
-  FileCode2,
+  FileCode,
   GitFork,
   Hourglass,
-  Layers,
-  LoaderCircle,
+  MagnifyingGlass,
+  MinusCircle,
+  PaperPlaneTilt,
   PencilLine,
   Plug,
   Repeat,
-  Search,
-  Send,
-  SquareTerminal,
+  Stack,
+  TerminalWindow,
+  WarningCircle,
   Wrench,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 import { BotIcon } from "@/components/icons/bot";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,14 +59,14 @@ interface GroupStyle {
 }
 
 const GROUP_STYLES: Record<ToolCallDisplayGroup, GroupStyle> = {
-  explore: { icon: Search, text: "text-cyan-700 dark:text-cyan-300", tile: "bg-cyan-500/10" },
+  explore: { icon: MagnifyingGlass, text: "text-cyan-700 dark:text-cyan-300", tile: "bg-cyan-500/10" },
   edit: { icon: PencilLine, text: "text-amber-700 dark:text-amber-300", tile: "bg-amber-500/10" },
-  execute: { icon: SquareTerminal, text: "text-blue-700 dark:text-blue-300", tile: "bg-blue-500/10" },
-  code: { icon: FileCode2, text: "text-fuchsia-700 dark:text-fuchsia-300", tile: "bg-fuchsia-500/10" },
+  execute: { icon: TerminalWindow, text: "text-blue-700 dark:text-blue-300", tile: "bg-blue-500/10" },
+  code: { icon: FileCode, text: "text-fuchsia-700 dark:text-fuchsia-300", tile: "bg-fuchsia-500/10" },
   mcp: { icon: Plug, text: "text-violet-700 dark:text-violet-300", tile: "bg-violet-500/10" },
   agent: { icon: GitFork, text: "text-indigo-700 dark:text-indigo-300", tile: "bg-indigo-500/10" },
   bot: { icon: BotIcon, text: "text-teal-700 dark:text-teal-300", tile: "bg-teal-500/10" },
-  message: { icon: Send, text: "text-emerald-700 dark:text-emerald-300", tile: "bg-emerald-500/10" },
+  message: { icon: PaperPlaneTilt, text: "text-emerald-700 dark:text-emerald-300", tile: "bg-emerald-500/10" },
   other: { icon: Wrench, text: "text-foreground/75", tile: "bg-muted" },
 };
 
@@ -249,7 +249,7 @@ export function ToolGroupTrace({
             single ? groupStyle(single).text : "text-muted-foreground",
           )}
         >
-          {single ? <ActivityIcon group={single} /> : <Layers aria-hidden="true" />}
+          {single ? <ActivityIcon group={single} /> : <Stack aria-hidden="true" />}
         </span>
         <span className="min-w-0 truncate font-medium">{batchTitle(group.calls)}</span>
         <span
@@ -260,10 +260,10 @@ export function ToolGroupTrace({
         >
           {active
             ? waiting
-              ? <><Clock3 aria-hidden="true" />waiting</>
-              : <><LoaderCircle className="motion-safe:animate-spin" aria-hidden="true" />{completed} of {group.calls.length}</>
+              ? <><Clock aria-hidden="true" />waiting</>
+              : <><CircleNotch className="motion-safe:animate-spin" aria-hidden="true" />{completed} of {group.calls.length}</>
             : failed > 0
-              ? <><CircleAlert aria-hidden="true" />{failed} failed</>
+              ? <><WarningCircle aria-hidden="true" />{failed} failed</>
               : durationMs !== undefined ? formatDuration(durationMs) : null}
         </span>
       </div>
@@ -314,7 +314,7 @@ function ToolCallRow({
   const running = !terminal && !waiting;
   const elapsed = useElapsed(call.startedAtMs, running);
 
-  const Icon = running ? LoaderCircle : callIcon(call);
+  const Icon = running ? CircleNotch : callIcon(call);
   const verb = call.continuation ? "Tool activity" : (display?.verb ?? call.toolName);
   const rawTarget = display?.target ?? toolTarget(call.argumentsJson);
   const target = rawTarget ? presentTarget(call, rawTarget, links) : null;
@@ -324,15 +324,15 @@ function ToolCallRow({
 
   let right: ReactNode = null;
   if (cancelled) {
-    right = <><CircleMinus aria-label="Cancelled" />cancelled</>;
+    right = <><MinusCircle aria-label="Cancelled" />cancelled</>;
   } else if (failed) {
     right = <>
-      <CircleAlert aria-label="Failed" className={cn(!highlightFailure && "text-amber-700 dark:text-amber-300")} />
+      <WarningCircle aria-label="Failed" className={cn(!highlightFailure && "text-amber-700 dark:text-amber-300")} />
       <span className={cn(!highlightFailure && "text-amber-700 dark:text-amber-300")}>failed</span>
       {call.durationMs !== undefined ? ` · ${formatDuration(call.durationMs)}` : ""}
     </>;
   } else if (waiting && !terminal) {
-    right = <><Clock3 aria-label="Waiting" />waiting</>;
+    right = <><Clock aria-label="Waiting" />waiting</>;
   } else if (running) {
     right = elapsed !== undefined ? formatDuration(elapsed) : null;
   } else if (call.durationMs !== undefined) {
@@ -365,7 +365,7 @@ function ToolCallRow({
           }}
           className="flex shrink-0 items-center gap-1 text-xs text-primary underline underline-offset-4 [&_svg]:size-3"
         >
-          <ExternalLink aria-hidden="true" />open session
+          <ArrowSquareOut aria-hidden="true" />open session
         </a>
       )}
       note={errorLine && (

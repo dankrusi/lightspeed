@@ -3,7 +3,7 @@ import { ReadError } from "@/components/read-error";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, RadioTower, Unplug } from "lucide-react";
+import { Broadcast, Plugs, Plus } from "@phosphor-icons/react";
 import {
   api,
   type ChannelAccountInput,
@@ -152,7 +152,7 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
       {toggle.error && <p className="mb-4 text-sm text-destructive">{toggle.error.message}</p>}
 
       {accounts.data && accountRows.length === 0 ? (
-        <EmptyState icon={RadioTower} title="No messaging accounts yet">
+        <EmptyState icon={Broadcast} title="No messaging accounts yet">
           Telegram bots and WhatsApp numbers that bots talk through; their credentials are kept for
           you.
         </EmptyState>
@@ -262,7 +262,7 @@ function Channels({ universeId, slug }: { universeId: string; slug: string }) {
                               label={`Unpair conversation ${pairing.chatId}`}
                               onClick={() => setUnpairing(pairing)}
                             >
-                              <Unplug />
+                              <Plugs />
                             </IconButton>
                           </TableActionsCell>
                         </TableRow>

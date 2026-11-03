@@ -1,5 +1,5 @@
 import { useEffect, useState, type RefObject } from "react";
-import { Check, ChevronDown, Copy, TriangleAlert } from "lucide-react";
+import { CaretDown, Check, Copy, Warning } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
@@ -49,8 +49,8 @@ export function ReplyCopyMenu({ contentRef, text, citations }: {
           className="h-6 gap-1 px-1.5 text-muted-foreground opacity-0 group-hover/message:opacity-100 group-focus-within/message:opacity-100 aria-expanded:opacity-100 hover:text-foreground focus-visible:text-foreground aria-expanded:text-foreground"
           disabled={copying} aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
           {feedback === "Copied" ? <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-            : feedback ? <TriangleAlert className="size-3.5 text-destructive" /> : <Copy className="size-3.5" />}
-          <ChevronDown className="size-3" />
+            : feedback ? <Warning className="size-3.5 text-destructive" /> : <Copy className="size-3.5" />}
+          <CaretDown className="size-3" />
         </Button>
       )}>
         <MenuItem onClick={() => void copy(false)}>Copy as Markdown</MenuItem>

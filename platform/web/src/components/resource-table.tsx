@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from "react";
-import { ChevronRight, LoaderCircle } from "lucide-react";
+import { CaretRight, CircleNotch } from "@phosphor-icons/react";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Table, TableActionsCell, TableBody, TableCard, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -40,7 +40,7 @@ export function ResourceRow({ name, onOpen, children }: {
       <TableActionsCell>
         <IconButton ref={triggerRef} size="sm" className="text-muted-foreground"
           label={`Details for ${name}`} aria-haspopup="dialog">
-          <ChevronRight aria-hidden="true" className="size-4" />
+          <CaretRight aria-hidden="true" className="size-4" />
         </IconButton>
       </TableActionsCell>
     </TableRow>
@@ -89,7 +89,7 @@ export function ResourceStatusBadge({ status }: { status: ResourceStatusInfo }) 
       status.tone === "danger" && "border-destructive/50 text-destructive",
       status.tone === "neutral" && "text-muted-foreground",
     )}>
-      {status.tone === "pending" && <LoaderCircle aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
+      {status.tone === "pending" && <CircleNotch aria-hidden="true" className="animate-spin motion-reduce:animate-none" />}
       {status.label}
     </Badge>
   );

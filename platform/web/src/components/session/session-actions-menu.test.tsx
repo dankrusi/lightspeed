@@ -4,6 +4,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { SessionActionsMenu } from "./session-actions-menu";
+import { CaretDown, DotsThree } from "@phosphor-icons/react";
+import { findIcon } from "@/test/icons";
 
 let root: Root;
 let container: HTMLDivElement;
@@ -85,7 +87,7 @@ it.each(["more", "tab"] as const)("offers compaction in the %s menu and prevents
     expect(busy.disabled).toBe(true);
     const trigger = menuTrigger();
     expect(trigger.querySelector(".animate-spin")).toBeNull();
-    expect(trigger.querySelector(variant === "more" ? ".lucide-ellipsis" : ".lucide-chevron-down")).not.toBeNull();
+    expect(findIcon(trigger, variant === "more" ? DotsThree : CaretDown)).not.toBeNull();
     await act(async () => busy.click());
     expect(compact).toHaveBeenCalledTimes(1);
   }

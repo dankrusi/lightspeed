@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { FieldLabel } from "@/components/ui/field";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";

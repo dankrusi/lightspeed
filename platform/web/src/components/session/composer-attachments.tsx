@@ -1,4 +1,4 @@
-import { FileText, LoaderCircle, RotateCw, TriangleAlert, X } from "lucide-react";
+import { ArrowClockwise, CircleNotch, FileText, Warning, X } from "@phosphor-icons/react";
 import { attachmentLabel, formatBytes, type ComposerAttachment } from "@/lib/composer-attachments";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { cn } from "@/lib/utils";
@@ -44,10 +44,10 @@ function AttachmentChip({ item, disabled, onRemove, onRetry }: {
       <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
         {item.previewUrl
           ? <img src={item.previewUrl} alt="" className="size-full object-cover" />
-          : failed ? <TriangleAlert className="size-4 text-destructive" /> : <FileText className="size-4" />}
+          : failed ? <Warning className="size-4 text-destructive" /> : <FileText className="size-4" />}
         {uploading && (
           <span className="absolute inset-0 flex items-center justify-center bg-background/70">
-            <LoaderCircle className="size-4 animate-spin" aria-hidden />
+            <CircleNotch className="size-4 animate-spin" aria-hidden />
           </span>
         )}
       </span>
@@ -61,7 +61,7 @@ function AttachmentChip({ item, disabled, onRemove, onRetry }: {
         {failed && (
           <IconButton size="xs" label={`Retry uploading ${item.name}`}
             disabled={disabled} onClick={() => onRetry(item.id)}>
-            <RotateCw />
+            <ArrowClockwise />
           </IconButton>
         )}
         <IconButton size="xs" label={`Remove ${item.name}`}

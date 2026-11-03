@@ -1,7 +1,7 @@
 import { defaultEnvironmentAttachment } from "@/lib/sessions/resource-features";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ArrowUpRight, CaretRight, SlidersHorizontal } from "@phosphor-icons/react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   api,
@@ -185,7 +185,7 @@ function SetupSection({
           aria-expanded={open}
           className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left"
         >
-          <ChevronRight
+          <CaretRight
             className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
           />
           <span className="min-w-0 flex-1">

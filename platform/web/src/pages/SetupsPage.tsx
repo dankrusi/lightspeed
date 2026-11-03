@@ -2,7 +2,7 @@ import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
 import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, PackageOpen, RefreshCw, Sparkles } from "lucide-react";
+import { ArrowsClockwise, CheckCircle, Package, Sparkle } from "@phosphor-icons/react";
 import type { DeploymentApiKeyView, MethodGroup } from "@lightspeed-ai/sdk";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
@@ -129,7 +129,7 @@ function SetupCard({
       <div className="flex flex-col gap-1 px-5 py-4">
         <div className="mb-2 flex items-start justify-between gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <PackageOpen className="size-5" />
+            <Package className="size-5" />
           </div>
           <SetupStatus setup={setup} />
         </div>
@@ -140,7 +140,7 @@ function SetupCard({
         {ready && setup.resources?.profileId && (
           <div className="rounded-lg bg-muted p-3 text-sm">
             <div className="flex items-center gap-2 font-medium">
-              <CheckCircle2 className="size-4 text-primary" />
+              <CheckCircle className="size-4 text-primary" />
               Ready to use
             </div>
             <p className="mt-1 text-muted-foreground">
@@ -186,11 +186,11 @@ function SetupCard({
           variant={ready && !upgradeAvailable ? "outline" : "primary"}
         >
           {installing ? (
-            <RefreshCw className="animate-spin" data-icon="inline-start" />
+            <ArrowsClockwise className="animate-spin" data-icon="inline-start" />
           ) : ready ? (
-            <RefreshCw data-icon="inline-start" />
+            <ArrowsClockwise data-icon="inline-start" />
           ) : (
-            <Sparkles data-icon="inline-start" />
+            <Sparkle data-icon="inline-start" />
           )}
           {installing ? "Installing…" : action}
         </Button>

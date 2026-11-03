@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { DownloadSimple } from "@phosphor-icons/react";
 import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
 
 export function PdfPreview({
@@ -42,7 +42,7 @@ export function PdfPreview({
         download={name.split("/").at(-1) || "document.pdf"}
         className={buttonClasses("outline", "sm")}
       >
-        <Download />
+        <DownloadSimple />
         Download PDF
       </a>
     </div>

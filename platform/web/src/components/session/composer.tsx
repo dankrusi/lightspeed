@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowUp, ChevronDown, CornerDownRight, ListPlus, LoaderCircle, Lock, Plus, Square, TriangleAlert, X } from "lucide-react";
+import { ArrowElbowDownRight, ArrowUp, CaretDown, CircleNotch, ListPlus, Lock, Plus, Stop as StopIcon, Warning, X } from "@phosphor-icons/react";
 import { ATTACHMENT_ACCEPT, ATTACHMENT_SUMMARY, type MessageRunOptions } from "@lightspeed-ai/platform-shared";
 import type { ModelOption } from "@/api";
 import { useDictation } from "@/lib/use-dictation";
@@ -325,7 +325,7 @@ export function SessionComposer({
                 "mx-2 mt-2 flex items-start gap-2 rounded-lg py-1.5 pr-1 pl-2.5 text-xs",
                 item.tone === "error" ? "bg-destructive/10 text-destructive" : "bg-amber-500/10 text-amber-800 dark:text-amber-300",
               )}>
-              <TriangleAlert className="mt-px size-3.5 shrink-0" aria-hidden />
+              <Warning className="mt-px size-3.5 shrink-0" aria-hidden />
               <span className="min-w-0 flex-1 py-px wrap-break-word">{item.text}</span>
               {item.dismiss && (
                 <IconButton size="xs" label="Dismiss" className="text-current hover:bg-foreground/10 hover:text-current"
@@ -396,7 +396,7 @@ export function SessionComposer({
                 <IconButton variant="outline" size="sm" onClick={onStop} disabled={stopping}
                   label={stopping ? "Stopping run" : "Stop run"}
                   title={stopping ? "Stopping the active run…" : "Stop the active run"}>
-                  {stopping ? <LoaderCircle className="animate-spin" /> : <Square className="size-3 fill-current" />}
+                  {stopping ? <CircleNotch className="animate-spin" /> : <StopIcon className="size-3" weight="fill" />}
                 </IconButton>
               )}
               {!disabled && (
@@ -405,20 +405,20 @@ export function SessionComposer({
                     disabled={!hasContent && !voiceCanSubmit}
                     label={sendLabel} title={sendTitle}
                     className={cn(runActive && "rounded-r-none")}>
-                    {pendingSubmit ? <LoaderCircle className="animate-spin" /> : <ArrowUp />}
+                    {pendingSubmit ? <CircleNotch className="animate-spin" /> : <ArrowUp />}
                   </IconButton>
                   {runActive && (
                     <Menu side="top" align="end" className="w-72" trigger={({ open, toggle }) => (
                       <Button type="button" size="sm" aria-label="Queue or steer" disabled={!hasContent && !voiceCanSubmit}
                         className="w-5 rounded-l-none border-l border-l-primary-foreground/20"
                         aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
-                        <ChevronDown className="size-3" />
+                        <CaretDown className="size-3" />
                       </Button>
                     )}>
                       <MenuItem icon={<ListPlus />} shortcut="↵" disabled={!hasContent && !voiceCanSubmit} onClick={() => submit(false)}>
                         Queue as the next run
                       </MenuItem>
-                      <MenuItem icon={<CornerDownRight />} shortcut={steerKeyLabel} className="h-auto py-1.5"
+                      <MenuItem icon={<ArrowElbowDownRight />} shortcut={steerKeyLabel} className="h-auto py-1.5"
                         disabled={(!hasContent && !voiceCanSubmit) || !canSteer} onClick={() => submit(true)}>
                         <span className="flex flex-col">
                           <span>Steer the current run</span>

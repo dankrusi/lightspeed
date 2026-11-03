@@ -3,7 +3,7 @@ import { ReadError } from "@/components/read-error";
 import { useId, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, KeyRound, LockKeyhole, Plus, ShieldOff } from "lucide-react";
+import { CaretRight, Key, LockKey, Plus, ShieldSlash } from "@phosphor-icons/react";
 import {
   api,
   type GitHubApp,
@@ -134,7 +134,7 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
               Add credential
             </Button>
           )}>
-            <MenuItem icon={<KeyRound />} onClick={() => setPasteOpen(true)}>
+            <MenuItem icon={<Key />} onClick={() => setPasteOpen(true)}>
               Paste a token or secret
             </MenuItem>
             <MenuItem icon={<GitHubLogo />} onClick={() => setGitHubOpen(true)}>
@@ -157,7 +157,7 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
         <p className="mb-4 text-sm text-destructive">{revokeGrant.error.message}</p>
       )}
       {inventory.data && reusable.length === 0 && (
-        <EmptyState icon={LockKeyhole} title="No credentials yet">
+        <EmptyState icon={LockKey} title="No credentials yet">
           Tokens, environment secrets and GitHub App installations live here, bound to
           environments, MCP servers and bot triggers without exposing their values.
         </EmptyState>
@@ -216,7 +216,7 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                         label={`Revoke ${grant.displayName ?? grant.grantId}`}
                         onClick={() => setRevokingGrant(grant)}
                       >
-                        <ShieldOff />
+                        <ShieldSlash />
                       </IconButton>
                     )}
                   </TableActionsCell>
@@ -282,7 +282,7 @@ function CredentialList({ universeId, slug }: { universeId: string; slug: string
                         <GitHubAppStatusBadge app={app} />
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        <ChevronRight className="size-4" />
+                        <CaretRight className="size-4" />
                       </TableCell>
                     </TableRow>
                   );

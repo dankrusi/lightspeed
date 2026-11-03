@@ -1,4 +1,4 @@
-import { Ellipsis, LoaderCircle, Pause, Play, SlidersHorizontal } from "lucide-react";
+import { CircleNotch, DotsThree, Pause, Play, SlidersHorizontal } from "@phosphor-icons/react";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
@@ -33,7 +33,7 @@ export function BotActionsMenu({
           aria-expanded={open}
           onClick={toggle}
         >
-          {pause?.pending ? <LoaderCircle className="size-3.5 animate-spin" /> : <Ellipsis />}
+          {pause?.pending ? <CircleNotch className="size-3.5 animate-spin" /> : <DotsThree />}
         </IconButton>
       )}
     >

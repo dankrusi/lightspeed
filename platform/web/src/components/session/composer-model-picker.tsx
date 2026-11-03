@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Check, ChevronDown, Search } from "lucide-react";
+import { CaretDown, Check, MagnifyingGlass, Package } from "@phosphor-icons/react";
 import {
   effortLabel,
   effortShortLabel,
@@ -51,11 +51,11 @@ export function ModelPicker({ choice, stored, runActive, canSaveDefault, onChang
         aria-label={`Model: ${summary}${overridden ? " (differs from the session)" : ""}. Change model or effort`}
         aria-expanded={open} aria-haspopup="dialog" onClick={toggle}
         className="relative h-8 max-w-full min-w-0 shrink gap-1.5 px-2 text-xs font-medium">
-        <Box className="hidden size-3.5 text-muted-foreground sm:block" aria-hidden />
+        <Package className="hidden size-3.5 text-muted-foreground sm:block" aria-hidden />
         <span className="min-w-0 max-w-28 truncate sm:max-w-48">{choice.modelLabel}</span>
         <span className="hidden text-muted-foreground/50 sm:inline" aria-hidden>·</span>
         <span className="hidden text-muted-foreground sm:inline">{effortShortLabel(choice.reasoningEffort)}</span>
-        <ChevronDown className="size-3 text-muted-foreground" aria-hidden />
+        <CaretDown className="size-3 text-muted-foreground" aria-hidden />
         {overridden && <span className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" aria-hidden />}
       </Button>
     )}>
@@ -110,7 +110,7 @@ function ModelSection({ choice, pick }: { choice: ComposerModelChoice; pick: (pa
   return (
     <section aria-label="Model" className="flex min-h-0 min-w-0 flex-1 flex-col border-b sm:border-r sm:border-b-0">
       <label className="m-2 mb-1 flex h-8 items-center gap-2 rounded-md bg-muted px-2 text-muted-foreground focus-within:ring-2 focus-within:ring-ring/50">
-        <Search className="size-3.5 shrink-0" aria-hidden />
+        <MagnifyingGlass className="size-3.5 shrink-0" aria-hidden />
         <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && query.trim()) {

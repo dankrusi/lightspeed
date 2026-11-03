@@ -9,7 +9,7 @@ import { useMcpToolDiscoverySource } from "@/lib/mcp/tool-discovery";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { slugify } from "@lightspeed-ai/platform-shared";
-import { CheckCircle2, ExternalLink, Loader2, LogIn, Plus, RotateCcw, Server } from "lucide-react";
+import { ArrowCounterClockwise, ArrowSquareOut, CheckCircle, CircleNotch, HardDrives, Plus, SignIn } from "@phosphor-icons/react";
 import {
   api,
   type AuthGrantOption,
@@ -89,7 +89,7 @@ function ServerList({ universeId }: { universeId: string }) {
       {servers.error && <ReadError error={servers.error} loading={!servers.data} prefix="MCP servers unavailable" />}
       {authGrants.error && <ReadError error={authGrants.error} loading={!authGrants.data} prefix="Access credentials unavailable" />}
       {servers.data && rows.length === 0 && (
-        <EmptyState icon={Server} title="No MCP servers yet">
+        <EmptyState icon={HardDrives} title="No MCP servers yet">
           Connect a remote tool server, then make its tools available to profiles and sessions.
         </EmptyState>
       )}
@@ -185,7 +185,7 @@ function ServerDetails({ universeId, server, authGrants, authGrantsLoading, onCh
           pending={remove.isPending} onConfirm={() => remove.mutate()} />
         <div className="ml-auto flex flex-wrap gap-2">
           {isOAuthPolicy(server.authPolicy.type) && <Button variant="outline" size="sm" onClick={() => setOAuthOpen(true)}>
-            <LogIn data-icon="inline-start" />{server.credential ? "Reconnect" : "Connect"}
+            <SignIn data-icon="inline-start" />{server.credential ? "Reconnect" : "Connect"}
           </Button>}
           <Button size="sm" onClick={() => setEditing(server)}>Edit server</Button>
         </div>
@@ -559,7 +559,7 @@ function ServerDialog({
         <FieldLabel>Authentication</FieldLabel>
         {detectedOAuth && (
           <div className="mb-2 flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
-            <CheckCircle2 className="size-4" />
+            <CheckCircle className="size-4" />
             OAuth sign-in detected from the server
           </div>
         )}
@@ -852,14 +852,14 @@ function AuthDiscoveryNote({
   if (pending) {
     return (
       <FieldDescription className="flex items-center gap-1.5">
-        <Loader2 className="size-3.5 animate-spin" /> Checking for OAuth sign-in…
+        <CircleNotch className="size-3.5 animate-spin" /> Checking for OAuth sign-in…
       </FieldDescription>
     );
   }
   if (checked && oauth) {
     return (
       <FieldDescription className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
-        <CheckCircle2 className="size-3.5" /> OAuth sign-in detected
+        <CheckCircle className="size-3.5" /> OAuth sign-in detected
       </FieldDescription>
     );
   }
@@ -1016,7 +1016,7 @@ function OAuthDialog({
 
         {(start.isPending || (attempt && flow.isLoading)) && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Preparing the sign-in…
+            <CircleNotch className="size-4 animate-spin" /> Preparing the sign-in…
           </p>
         )}
         {attempt && flow.data?.status === "pending" && (
@@ -1033,17 +1033,17 @@ function OAuthDialog({
                 setAuthorizationOpened(true);
               }}
             >
-              <ExternalLink data-icon="inline-start" />
+              <ArrowSquareOut data-icon="inline-start" />
               {authorizationOpened ? "Open the sign-in again" : "Open the sign-in"}
             </Button>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" /> Waiting for you to approve access…
+              <CircleNotch className="size-3 animate-spin" /> Waiting for you to approve access…
             </p>
           </div>
         )}
         {flow.data?.status === "completed" && complete.isPending && (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" /> Access approved — connecting the server…
+            <CircleNotch className="size-4 animate-spin" /> Access approved — connecting the server…
           </p>
         )}
         {complete.data && (
@@ -1061,7 +1061,7 @@ function OAuthDialog({
               {terminalError || start.error?.message || flow.error?.message || complete.error?.message}
             </p>
             <Button type="button" variant="outline" className="w-fit" onClick={retry}>
-              <RotateCcw data-icon="inline-start" />
+              <ArrowCounterClockwise data-icon="inline-start" />
               Try again
             </Button>
           </div>

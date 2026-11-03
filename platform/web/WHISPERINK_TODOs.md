@@ -27,7 +27,6 @@ These came from replacing the local adapters in `src/components/ui/` with Whispe
 
 - **Swap the hand-rolled `tabs` and `field`** for Whisperink's `Tabs` and `Field`.
 - **Move the app components out of `src/components/ui/`.** These are `combobox`, `message-scroller`, `message`, `bubble`, `marker`, `settings-disclosure`, `progress-steps`, and whatever remains of `field`. They don't wrap Whisperink, so `ui/` shouldn't imply they're the design system.
-- **Migrate the remaining lucide icons to Phosphor.** The sidebar nav has moved. `user-menu.tsx`, `universe-switcher.tsx`, and the rest of the app still use lucide. The custom bot icon (`src/components/icons/bot.tsx`) is drawn at lucide's stroke weight, and only the sidebar thins it to match Phosphor light.
 
 ## Untracked files
 

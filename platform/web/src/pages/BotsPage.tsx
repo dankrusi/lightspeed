@@ -1,7 +1,7 @@
 import type { BotReadResponse } from "@lightspeed-ai/sdk";
 import { ReadError } from "@/components/read-error";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react";
 import { NavLink, useParams } from "react-router-dom";
 import {
   api,

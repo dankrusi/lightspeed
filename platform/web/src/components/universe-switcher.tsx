@@ -2,7 +2,7 @@ import { slugify, universeSlugSchema } from "@lightspeed-ai/platform-shared";
 import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
+import { CaretUpDown, Check, Plus } from "@phosphor-icons/react";
 import { UniverseIcon } from "@/components/universe-icon";
 import { api, type Universe } from "@/api";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
@@ -56,7 +56,7 @@ export function UniverseSwitcher({
                   : "Lightspeed"}
               </span>
             </div>
-            <ChevronsUpDown className="ml-auto size-4" />
+            <CaretUpDown className="ml-auto size-4" />
           </button>
         )}>
           <MenuLabel>Universes</MenuLabel>

@@ -1,7 +1,7 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { ReadError } from "@/components/read-error";
 import { LoadingNote, PageHeader, UniverseNotFound } from "@/components/page";

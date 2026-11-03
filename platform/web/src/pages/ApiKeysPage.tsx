@@ -1,7 +1,7 @@
 import { ReadError } from "@/components/read-error";
 import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Plus, RotateCw, ShieldOff } from "lucide-react";
+import { ArrowClockwise, Key as KeyIcon, Plus, ShieldSlash } from "@phosphor-icons/react";
 import type { DeploymentApiKeyCreateResponse, DeploymentApiKeyView, MethodGroup } from "@lightspeed-ai/sdk";
 import { GroupSummary, KeyPresetField, MethodGroupPicker } from "@/components/api-keys/method-group-picker";
 import { RotateKeyDialog } from "@/components/api-keys/rotate-key-dialog";
@@ -89,7 +89,7 @@ function ApiKeyList({ universeId }: { universeId: string }) {
         <p className="mb-3 text-sm text-destructive">{revoke.error.message}</p>
       )}
       {keys.data && allRows.length === 0 && (
-        <EmptyState icon={KeyRound} title="No API keys yet">
+        <EmptyState icon={KeyIcon} title="No API keys yet">
           Keys let external agents and clients reach this universe and call the method groups
           they were minted with. A key's secret is shown only once.
         </EmptyState>
@@ -138,7 +138,7 @@ function ApiKeyList({ universeId }: { universeId: string }) {
                     <TableActionsCell>
                       {!revoked && !key.assertActor && (
                         <IconButton size="sm" label={`Rotate ${key.displayName ?? key.keyPrefix}`} onClick={() => setRotatingKey(key)}>
-                          <RotateCw />
+                          <ArrowClockwise />
                         </IconButton>
                       )}
                       {!revoked && (
@@ -148,7 +148,7 @@ function ApiKeyList({ universeId }: { universeId: string }) {
                           label={`Revoke ${key.displayName ?? key.keyPrefix}`}
                           onClick={() => setRevokingKey(key)}
                         >
-                          <ShieldOff />
+                          <ShieldSlash />
                         </IconButton>
                       )}
                     </TableActionsCell>

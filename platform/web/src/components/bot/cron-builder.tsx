@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";

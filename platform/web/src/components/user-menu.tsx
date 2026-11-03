@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { LogOut, Monitor, Moon, ShieldCheck, Sun, UserRound } from "lucide-react";
+import { Monitor, Moon, ShieldCheck, SignOut, Sun, UserCircle } from "@phosphor-icons/react";
 import { MenuItem } from "@versavolta/whisperink/components/Menu/MenuItem.js";
 import { MenuLabel } from "@versavolta/whisperink/components/Menu/MenuLabel.js";
 import { MenuSeparator } from "@versavolta/whisperink/components/Menu/MenuSeparator.js";
@@ -33,7 +33,7 @@ export function UserMenu({ user, admin }: { user: SessionUser; admin: boolean })
   return (
     <>
       <MenuLabel>{user.email}</MenuLabel>
-      <MenuItem icon={<UserRound />} onClick={() => navigate("/account")}>Account</MenuItem>
+      <MenuItem icon={<UserCircle />} onClick={() => navigate("/account")}>Account</MenuItem>
       <MenuSeparator />
       <MenuLabel>Theme</MenuLabel>
       {THEMES.map(({ value, label, icon: Icon }) => (
@@ -51,7 +51,7 @@ export function UserMenu({ user, admin }: { user: SessionUser; admin: boolean })
       )}
       <MenuSeparator />
       <MenuItem
-        icon={<LogOut />}
+        icon={<SignOut />}
         onClick={() => {
           void authClient.signOut().then(() =>
             window.location.assign(`${import.meta.env.BASE_URL}login`),

@@ -1,6 +1,6 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { EnvironmentPowerControls } from "@/components/environment/power-controls";

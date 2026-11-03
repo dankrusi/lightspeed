@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CalendarClock, Check, ChevronDown, ChevronRight, Copy, Inbox, MessageCircle, Pause, Play, Plus, RefreshCw, RotateCw, Send, Terminal, Trash2, Webhook } from "lucide-react";
+import { ArrowClockwise, ArrowLeft, ArrowsClockwise, CalendarDots, CaretDown, CaretRight, ChatCircle, Check, Copy, PaperPlaneTilt, Pause, Play, Plus, Terminal, Trash, Tray, WebhooksLogo } from "@phosphor-icons/react";
 import {
   api,
   botLabel,
@@ -296,11 +296,11 @@ export function TriggerKindIcon({
   className?: string;
 }) {
   const classes = cn("size-3.5 shrink-0 text-muted-foreground", className);
-  if (kind === "schedule") return <CalendarClock className={classes} />;
-  if (kind === "bot") return <Inbox className={classes} />;
-  if (kind === "chat") return <MessageCircle className={classes} />;
-  if (kind === "poll") return exec ? <Terminal className={classes} /> : <RefreshCw className={classes} />;
-  return <Webhook className={classes} />;
+  if (kind === "schedule") return <CalendarDots className={classes} />;
+  if (kind === "bot") return <Tray className={classes} />;
+  if (kind === "chat") return <ChatCircle className={classes} />;
+  if (kind === "poll") return exec ? <Terminal className={classes} /> : <ArrowsClockwise className={classes} />;
+  return <WebhooksLogo className={classes} />;
 }
 
 /**
@@ -374,9 +374,9 @@ export function TriggerFormCard({
           disabled={!expandable}
         >
           {expandable && (open ? (
-              <ChevronDown className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <CaretDown className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             ) : (
-              <ChevronRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <CaretRight className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             ))}
           <TriggerKindIcon kind={kind} exec={exec} className="mt-0.5" />
           <span className="min-w-0 flex-1">
@@ -882,7 +882,7 @@ export function TriggersSection({
                       disabled={sample.isPending || !enabled}
                       title="Post a sample payload to this webhook"
                     >
-                      <Send data-icon="inline-start" /> Send sample
+                      <PaperPlaneTilt data-icon="inline-start" /> Send sample
                     </Button>
                   )}
                   <IconButton
@@ -908,7 +908,7 @@ export function TriggersSection({
                       onClick={() => setPendingDelete(trigger.triggerId)}
                       label="Delete trigger"
                     >
-                      <Trash2 />
+                      <Trash />
                     </IconButton>
                   )}
               </>
@@ -1336,7 +1336,7 @@ function ChatRowDetail({
             disabled={rotate.isPending}
             onClick={() => rotate.mutate()}
           >
-            <RotateCw />
+            <ArrowClockwise />
           </IconButton>
           {rotate.error && <span className="text-destructive">{rotate.error.message}</span>}
         </div>
@@ -2387,20 +2387,20 @@ export function TriggerKindPicker({
   return (
     <div className={cn("grid content-start gap-3 sm:grid-cols-2", className)}>
       <TriggerKindChoice
-        icon={<CalendarClock className="size-5" />}
+        icon={<CalendarDots className="size-5" />}
         title="Schedule"
         description="At fixed times: every morning, weekdays at nine, once next Tuesday."
         onClick={() => onPick("schedule")}
       />
       <TriggerKindChoice
-        icon={<Webhook className="size-5" />}
+        icon={<WebhooksLogo className="size-5" />}
         title="Webhook"
         description="When something happens elsewhere: GitHub, an alerting tool, your own systems."
         onClick={() => onPick("webhook")}
       />
       {channelsOn && !exclude.includes("chat") && (
         <TriggerKindChoice
-          icon={<MessageCircle className="size-5" />}
+          icon={<ChatCircle className="size-5" />}
           title="Chat account"
           description="Messages from people on Telegram or WhatsApp; each conversation becomes a thread."
           onClick={() => onPick("chat")}
@@ -2408,14 +2408,14 @@ export function TriggerKindPicker({
       )}
       {!exclude.includes("bot") && (
         <TriggerKindChoice
-          icon={<Inbox className="size-5" />}
+          icon={<Tray className="size-5" />}
           title="Other bots"
           description="Let bots in this universe message this one (at most one inbox)."
           onClick={() => onPick("bot")}
         />
       )}
       <TriggerKindChoice
-        icon={<RefreshCw className="size-5" />}
+        icon={<ArrowsClockwise className="size-5" />}
         title="Check a URL"
         description="Fetch an HTTP endpoint on a timer and wake only for new items."
         onClick={() => onPick("poll", { pollSource: "http" })}

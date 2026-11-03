@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { ArrowsClockwise } from "@phosphor-icons/react";
 import { api, type GitHubApp, type GitHubInstallation, type SecretGrant } from "@/api";
 import { Badge } from "@versavolta/whisperink/components/Badge/Badge.js";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
@@ -258,7 +258,7 @@ export function GitHubAppDetails({
             onClick={() => void installations.refetch()}
             disabled={installations.isFetching}
           >
-            <RefreshCw className={installations.isFetching ? "animate-spin" : undefined} />
+            <ArrowsClockwise className={installations.isFetching ? "animate-spin" : undefined} />
             Refresh
           </Button>
         </div>

@@ -9,17 +9,16 @@ import {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  SquarePen,
-  Download,
-  Ellipsis,
-  LoaderCircle,
+  CircleNotch,
+  DotsThree,
+  DownloadSimple,
   FilePlus,
   FolderPlus,
-  FolderUp,
-  Trash2,
-  Upload,
-  Pencil,
-} from "lucide-react";
+  NotePencil,
+  PencilSimple,
+  Trash,
+  UploadSimple,
+} from "@phosphor-icons/react";
 import {
   validWorkspaceTransferPath,
   workspaceUploadConflicts,
@@ -677,7 +676,7 @@ export function WorkspaceTransfers({
               role="status"
               className="flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-primary/40 bg-popover px-3 py-2 text-sm text-popover-foreground shadow-md"
             >
-              <FolderUp className="size-4 shrink-0 text-primary" />
+              <UploadSimple className="size-4 shrink-0 text-primary" />
               <span className="min-w-0 break-words">
                 {movingEntry ? "Drop to move into" : "Drop to upload into"}{" "}
                 <span className="font-medium [overflow-wrap:anywhere]">
@@ -1133,17 +1132,17 @@ export function WorkspaceActionsMenu({
           <>
             {transfers.activity ? (
               <>
-                <LoaderCircle className="animate-spin" />
+                <CircleNotch className="animate-spin" />
                 <span className="sr-only" role="status">
                   {transfers.activity}
                 </span>
               </>
             ) : (
-              <SquarePen />
+              <NotePencil />
             )}
           </>
         ) : (
-          <Ellipsis />
+          <DotsThree />
         )}
       </IconButton>
     )}>
@@ -1168,7 +1167,7 @@ export function WorkspaceActionsMenu({
             </MenuItem>
           )}
           <MenuItem
-            icon={<Upload />}
+            icon={<UploadSimple />}
             disabled={transfers.busy || disabled}
             onClick={() => transfers.choose(false, path, !directory)}
           >
@@ -1176,7 +1175,7 @@ export function WorkspaceActionsMenu({
           </MenuItem>
           {directory && (
             <MenuItem
-              icon={<FolderUp />}
+              icon={<UploadSimple />}
               disabled={transfers.busy || disabled}
               onClick={() => transfers.choose(true, path)}
             >
@@ -1186,7 +1185,7 @@ export function WorkspaceActionsMenu({
         </>
       )}
       <MenuItem
-        icon={<Download />}
+        icon={<DownloadSimple />}
         disabled={transfers.downloading}
         onClick={() => transfers.download(path, directory)}
       >
@@ -1196,7 +1195,7 @@ export function WorkspaceActionsMenu({
         <>
           <MenuSeparator />
           <MenuItem
-            icon={<Pencil />}
+            icon={<PencilSimple />}
             disabled={transfers.busy || disabled}
             onClick={() => transfers.rename(path, directory)}
           >
@@ -1204,7 +1203,7 @@ export function WorkspaceActionsMenu({
           </MenuItem>
           <MenuItem
             danger
-            icon={<Trash2 />}
+            icon={<Trash />}
             disabled={transfers.busy || disabled}
             onClick={() => transfers.remove(path, directory)}
           >
@@ -1216,7 +1215,7 @@ export function WorkspaceActionsMenu({
         <>
           <MenuSeparator />
           <MenuItem
-            icon={<Pencil />}
+            icon={<PencilSimple />}
             disabled={transfers.busy || disabled}
             onClick={transfers.renameWorkspace}
           >
@@ -1224,7 +1223,7 @@ export function WorkspaceActionsMenu({
           </MenuItem>
           <MenuItem
             danger
-            icon={<Trash2 />}
+            icon={<Trash />}
             disabled={transfers.busy || disabled}
             onClick={transfers.removeWorkspace}
           >

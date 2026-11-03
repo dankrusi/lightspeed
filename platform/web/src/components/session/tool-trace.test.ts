@@ -10,6 +10,8 @@ import {
   subagentSessionId,
   type TranscriptLinks,
 } from "./tool-trace";
+import { FileCode, WarningCircle } from "@phosphor-icons/react";
+import { hasIcon } from "@/test/icons";
 
 const call = (over: Partial<TranscriptToolCall> = {}): TranscriptToolCall => ({
   callId: "call-1", toolName: "read_file", status: "succeeded", isError: false, ...over,
@@ -39,7 +41,7 @@ describe("step rows", () => {
       display: { group: "code", verb: "Run code", target: "JavaScript", detail: "1 line" },
     })]));
     expect(text(html)).toBe("Run code JavaScript 1 line");
-    expect(html).toContain("lucide-file-code-2");
+    expect(hasIcon(html, FileCode)).toBe(true);
     expect(html).toContain("text-fuchsia-700");
     expect(html).not.toContain("secret");
   });
@@ -72,7 +74,7 @@ describe("step rows", () => {
       expect(text(html)).toBe("Run cargo clippy failed · 12s");
       expect(html).toContain('class="text-amber-700 dark:text-amber-300">failed</span>');
       expect(html).not.toContain("destructive");
-      expect(html).toContain("lucide-circle-alert");
+      expect(hasIcon(html, WarningCircle)).toBe(true);
       expect(html).not.toContain("exit 101");
     },
   );
@@ -85,7 +87,7 @@ describe("step rows", () => {
     expect(text(html)).toContain("2 failed");
     expect(html).toContain("text-amber-700 dark:text-amber-300");
     expect(html).not.toContain("destructive");
-    expect(html).toContain("lucide-circle-alert");
+    expect(hasIcon(html, WarningCircle)).toBe(true);
   });
 
   it("emphasizes a mixed batch when an external tool fails", () => {
@@ -95,7 +97,7 @@ describe("step rows", () => {
     ], "completedWithErrors"));
     expect(text(html)).toContain("2 failed");
     expect(html).toContain("text-destructive");
-    expect(html).toContain("lucide-circle-alert");
+    expect(hasIcon(html, WarningCircle)).toBe(true);
   });
 
   it("shows cancelled and waiting states without inventing a duration", () => {

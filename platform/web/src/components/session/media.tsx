@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { FileText, ImageOff } from "lucide-react";
+import { FileText, ImageBroken } from "@phosphor-icons/react";
 import { TranscriptLinksContext, type TranscriptLinks } from "@/components/session/transcript-links";
 import type { TranscriptMedia } from "@/lib/sessions/transcript";
 import { cn } from "@/lib/utils";
@@ -82,7 +82,7 @@ export function MediaThumb({ media, className }: { media: TranscriptMedia; class
         title={title}
         aria-label={title}
       >
-        <ImageOff className="size-4" />
+        <ImageBroken className="size-4" />
       </div>
     );
   }

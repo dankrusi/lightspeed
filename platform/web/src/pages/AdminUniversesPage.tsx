@@ -4,7 +4,7 @@ import { ReadError } from "@/components/read-error";
 import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react";
 import {
   api,
   type EngineUniverse,

@@ -2,7 +2,7 @@ import { useActionPermissions } from "@/lib/permissions";
 import { ReadError } from "@/components/read-error";
 import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { PencilSimple, Plus, Trash } from "@phosphor-icons/react";
 import { api, type Member } from "@/api";
 import { UNIVERSE_ROLES, type UniverseRole } from "@lightspeed-ai/platform-shared";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
@@ -122,7 +122,7 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
                         label={`Edit role for ${member.name || member.email}`}
                         onClick={() => setEditing(member)}
                       >
-                        <Pencil />
+                        <PencilSimple />
                       </IconButton>
                       <IconButton
                         size="sm"
@@ -130,7 +130,7 @@ function MemberList({ universeId, writable }: { universeId: string; writable: bo
                         label={`Remove ${member.name || member.email}`}
                         onClick={() => setRemoving(member)}
                       >
-                        <Trash2 />
+                        <Trash />
                       </IconButton>
                     </TableActionsCell>
                   )}

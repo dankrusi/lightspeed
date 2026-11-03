@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { NavLink } from "react-router-dom";
-import { ChevronRight, File, FolderOpen } from "lucide-react";
+import { CaretRight, File, FolderOpen } from "@phosphor-icons/react";
 import type { VfsTreeEntry } from "@/api";
 import {
   WorkspaceActionsMenu,
@@ -235,7 +235,7 @@ function Directory({
             setOpen((value) => !value);
           }}
         >
-          <ChevronRight
+          <CaretRight
             className={cn(
               "size-3.5 shrink-0 transition-transform",
               open && "rotate-90",

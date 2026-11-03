@@ -3,7 +3,7 @@ import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } f
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { slugify } from "@lightspeed-ai/platform-shared";
-import { ChevronRight, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { CaretRight, Plus, SlidersHorizontal, Trash } from "@phosphor-icons/react";
 import {
   api,
   type ProfileDocument,
@@ -322,7 +322,7 @@ function ProfileEditor({
     <>
       <header className="flex h-12 min-w-0 shrink-0 items-center gap-1.5 border-b px-2 md:gap-3 md:px-4">
         <NavLink to={`/u/${slug}/profiles`} className="flex size-8 shrink-0 items-center justify-center md:hidden" aria-label="Back to profiles">
-          <ChevronRight className="size-4 rotate-180" />
+          <CaretRight className="size-4 rotate-180" />
         </NavLink>
         <h1 className="min-w-0 flex-1 truncate text-sm font-semibold">
           {(draft.displayName as string) || profileId}
@@ -352,7 +352,7 @@ function ProfileEditor({
               label="Delete profile"
               onClick={() => setConfirmDelete(true)}
             >
-              <Trash2 />
+              <Trash />
             </IconButton>
             <Modal
               role="alertdialog"

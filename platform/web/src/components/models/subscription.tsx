@@ -2,7 +2,7 @@ import { ResourceActions } from "@/components/resource-details-dialog";
 import { useActionPermissions } from "@/lib/permissions";
 import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Copy } from "lucide-react";
+import { Copy } from "@phosphor-icons/react";
 import { api, type SecretGrant, type SubscriptionImportResult } from "@/api";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { Field, FieldLabel } from "@/components/ui/field";

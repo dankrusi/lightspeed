@@ -1,19 +1,47 @@
 import {
-  Orbit, Globe, Rocket, Star, Sparkles, Zap, Sun, Moon, Atom, Compass,
-  Mountain, Leaf, Flame, Heart, Code, Briefcase, House, Music, Shield, Bot, type LucideIcon,
-  Anchor, Book, Camera, Coffee, Crown, Gem, Palette, Puzzle, Telescope, Cpu,
-} from "lucide-react";
+  Anchor,
+  Atom,
+  Binoculars,
+  Book,
+  Briefcase,
+  Camera,
+  Code,
+  Coffee,
+  Compass,
+  Cpu,
+  Crown,
+  Diamond,
+  Flame,
+  Globe,
+  Heart,
+  House,
+  Leaf,
+  Lightning,
+  Moon,
+  Mountains,
+  MusicNote,
+  Palette,
+  Planet,
+  PuzzlePiece,
+  Robot,
+  Rocket,
+  Shield,
+  Sparkle,
+  Star,
+  Sun,
+  type Icon as PhosphorIcon,
+} from "@phosphor-icons/react";
 import type { UniverseIconName, UniverseIconColor } from "@lightspeed-ai/platform-shared";
 import { cn } from "@/lib/utils";
 import { UNIVERSE_ICON_BACKGROUNDS } from "@/lib/identity-colors";
 
-const ICONS: Record<UniverseIconName, LucideIcon> = {
-  orbit: Orbit, globe: Globe, rocket: Rocket, star: Star, sparkles: Sparkles,
-  zap: Zap, sun: Sun, moon: Moon, atom: Atom, compass: Compass,
-  mountain: Mountain, leaf: Leaf, flame: Flame, heart: Heart, code: Code, briefcase: Briefcase,
-  house: House, music: Music, shield: Shield, bot: Bot,
+export const UNIVERSE_ICON_GLYPHS: Record<UniverseIconName, PhosphorIcon> = {
+  orbit: Planet, globe: Globe, rocket: Rocket, star: Star, sparkles: Sparkle,
+  zap: Lightning, sun: Sun, moon: Moon, atom: Atom, compass: Compass,
+  mountain: Mountains, leaf: Leaf, flame: Flame, heart: Heart, code: Code, briefcase: Briefcase,
+  house: House, music: MusicNote, shield: Shield, bot: Robot,
   anchor: Anchor, book: Book, camera: Camera, coffee: Coffee, crown: Crown,
-  gem: Gem, palette: Palette, puzzle: Puzzle, telescope: Telescope, cpu: Cpu,
+  gem: Diamond, palette: Palette, puzzle: PuzzlePiece, telescope: Binoculars, cpu: Cpu,
 };
 
 export function UniverseIcon({ icon = "orbit", iconColor = "default", className }: {
@@ -21,7 +49,7 @@ export function UniverseIcon({ icon = "orbit", iconColor = "default", className 
   iconColor?: UniverseIconColor;
   className?: string;
 }) {
-  const Icon = ICONS[icon] ?? Orbit;
+  const Icon = UNIVERSE_ICON_GLYPHS[icon] ?? Planet;
   const background = UNIVERSE_ICON_BACKGROUNDS[iconColor] ?? UNIVERSE_ICON_BACKGROUNDS.default;
   const foreground = background === UNIVERSE_ICON_BACKGROUNDS.default
     ? "bg-sidebar-primary text-sidebar-primary-foreground"

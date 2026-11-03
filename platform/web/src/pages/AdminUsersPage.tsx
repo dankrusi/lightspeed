@@ -1,7 +1,7 @@
 import { ReadError } from "@/components/read-error";
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus } from "lucide-react";
+import { PencilSimple, Plus } from "@phosphor-icons/react";
 import { authClient, useLoginConfig, type SessionUser } from "@/auth";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
 import { Select } from "@versavolta/whisperink/components/Select/Select.js";
@@ -110,7 +110,7 @@ export function AdminUsersPage({ currentUser }: { currentUser: SessionUser }) {
                       label={`Edit ${user.email}`}
                       onClick={() => setEditing(user)}
                     >
-                      <Pencil />
+                      <PencilSimple />
                     </IconButton>
                   </TableActionsCell>
                 </TableRow>

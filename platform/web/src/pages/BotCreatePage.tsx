@@ -1,7 +1,7 @@
 import { defaultEnvironmentAttachment } from "@/lib/sessions/resource-features";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash } from "@phosphor-icons/react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   api,
@@ -573,7 +573,7 @@ function Wizard({
                                 setWakeups((current) => current.filter((entry) => entry.key !== draft.key))
                               }
                             >
-                              <Trash2 />
+                              <Trash />
                             </IconButton>
                           )}
                         />

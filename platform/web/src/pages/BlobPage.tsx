@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Download, FileQuestion, Link2 } from "lucide-react";
+import { Check, DownloadSimple, FileDashed, Link as LinkIcon } from "@phosphor-icons/react";
 import { validWorkspaceTransferPath } from "@lightspeed-ai/platform-shared";
 import { api, type SessionView, type WorkspaceTree, type VfsTreeEntry } from "@/api";
 import { LoadingNote, UniverseNotFound } from "@/components/page";
@@ -157,7 +157,7 @@ function BlobBody({ bytes, view, name, preview }: { bytes: Uint8Array; view: Blo
     case "binary":
       return (
         <div className="flex flex-col items-center gap-2 p-12 text-sm text-muted-foreground">
-          <FileQuestion className="size-6" />
+          <FileDashed className="size-6" />
           <p>This blob has no preview. Download it to open it.</p>
         </div>
       );
@@ -190,7 +190,7 @@ function CopyLink() {
         setTimeout(() => setCopied(false), 1500);
       });
     }}>
-      {copied ? <Check data-icon="inline-start" /> : <Link2 data-icon="inline-start" />}
+      {copied ? <Check data-icon="inline-start" /> : <LinkIcon data-icon="inline-start" />}
       {copied ? "Copied" : "Copy link"}
     </Button>
   );
@@ -203,7 +203,7 @@ function DownloadLink({ bytes, name }: { bytes: Uint8Array; name: string }) {
   if (!url) return null;
   return (
     <ButtonLink variant="outline" size="sm" href={url} download={name}>
-      <Download data-icon="inline-start" />
+      <DownloadSimple data-icon="inline-start" />
       Download
     </ButtonLink>
   );

@@ -31,12 +31,6 @@ export interface UniverseNavItem {
   feature?: FeatureKey;
 }
 
-/// The bot mark is drawn on a 24px stroke grid; thinned to Phosphor's light
-/// weight (12 on its 256 grid) so it matches the other sidebar icons.
-function BotNavIcon() {
-  return <BotFaceIcon strokeWidth={1.125} />;
-}
-
 export function navItemVisible(
   item: UniverseNavItem,
   can: (action: PermissionAction) => boolean,
@@ -64,7 +58,7 @@ export const UNIVERSE_NAV: UniverseNavGroup[] = [
   {
     // Unlabelled: the universe switcher above already names the universe.
     items: [
-      { path: "bots", label: "Bots", icon: BotNavIcon, action: "read", feature: "bots" },
+      { path: "bots", label: "Bots", icon: BotFaceIcon, action: "read", feature: "bots" },
       { path: "sessions", label: "Sessions", icon: ChatsCircle, action: "read" },
     ],
   },

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LockKeyhole, Users } from "lucide-react";
+import { LockKey, Users } from "@phosphor-icons/react";
 import type { ResourceAccessSummary } from "@lightspeed-ai/sdk";
 import { api } from "@/api";
 import { Modal } from "@versavolta/whisperink/components/Modal/Modal.js";
@@ -22,7 +22,7 @@ export function SharingMark({
   if (!access) return null;
   const shared = access.visibility === "universe";
   if (quiet && !shared) return null;
-  const Icon = shared ? Users : LockKeyhole;
+  const Icon = shared ? Users : LockKey;
   return (
     <Tooltip
       content={shared

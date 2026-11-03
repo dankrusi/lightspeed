@@ -1,4 +1,4 @@
-import { ChevronDown, TriangleAlert } from "lucide-react";
+import { CaretDown, Warning } from "@phosphor-icons/react";
 import { Popover } from "@versavolta/whisperink/components/Popover/Popover.js";
 import {
   formatDuration,
@@ -39,7 +39,7 @@ export function RunStatsTrigger({ summary, className }: { summary: TranscriptRun
         {contextTokens !== undefined && <span>Context {formatTokens(contextTokens)}</span>}
         {contextTokens !== undefined && total !== undefined && <span aria-hidden="true">·</span>}
         {total !== undefined && <span>Usage {formatTokens(total)}</span>}
-        <ChevronDown className="size-3! shrink-0" />
+        <CaretDown className="size-3! shrink-0" />
       </button>
     )}>
       <div role="group" aria-label="Run statistics">
@@ -77,7 +77,7 @@ export function RunOutcomeLine({
     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 px-2 text-xs text-muted-foreground">
       {status === "failed" ? (
         <span className="flex min-w-0 items-start gap-1.5 text-destructive">
-          <TriangleAlert className="mt-px size-3.5 shrink-0" />
+          <Warning className="mt-px size-3.5 shrink-0" />
           <span className="[overflow-wrap:anywhere]">{runFailureText(summary)}</span>
         </span>
       ) : status === "cancelled" ? (

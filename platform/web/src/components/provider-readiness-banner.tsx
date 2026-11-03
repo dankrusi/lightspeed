@@ -1,6 +1,6 @@
 import { useActionPermissions } from "@/lib/permissions";
 import { Link } from "react-router-dom";
-import { Info } from "lucide-react";
+import { Info } from "@phosphor-icons/react";
 import type { ModelConfig } from "@/api";
 import { buttonClasses } from "@versavolta/whisperink/components/Button/button-classes.js";
 import { useProviderReadiness } from "@/lib/provider-readiness";

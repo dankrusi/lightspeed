@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronDown, Minimize2, Ellipsis, LoaderCircle, Share2, SlidersHorizontal } from "lucide-react";
+import { ArrowsInSimple, CaretDown, CircleNotch, DotsThree, ShareNetwork, SlidersHorizontal } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Menu } from "@versavolta/whisperink/components/Menu/Menu.js";
@@ -41,7 +41,7 @@ export function SessionActionsMenu({
   const navigate = useNavigate();
   const compactItem = onCompact && (
     <MenuItem
-      icon={compactionLabel ? <LoaderCircle className="animate-spin" /> : <Minimize2 />}
+      icon={compactionLabel ? <CircleNotch className="animate-spin" /> : <ArrowsInSimple />}
       onClick={onCompact}
       disabled={Boolean(compactionLabel)}
     >
@@ -62,7 +62,7 @@ export function SessionActionsMenu({
             aria-expanded={menuOpen}
             onClick={toggle}
           >
-            <Ellipsis />
+            <DotsThree />
           </IconButton>
         ) : (
           <button
@@ -74,7 +74,7 @@ export function SessionActionsMenu({
             aria-expanded={menuOpen}
             onClick={toggle}
           >
-            <ChevronDown className="size-3.5" />
+            <CaretDown className="size-3.5" />
           </button>
         )
       }
@@ -87,7 +87,7 @@ export function SessionActionsMenu({
             </MenuItem>
           )}
           {onShare && (
-            <MenuItem icon={<Share2 />} onClick={onShare}>
+            <MenuItem icon={<ShareNetwork />} onClick={onShare}>
               Share with universe…
             </MenuItem>
           )}

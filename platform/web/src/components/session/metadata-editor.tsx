@@ -2,7 +2,7 @@
 /// freely; `rowsToMetadata` drops incomplete rows and the last duplicate key
 /// wins, which is exactly what the put will store.
 import { useEffect, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X } from "@phosphor-icons/react";
 import { Button } from "@versavolta/whisperink/components/Button/Button.js";
 import { IconButton } from "@versavolta/whisperink/components/Button/IconButton.js";
 import { Input } from "@versavolta/whisperink/components/Input/Input.js";
