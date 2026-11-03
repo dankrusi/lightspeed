@@ -7,7 +7,7 @@ type Item = { value: string; label: ReactNode }
 function collect(children: ReactNode, into: Item[] = [], trigger: { id?: string; className?: string; disabled?: boolean; label?: string; format?: (value: string) => ReactNode } = {}) {
   Children.forEach(children, (child) => {
     if (!isValidElement(child)) return
-    const element = child as ReactElement<{ value?: unknown; children?: ReactNode; id?: string; className?: string; disabled?: boolean }>
+    const element = child as ReactElement<{ value?: unknown; children?: ReactNode; id?: string; className?: string; disabled?: boolean; "aria-label"?: string }>
     const name = named(element)
     if (name === "SelectItem") {
       into.push({ value: String(element.props.value ?? ""), label: element.props.children })

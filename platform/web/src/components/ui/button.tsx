@@ -51,7 +51,7 @@ function Button({
 }: React.ComponentProps<"button"> & {
   variant?: Variant | null
   size?: Size | null
-  render?: ReactElement<{ className?: string; children?: ReactNode; onClick?: (event: React.MouseEvent) => void }>
+  render?: ReactElement<{ className?: string; children?: ReactNode; onClick?: (event: React.MouseEvent) => void; "aria-label"?: string; title?: string }>
   nativeButton?: boolean
 }) {
   const resolvedVariant = variant ?? "default"
